@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PRISM — see what you can't</title>
+<meta name="description" content="Describe what's weighing on you. PRISM refracts it through other perspectives — your future self, a mentor, a skeptic, your values — so you can see the angles you're too close to see." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #07070c;
+    --bg-2: #0c0c16;
+    --ink: #ece9f5;
+    --ink-dim: #9b97b0;
+    --ink-faint: #5f5b77;
+    --line: rgba(180,170,220,0.12);
+    --line-bright: rgba(180,170,220,0.26);
+    --serif: "Fraunces", Georgia, serif;
+    --sans: "Space Grotesk", system-ui, sans-serif;
+    /* spectrum — refracted beams */
+    --c-future: #b39cff;
+    --c-mentor: #ffce7a;
+    --c-skeptic: #6fe0e6;
+    --c-values: #ff9ec4;
+    --c-child:  #9bef9f;
+    --c-rival:  #ff8a6b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+  }
+
+  /* ambient grain + glow */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(900px 600px at 50% -10%, rgba(150,120,255,0.10), transparent 60%),
+      radial-gradient(700px 500px at 85% 110%, rgba(255,180,120,0.06), transparent 60%),
+      radial-gradient(700px 500px at 10% 100%, rgba(110,224,230,0.05), transparent 60%);
+    pointer-events: none; z-index: 0;
+  }
+  body::after {
+    content: "";
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+    opacity: 0.025; pointer-events: none; z-index: 0; mix-blend-mode: screen;
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- top bar ---------- */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 26px 0 0; position: relative; z-index: 3;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; letter-spacing: 0.42em;
+    font-weight: 600; font-size: 13px; text-transform: uppercase; color: var(--ink); }
+  .brand .spec { width: 30px; height: 8px; border-radius: 6px;
+    background: linear-gradient(90deg, var(--c-rival), var(--c-mentor), var(--c-child), var(--c-skeptic), var(--c-future), var(--c-values));
+    box-shadow: 0 0 16px rgba(160,140,255,0.5); }
+  .top-actions { display: flex; gap: 8px; }
+  .ghost-btn {
+    font-family: var(--sans); font-size: 12px; letter-spacing: 0.08em;
+    color: var(--ink-dim); background: transparent; border: 1px solid var(--line);
+    padding: 8px 14px; border-radius: 999px; cursor: pointer; transition: .22s;
+    text-transform: uppercase;
+  }
+  .ghost-btn:hover { color: var(--ink); border-color: var(--line-bright); background: rgba(255,255,255,0.03); }
+
+  /* ---------- hero / intake ---------- */
+  .stage { min-height: calc(100vh - 90px); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; padding: 30px 0 70px; }
+
+  .eyebrow { font-size: 12px; letter-spacing: 0.45em; text-transform: uppercase;
+    color: var(--ink-faint); margin-bottom: 26px; }
+
+  /* the prism artwork */
+  .glass { position: relative; width: 280px; height: 150px; margin: 0 auto 6px; }
+  .glass svg { width: 100%; height: 100%; overflow: visible; }
+  @keyframes beamPulse { 0%,100% { opacity:.5 } 50% { opacity:1 } }
+  @keyframes floaty { 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(-7px) } }
+  .glass .tri { animation: floaty 7s ease-in-out infinite; transform-origin: center; }
+  .glass .in-beam { animation: beamPulse 4s ease-in-out infinite; }
+  .glass .out-beam { opacity: .85; }
+
+  h1 { font-family: var(--serif); font-weight: 300; font-optical-sizing: auto;
+    font-size: clamp(40px, 8vw, 86px); line-height: 1.0; letter-spacing: -0.02em;
+    margin: 6px 0 0; }
+  h1 em { font-style: italic; background: linear-gradient(100deg, var(--c-future), var(--c-values) 55%, var(--c-mentor));
+    -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lede { max-width: 560px; margin: 22px auto 0; color: var(--ink-dim);
+    font-size: clamp(15px, 2vw, 18px); }
+
+  /* intake field */
+  .intake { width: min(680px, 100%); margin: 40px auto 0; }
+  .field-shell {
+    position: relative; border: 1px solid var(--line-bright); border-radius: 20px;
+    background: linear-gradient(180deg, rgba(20,20,32,0.7), rgba(12,12,22,0.7));
+    backdrop-filter: blur(8px); padding: 6px;
+    box-shadow: 0 24px 60px -30px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.04);
+    transition: border-color .25s, box-shadow .25s;
+  }
+  .field-shell:focus-within { border-color: rgba(179,156,255,0.5);
+    box-shadow: 0 24px 70px -28px rgba(110,80,200,0.5), inset 0 1px 0 rgba(255,255,255,0.06); }
+  textarea {
+    width: 100%; min-height: 92px; resize: none; border: 0; outline: 0; background: transparent;
+    color: var(--ink); font-family: var(--serif); font-size: 20px; line-height: 1.5;
+    padding: 18px 18px 6px; font-weight: 300;
+  }
+  textarea::placeholder { color: var(--ink-faint); font-style: italic; }
+  .field-foot { display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 10px 8px 18px; gap: 12px; }
+  .hint { font-size: 12px; color: var(--ink-faint); letter-spacing: 0.02em; }
+  .refract-btn {
+    font-family: var(--sans); font-weight: 600; font-size: 14px; letter-spacing: 0.04em;
+    color: #14101f; border: 0; cursor: pointer; padding: 12px 22px; border-radius: 14px;
+    background: linear-gradient(100deg, #d9caff, #ffe1b0);
+    box-shadow: 0 10px 30px -10px rgba(179,156,255,0.7); transition: transform .15s, box-shadow .2s, opacity .2s;
+    display: inline-flex; align-items: center; gap: 9px; white-space: nowrap;
+  }
+  .refract-btn:hover { transform: translateY(-1px); box-shadow: 0 14px 36px -10px rgba(179,156,255,0.9); }
+  .refract-btn:active { transform: translateY(0); }
+  .refract-btn:disabled { opacity: .55; cursor: progress; }
+
+  /* lens chooser */
+  .lenses-pick { margin: 26px auto 0; max-width: 700px; }
+  .lenses-pick .label { font-size: 11px; letter-spacing: 0.32em; text-transform: uppercase;
+    color: var(--ink-faint); margin-bottom: 13px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 9px; justify-content: center; }
+  .chip {
+    font-family: var(--sans); font-size: 13px; letter-spacing: 0.02em; cursor: pointer;
+    padding: 8px 15px; border-radius: 999px; border: 1px solid var(--line);
+    color: var(--ink-dim); background: rgba(255,255,255,0.015); transition: .2s;
+    display: inline-flex; align-items: center; gap: 8px; user-select: none;
+  }
+  .chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--lc, #888);
+    box-shadow: 0 0 10px var(--lc); opacity: .4; transition: .2s; }
+  .chip[aria-pressed="true"] { color: var(--ink); border-color: var(--line-bright);
+    background: rgba(255,255,255,0.06); }
+  .chip[aria-pressed="true"] .dot { opacity: 1; }
+  .chip:hover { border-color: var(--line-bright); }
+
+  .examples { margin-top: 22px; font-size: 12.5px; color: var(--ink-faint); }
+  .examples a { color: var(--ink-dim); cursor: pointer; border-bottom: 1px dotted var(--line-bright);
+    text-decoration: none; transition: .2s; }
+  .examples a:hover { color: var(--ink); }
+
+  /* ---------- refraction result ---------- */
+  .result { display: none; padding: 40px 0 90px; }
+  .result.show { display: block; }
+  .result-head { text-align: center; margin-bottom: 8px; }
+  .result-head .your-words {
+    font-family: var(--serif); font-style: italic; font-weight: 300;
+    font-size: clamp(20px, 3.4vw, 30px); line-height: 1.35; color: var(--ink);
+    max-width: 720px; margin: 0 auto; position: relative; padding: 0 8px;
+  }
+  .result-head .quote-mark { color: var(--ink-faint); font-style: normal; }
+  .result-sub { margin-top: 18px; font-size: 11px; letter-spacing: 0.34em;
+    text-transform: uppercase; color: var(--ink-faint); display: flex; align-items: center;
+    gap: 12px; justify-content: center; }
+  .result-sub .rule { height: 1px; width: 46px; background: var(--line-bright); }
+
+  .beams-art { height: 70px; display: flex; align-items: center; justify-content: center; margin: 6px 0 2px; }
+  .beams-art svg { overflow: visible; }
+
+  .lens-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-top: 14px; }
+  @media (max-width: 760px) { .lens-grid { grid-template-columns: 1fr; } }
+
+  .lens-card {
+    border: 1px solid var(--line); border-radius: 18px; padding: 24px 24px 22px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.005));
+    position: relative; overflow: hidden;
+    opacity: 0; transform: translateY(18px);
+  }
+  .lens-card.in { animation: cardIn .7s cubic-bezier(.2,.7,.2,1) forwards; }
+  @keyframes cardIn { to { opacity: 1; transform: translateY(0); } }
+  .lens-card::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--lc); box-shadow: 0 0 22px var(--lc); opacity: .9;
+  }
+  .lens-card::after {
+    content: ""; position: absolute; right: -40px; top: -40px; width: 160px; height: 160px;
+    background: radial-gradient(circle, var(--lc), transparent 70%); opacity: .10; pointer-events: none;
+  }
+  .lens-name { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .lens-name .nm { font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--lc); font-weight: 500; }
+  .lens-name .glyph { width: 22px; height: 22px; flex: 0 0 auto; }
+  .lens-reflection { font-family: var(--serif); font-weight: 300; font-size: 19px;
+    line-height: 1.5; color: var(--ink); margin-bottom: 16px; }
+  .lens-question { font-size: 14.5px; color: var(--ink-dim); display: flex; gap: 10px;
+    padding-top: 14px; border-top: 1px solid var(--line); line-height: 1.5; }
+  .lens-question .ask { color: var(--lc); flex: 0 0 auto; font-weight: 600; }
+
+  .synthesis {
+    margin-top: 26px; border-radius: 18px; padding: 30px 30px 28px;
+    border: 1px solid var(--line-bright);
+    background:
+      linear-gradient(120deg, rgba(179,156,255,0.06), rgba(255,206,122,0.05) 50%, rgba(111,224,230,0.05));
+    position: relative; opacity: 0; transform: translateY(18px);
+  }
+  .synthesis.in { animation: cardIn .8s .1s cubic-bezier(.2,.7,.2,1) forwards; }
+  .synthesis .syn-label { font-size: 11px; letter-spacing: 0.34em; text-transform: uppercase;
+    color: var(--ink-faint); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+  .synthesis .syn-label .spec { width: 26px; height: 7px; border-radius: 5px;
+    background: linear-gradient(90deg, var(--c-rival), var(--c-mentor), var(--c-child), var(--c-skeptic), var(--c-future), var(--c-values)); }
+  .synthesis .syn-text { font-family: var(--serif); font-weight: 300; font-size: 21px; line-height: 1.55; color: var(--ink); }
+
+  .result-actions { display: flex; gap: 12px; justify-content: center; margin-top: 36px; flex-wrap: wrap; }
+
+  /* ---------- loading ---------- */
+  .loader { display: none; flex-direction: column; align-items: center; gap: 22px; padding: 70px 0; }
+  .loader.show { display: flex; }
+  .loader .spin { width: 64px; height: 64px; position: relative; }
+  .loader .spin svg { animation: spin 3.4s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loader .ltext { font-family: var(--serif); font-style: italic; color: var(--ink-dim); font-size: 18px;
+    min-height: 27px; text-align: center; }
+
+  /* error / notice */
+  .notice { display: none; max-width: 620px; margin: 18px auto 0; padding: 14px 18px;
+    border-radius: 14px; border: 1px solid rgba(255,138,107,0.35); background: rgba(255,138,107,0.08);
+    color: #ffc9b8; font-size: 13.5px; text-align: center; }
+  .notice.show { display: block; }
+  .notice.info { border-color: var(--line-bright); background: rgba(179,156,255,0.07); color: var(--ink-dim); }
+
+  /* ---------- modal (settings / history) ---------- */
+  .modal-bg { position: fixed; inset: 0; background: rgba(4,4,9,0.72); backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center; z-index: 50; padding: 24px; }
+  .modal-bg.show { display: flex; }
+  .modal { width: min(540px, 100%); border: 1px solid var(--line-bright); border-radius: 22px;
+    background: linear-gradient(180deg, #14141f, #0c0c15); padding: 30px;
+    box-shadow: 0 40px 100px -40px #000; max-height: 86vh; overflow-y: auto; }
+  .modal h2 { font-family: var(--serif); font-weight: 300; font-size: 27px; margin-bottom: 6px; }
+  .modal p.m-sub { color: var(--ink-dim); font-size: 14px; margin-bottom: 22px; }
+  .modal label { display: block; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--ink-faint); margin-bottom: 9px; }
+  .modal input[type="password"], .modal input[type="text"] {
+    width: 100%; padding: 13px 15px; border-radius: 12px; border: 1px solid var(--line-bright);
+    background: rgba(0,0,0,0.35); color: var(--ink); font-family: var(--sans); font-size: 14px; outline: 0; }
+  .modal input:focus { border-color: rgba(179,156,255,0.5); }
+  .modal .fineprint { font-size: 12px; color: var(--ink-faint); margin-top: 12px; line-height: 1.55; }
+  .modal .fineprint code { color: var(--ink-dim); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 24px; justify-content: flex-end; }
+  .x-close { position: absolute; }
+
+  .hist-item { border: 1px solid var(--line); border-radius: 13px; padding: 14px 16px; margin-bottom: 10px;
+    cursor: pointer; transition: .2s; }
+  .hist-item:hover { border-color: var(--line-bright); background: rgba(255,255,255,0.03); }
+  .hist-item .ht { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--ink);
+    overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .hist-item .hm { font-size: 11px; color: var(--ink-faint); margin-top: 6px; letter-spacing: 0.04em; }
+  .hist-empty { color: var(--ink-faint); font-style: italic; text-align: center; padding: 24px 0; }
+
+  footer { text-align: center; padding: 30px 0 40px; color: var(--ink-faint); font-size: 12px;
+    letter-spacing: 0.04em; position: relative; z-index: 1; }
+  footer .spec-mini { display: inline-block; width: 22px; height: 5px; border-radius: 4px; vertical-align: middle;
+    margin: 0 6px; background: linear-gradient(90deg, var(--c-rival), var(--c-mentor), var(--c-child), var(--c-skeptic), var(--c-future), var(--c-values)); }
+
+  /* ---------- grounding line (sets calm, honest expectations) ---------- */
+  .grounding { margin: 26px auto 0; font-size: 12.5px; color: var(--ink-faint);
+    letter-spacing: 0.02em; max-width: 540px; line-height: 1.55; }
+
+  /* ---------- care / support surface ---------- */
+  .care { display:none; border-radius:18px; padding:24px 26px; margin:0 auto 26px; max-width:760px;
+    border:1px solid rgba(155,239,159,0.30);
+    background: linear-gradient(180deg, rgba(155,239,159,0.09), rgba(111,224,230,0.05));
+    box-shadow: 0 18px 50px -34px rgba(0,0,0,0.7); }
+  .care.show { display:block; animation: cardIn .7s cubic-bezier(.2,.7,.2,1); }
+  .care.crisis { border-color: rgba(255,206,122,0.42);
+    background: linear-gradient(180deg, rgba(255,206,122,0.11), rgba(255,158,196,0.05)); }
+  .care .care-head { display:flex; align-items:center; gap:11px; margin-bottom:11px; }
+  .care .care-head .h { font-family:var(--serif); font-weight:300; font-size:22px; color:var(--ink); }
+  .care .care-head .icon { width:24px; height:24px; color:var(--c-child); flex:0 0 auto; }
+  .care.crisis .care-head .icon { color:var(--c-mentor); }
+  .care .care-body { color:var(--ink); font-size:15.5px; line-height:1.62; margin-bottom:16px; }
+  .care .care-actions { display:flex; gap:10px; flex-wrap:wrap; }
+  .care .care-link { font-family:var(--sans); font-size:13px; letter-spacing:0.02em; cursor:pointer;
+    padding:10px 16px; border-radius:999px; border:1px solid var(--line-bright); color:var(--ink);
+    background:rgba(255,255,255,0.04); transition:.2s; text-decoration:none;
+    display:inline-flex; align-items:center; gap:7px; }
+  .care .care-link.primary { background:linear-gradient(100deg,#cdeccf,#bfe9ea); color:#10241a; border:0; font-weight:600; }
+  .care .care-link:hover { transform:translateY(-1px); border-color:var(--line-bright); }
+
+  /* ---------- resources list (inside modal) ---------- */
+  .res-item { display:flex; gap:13px; align-items:flex-start; padding:15px 0; border-bottom:1px solid var(--line); }
+  .res-item:last-of-type { border-bottom:0; }
+  .res-item .res-ic { width:24px; height:24px; flex:0 0 auto; color:var(--c-child); margin-top:2px; }
+  .res-item .res-t { font-weight:600; font-size:14.5px; color:var(--ink); }
+  .res-item .res-t a { color:var(--c-skeptic); text-decoration:none; border-bottom:1px dotted var(--line-bright); }
+  .res-item .res-d { font-size:13px; color:var(--ink-dim); line-height:1.55; margin-top:3px; }
+  .res-item .res-d b { color:var(--ink); font-weight:600; }
+
+  /* ---------- breathing loader (calm-tech: a slow breath to settle into) ---------- */
+  .loader .orbit { position:relative; width:120px; height:120px; display:flex; align-items:center; justify-content:center; }
+  .breath { position:absolute; left:50%; top:50%; width:120px; height:120px; margin:-60px 0 0 -60px;
+    border-radius:50%; border:1px solid rgba(179,156,255,0.30);
+    background: radial-gradient(circle, rgba(179,156,255,0.10), transparent 70%);
+    animation: breathe 8s ease-in-out infinite; }
+  @keyframes breathe { 0%,100%{ transform:scale(0.62); opacity:.4 } 50%{ transform:scale(1); opacity:.85 } }
+
+  /* support link in footer */
+  .support-foot { margin-top:14px; color:var(--ink-faint); font-size:12px; }
+  .support-foot a { color:var(--ink-dim); text-decoration:none; border-bottom:1px dotted var(--line-bright); cursor:pointer; transition:.2s; }
+  .support-foot a:hover { color:var(--ink); }
+
+  /* ---------- respect reduced motion (calm + accessible) ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior:auto; }
+    *, *::before, *::after { animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+    .glass .tri, .glass .in-beam, .loader .spin svg, .breath { animation:none !important; }
+    .lens-card, .synthesis, .care { opacity:1 !important; transform:none !important; }
+  }
+
+  .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><span class="spec"></span> Prism</div>
+    <div class="top-actions">
+      <button class="ghost-btn" id="historyBtn">Reflections</button>
+      <button class="ghost-btn" id="aboutBtn">About</button>
+    </div>
+  </header>
+
+  <!-- ============ INTAKE STAGE ============ -->
+  <section class="stage" id="stage">
+    <div class="eyebrow">a reflection tool · cohort 001</div>
+
+    <div class="glass" aria-hidden="true">
+      <svg viewBox="0 0 280 150">
+        <!-- incoming white beam -->
+        <line class="in-beam" x1="0" y1="75" x2="118" y2="75" stroke="white" stroke-width="2" opacity="0.85"/>
+        <!-- prism triangle -->
+        <g class="tri">
+          <polygon points="120,38 165,112 75,112" fill="rgba(255,255,255,0.05)" stroke="rgba(200,190,240,0.5)" stroke-width="1.2"/>
+          <polygon points="120,38 165,112 75,112" fill="url(#pg)" opacity="0.4"/>
+        </g>
+        <!-- refracted beams -->
+        <g class="out-beam">
+          <line x1="150" y1="95" x2="280" y2="40" stroke="var(--c-future)" stroke-width="2"/>
+          <line x1="150" y1="98" x2="280" y2="58" stroke="var(--c-values)" stroke-width="2"/>
+          <line x1="150" y1="101" x2="280" y2="76" stroke="var(--c-skeptic)" stroke-width="2"/>
+          <line x1="150" y1="104" x2="280" y2="94" stroke="var(--c-child)" stroke-width="2"/>
+          <line x1="150" y1="107" x2="280" y2="112" stroke="var(--c-mentor)" stroke-width="2"/>
+          <line x1="150" y1="110" x2="280" y2="130" stroke="var(--c-rival)" stroke-width="2"/>
+        </g>
+        <defs>
+          <linearGradient id="pg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#b39cff"/><stop offset="1" stop-color="#ffce7a"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+
+    <h1>See what <em>you can't</em>.</h1>
+    <p class="lede">When you're inside a problem, you can only see it from one angle. Describe what's weighing on you — Prism refracts it through other perspectives so the blind spots become visible.</p>
+
+    <div class="intake">
+      <div class="field-shell">
+        <textarea id="situation" maxlength="800" placeholder="What's weighing on you? Be honest — it stays on your device."></textarea>
+        <div class="field-foot">
+          <span class="hint" id="charhint">A decision, a worry, a stuck feeling…</span>
+          <button class="refract-btn" id="refractBtn">
+            Refract
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 8h8M9 8l4-7M9 8l4 7" stroke="#14101f" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="lenses-pick">
+        <div class="label">Refract through</div>
+        <div class="chips" id="chips"></div>
+      </div>
+
+      <div class="examples">
+        Not sure what to write? Try
+        <a data-ex="0">“Should I drop the team I helped start?”</a> ·
+        <a data-ex="1">“Everyone thinks I have it together.”</a>
+      </div>
+
+      <p class="grounding">A space to think things through — not therapy, and never a replacement for a real person. If you're carrying something heavy, Prism will always point you toward someone who can help.</p>
+
+      <div class="notice" id="notice"></div>
+    </div>
+  </section>
+
+  <!-- ============ LOADER ============ -->
+  <section class="loader" id="loader">
+    <div class="orbit">
+      <div class="breath"></div>
+      <div class="spin">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+          <polygon points="32,10 52,50 12,50" stroke="rgba(200,190,240,0.5)" stroke-width="1.4" fill="rgba(255,255,255,0.04)"/>
+          <line x1="0" y1="34" x2="22" y2="34" stroke="white" stroke-width="2"/>
+          <line x1="42" y1="40" x2="64" y2="22" stroke="var(--c-future)" stroke-width="2"/>
+          <line x1="42" y1="44" x2="64" y2="44" stroke="var(--c-skeptic)" stroke-width="2"/>
+          <line x1="42" y1="48" x2="64" y2="62" stroke="var(--c-mentor)" stroke-width="2"/>
+        </svg>
+      </div>
+    </div>
+    <div class="ltext" id="ltext">Take a breath. Letting the light in…</div>
+  </section>
+
+  <!-- ============ RESULT ============ -->
+  <section class="result" id="result">
+    <div class="notice info" id="resultNotice" style="margin-bottom:22px;"></div>
+
+    <div class="care" id="carePanel">
+      <div class="care-head">
+        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 20S3.5 14.5 3.5 8.8C3.5 6 5.6 4.2 7.8 4.2c1.8 0 3 1.1 4.2 2.7 1.2-1.6 2.4-2.7 4.2-2.7 2.2 0 4.3 1.8 4.3 4.6C20.5 14.5 12 20 12 20z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span>
+        <span class="h" id="careHead"></span>
+      </div>
+      <div class="care-body" id="careBody"></div>
+      <div class="care-actions">
+        <a class="care-link primary" id="careResources">Find someone to talk to</a>
+      </div>
+    </div>
+
+    <div class="result-head">
+      <div class="your-words"><span class="quote-mark">“</span><span id="echo"></span><span class="quote-mark">”</span></div>
+      <div class="result-sub"><span class="rule"></span> refracted <span class="rule"></span></div>
+    </div>
+    <div class="beams-art" aria-hidden="true">
+      <svg width="320" height="60" viewBox="0 0 320 60">
+        <line x1="160" y1="6" x2="160" y2="20" stroke="white" stroke-width="2" opacity="0.7"/>
+        <polygon points="160,16 174,40 146,40" fill="rgba(255,255,255,0.05)" stroke="rgba(200,190,240,0.45)" stroke-width="1"/>
+        <line x1="158" y1="38" x2="30" y2="58" stroke="var(--c-future)" stroke-width="1.6"/>
+        <line x1="159" y1="38" x2="95" y2="58" stroke="var(--c-values)" stroke-width="1.6"/>
+        <line x1="160" y1="38" x2="160" y2="58" stroke="var(--c-skeptic)" stroke-width="1.6"/>
+        <line x1="161" y1="38" x2="225" y2="58" stroke="var(--c-child)" stroke-width="1.6"/>
+        <line x1="162" y1="38" x2="290" y2="58" stroke="var(--c-mentor)" stroke-width="1.6"/>
+      </svg>
+    </div>
+
+    <div class="lens-grid" id="lensGrid"></div>
+
+    <div class="synthesis" id="synthesis">
+      <div class="syn-label"><span class="spec"></span> what the light reveals</div>
+      <div class="syn-text" id="synText"></div>
+    </div>
+
+    <div class="result-actions">
+      <button class="refract-btn" id="againBtn">Reflect on something else</button>
+      <button class="ghost-btn" id="deeperBtn">Save &amp; copy link</button>
+    </div>
+  </section>
+
+  <footer>
+    Prism reflects; it doesn't decide. <span class="spec-mini"></span> Built for the SMG Bubble Cohort 001 “Reflection” Hackathon.
+    <div class="support-foot">Going through something heavy? <a id="footSupport">You don't have to face it alone →</a></div>
+  </footer>
+</div>
+
+<!-- ============ ABOUT MODAL ============ -->
+<div class="modal-bg" id="aboutModal">
+  <div class="modal">
+    <h2>Why Prism exists</h2>
+    <p class="m-sub">A reflection instrument for the moments you're too close to see clearly.</p>
+    <p style="color:var(--ink-dim); font-size:14.5px; line-height:1.65; margin-bottom:14px;">
+      When something is weighing on you, you're trapped inside one point of view — your own, in the middle of the feeling. Advice from others collapses everything into <em>their</em> single answer. Prism does the opposite: it takes what you wrote and splits it, like white light through glass, into the distinct perspectives already inside you — your future self, a mentor, a skeptic, your own values.
+    </p>
+    <p style="color:var(--ink-dim); font-size:14.5px; line-height:1.65; margin-bottom:14px;">
+      It never tells you what to do. It reflects, and it asks. The decision stays yours — you just get to see it whole first.
+    </p>
+    <p class="fineprint">
+      Powered by Claude (Anthropic). Your reflection is sent to a private endpoint, never shown to anyone else, and saved only if you choose to. Built for the SMG Bubble Cohort 001 “Reflection” Hackathon.
+    </p>
+    <div class="modal-actions">
+      <button class="refract-btn" id="closeAbout">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SHARE TOAST ============ -->
+<div class="modal-bg" id="shareModal">
+  <div class="modal">
+    <h2>Reflection saved</h2>
+    <p class="m-sub">A private link to this reflection — open it on any device to return to it.</p>
+    <input type="text" id="shareLink" readonly onclick="this.select()" />
+    <p class="fineprint">Only people with this exact link can see it. Keep it to yourself, or share it with someone you trust.</p>
+    <div class="modal-actions">
+      <button class="refract-btn" id="closeShare">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ HISTORY MODAL ============ -->
+<div class="modal-bg" id="historyModal">
+  <div class="modal">
+    <h2>Your reflections</h2>
+    <p class="m-sub">Saved on this device only. Reflection is a practice — coming back to what you wrote is part of it.</p>
+    <div id="histList"></div>
+    <div class="modal-actions">
+      <button class="ghost-btn" id="clearHist">Clear all</button>
+      <button class="refract-btn" id="closeHist">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ RESOURCES MODAL ============ -->
+<div class="modal-bg" id="resourcesModal">
+  <div class="modal">
+    <h2>You're not alone in this</h2>
+    <p class="m-sub">Prism is a tool for thinking — it can't be a person, and some moments need a person. These are real, free, and there for you any time.</p>
+
+    <div class="res-item">
+      <span class="res-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 4h4l2 5-3 2a12 12 0 006 6l2-3 5 2v4a2 2 0 01-2 2C10 22 2 14 2 6a2 2 0 012-2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span>
+      <div>
+        <div class="res-t">988 Suicide &amp; Crisis Lifeline <span style="color:var(--ink-faint);font-weight:400">· US</span></div>
+        <div class="res-d">Call or text <b>988</b>, or chat at <a href="https://988lifeline.org" target="_blank" rel="noopener">988lifeline.org</a>. Free and confidential, 24/7 — English &amp; Spanish, with interpreters in 240+ languages.</div>
+      </div>
+    </div>
+
+    <div class="res-item">
+      <span class="res-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H8l-4 3V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span>
+      <div>
+        <div class="res-t">Crisis Text Line <span style="color:var(--ink-faint);font-weight:400">· US</span></div>
+        <div class="res-d">Text <b>HOME</b> to <b>741741</b> to reach a trained crisis counselor. Free, 24/7.</div>
+      </div>
+    </div>
+
+    <div class="res-item">
+      <span class="res-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" stroke="currentColor" stroke-width="1.3"/></svg></span>
+      <div>
+        <div class="res-t">Outside the US — <a href="https://findahelpline.com" target="_blank" rel="noopener">findahelpline.com</a></div>
+        <div class="res-d">Free, confidential helplines in 130+ countries, in your language.</div>
+      </div>
+    </div>
+
+    <div class="res-item">
+      <span class="res-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3l9-16z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+      <div>
+        <div class="res-t">In immediate danger?</div>
+        <div class="res-d">If you or someone near you is in immediate danger, call your local emergency number (<b>911</b> in the US).</div>
+      </div>
+    </div>
+
+    <p class="fineprint" style="margin-top:16px;">Prism is a student project — it can't contact anyone for you, but the services above are real and staffed by people who want to help.</p>
+    <div class="modal-actions">
+      <button class="refract-btn" id="closeResources">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   PRISM — refract a situation through chosen perspectives.
+   Single-file app. Calls Claude (Opus 4.8) directly from the
+   browser when a key is present; otherwise runs example mode.
+   ============================================================ */
+
+/* ---- the lenses (perspectives the light splits into) ---- */
+const LENSES = [
+  { id:"future",  name:"Future You",   color:"var(--c-future)",
+    desc:"You, ten years from now, looking back on this moment with everything you'll have learned by then.",
+    glyph:'<svg viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.4"/><path d="M11 6v5l3 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>' },
+  { id:"mentor",  name:"The Mentor",   color:"var(--c-mentor)",
+    desc:"Someone wiser who deeply believes in you — warm, but unwilling to let you off the hook.",
+    glyph:'<svg viewBox="0 0 22 22" fill="none"><path d="M11 3l2.2 5.2L19 9l-4 3.6L16.2 19 11 15.8 5.8 19 7 12.6 3 9l5.8-.8L11 3z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>' },
+  { id:"skeptic", name:"The Skeptic",  color:"var(--c-skeptic)",
+    desc:"A protective part that gently questions the story you may be telling yourself — not to attack you, but so you're not fooled by your own fear.",
+    glyph:'<svg viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.4"/><path d="M8 9.5c.5-1.2 2-1.7 3-1.2 1.2.5 1.4 2 .4 2.8-.7.6-1.4.8-1.4 1.9M11 16h.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>' },
+  { id:"values",  name:"Your Values",  color:"var(--c-values)",
+    desc:"What you've said matters most to you — measuring the situation against your own compass.",
+    glyph:'<svg viewBox="0 0 22 22" fill="none"><path d="M11 2v18M4 6l7-4 7 4-7 4-7-4z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>' },
+  { id:"child",   name:"Younger You",  color:"var(--c-child)",
+    desc:"The kid you used to be — before the fear and the noise. What would make them proud or sad?",
+    glyph:'<svg viewBox="0 0 22 22" fill="none"><circle cx="11" cy="8" r="4" stroke="currentColor" stroke-width="1.4"/><path d="M4 19c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>' },
+  { id:"rival",   name:"The Honest Friend", color:"var(--c-rival)",
+    desc:"The part of you that cares enough to say the hard thing kindly — never to wound, always because it wants more for you.",
+    glyph:'<svg viewBox="0 0 22 22" fill="none"><path d="M11 18S3 13 3 7.5C3 5 5 3.5 7 3.5c1.7 0 2.8 1 4 2.5 1.2-1.5 2.3-2.5 4-2.5 2 0 4 1.5 4 4C19 13 11 18 11 18z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>' },
+];
+const DEFAULT_SELECTED = ["future","mentor","skeptic","values"];
+
+const EXAMPLES = [
+  "I helped start a team I care about, but it's draining me and I think I want to leave. I feel like a traitor for even considering it.",
+  "Everyone thinks I have it all together. I'm the one people come to. But lately I feel like I'm faking it and I don't know who I'd go to.",
+];
+
+/* ---------- state ---------- */
+let selected = new Set(DEFAULT_SELECTED);
+const $ = id => document.getElementById(id);
+
+/* ---------- build lens chips ---------- */
+const chips = $("chips");
+LENSES.forEach(l => {
+  const b = document.createElement("button");
+  b.className = "chip"; b.style.setProperty("--lc", l.color);
+  b.setAttribute("aria-pressed", selected.has(l.id));
+  b.dataset.id = l.id;
+  b.innerHTML = `<span class="dot"></span>${l.name}`;
+  b.title = l.desc;
+  b.addEventListener("click", () => {
+    if (selected.has(l.id)) {
+      if (selected.size <= 2) { flashHint("Keep at least two perspectives — refraction needs contrast."); return; }
+      selected.delete(l.id);
+    } else {
+      if (selected.size >= 4) { flashHint("Four perspectives is the sweet spot. Deselect one first."); return; }
+      selected.add(l.id);
+    }
+    b.setAttribute("aria-pressed", selected.has(l.id));
+  });
+  chips.appendChild(b);
+});
+function flashHint(msg){ const h=$("charhint"); const old=h.textContent; h.textContent=msg; h.style.color="var(--c-mentor)"; setTimeout(()=>{h.textContent=old;h.style.color="";},2600); }
+
+/* ---------- about + share + resources modals ---------- */
+$("aboutBtn").addEventListener("click", () => openModal("aboutModal"));
+$("closeAbout").addEventListener("click", () => closeModal("aboutModal"));
+$("closeShare").addEventListener("click", () => closeModal("shareModal"));
+$("closeResources").addEventListener("click", () => closeModal("resourcesModal"));
+$("footSupport").addEventListener("click", () => openModal("resourcesModal"));
+$("careResources").addEventListener("click", () => openModal("resourcesModal"));
+
+/* ---------- modals ---------- */
+function openModal(id){ $(id).classList.add("show"); }
+function closeModal(id){ $(id).classList.remove("show"); }
+document.querySelectorAll(".modal-bg").forEach(bg => bg.addEventListener("click", e => { if (e.target === bg) bg.classList.remove("show"); }));
+$("closeHist").addEventListener("click", () => closeModal("historyModal"));
+
+/* ---------- examples ---------- */
+document.querySelectorAll(".examples a").forEach(a => a.addEventListener("click", () => {
+  $("situation").value = EXAMPLES[+a.dataset.ex];
+  $("situation").focus();
+  $("situation").scrollIntoView({behavior:"smooth", block:"center"});
+}));
+
+/* ---------- the main action ---------- */
+$("refractBtn").addEventListener("click", refract);
+$("situation").addEventListener("keydown", e => { if ((e.metaKey||e.ctrlKey) && e.key === "Enter") refract(); });
+$("againBtn").addEventListener("click", reset);
+$("deeperBtn").addEventListener("click", saveCurrent);
+
+let current = null; // {situation, lenses:[...], synthesis}
+
+async function refract(){
+  const text = $("situation").value.trim();
+  hideNotice();
+  if (text.length < 12) { showNotice("Give it a little more — a sentence or two about what's actually going on.", false); $("situation").focus(); return; }
+
+  const chosen = LENSES.filter(l => selected.has(l.id));
+  setLoading(true);
+  current = null;
+
+  let data;
+  try {
+    data = await callRefract(text, chosen);          // live: Claude via /api/refract
+  } catch (err) {
+    console.warn("Live refraction unavailable, using example mode:", err.message);
+    data = await exampleReflect(text, chosen);        // graceful fallback
+    if (err.code === "BACKEND_DOWN") {
+      flashAfterRender("Showing example mode — the live AI backend isn't reachable from here. It runs once deployed.");
+    } else {
+      flashAfterRender(err.message || "Couldn't reach the AI; showing example mode.");
+    }
+  }
+  // Safety: combine the model's read with a client-side scan (belt and suspenders).
+  data.care = mergeCare(detectDistress(text), data.care);
+
+  current = { situation: text, lenses: data.lenses, synthesis: data.synthesis,
+              care: data.care, when: Date.now(), lensIds: chosen.map(l=>l.id) };
+  renderResult(text, chosen, data);
+}
+let _afterRenderNotice = null;
+function flashAfterRender(msg){ _afterRenderNotice = msg; }
+
+/* ---------- safety / care ---------- */
+function detectDistress(text){
+  const t = " " + String(text).toLowerCase().replace(/\s+/g," ") + " ";
+  const crisis = /(kill (myself|me)\b|killing myself|end (my|this) life|ending my life|take my (own )?life|want to die|wanna die|don'?t want to (be here|live|wake up|exist)|better off (dead|without me)|no reason to (live|go on|be here)|can'?t go on|can'?t do this anymore|suicid|harm myself|hurt myself|cut myself|end it all|not want to be alive)/;
+  const struggling = /(hopeless|worthless|empty inside|feel numb|feeling numb|can'?t cope|breaking down|falling apart|so depressed|really depressed|severely depressed|hate myself|giving up on|no point in|can'?t take (it|this)|drowning|unbearable|nothing matters)/;
+  if (crisis.test(t)) return "crisis";
+  if (struggling.test(t)) return "struggling";
+  return "none";
+}
+function mergeCare(clientLevel, modelCare){
+  const rank = { none:0, struggling:1, crisis:2 };
+  const mLevel = (modelCare && modelCare.level) || "none";
+  const level = rank[clientLevel] >= rank[mLevel] ? clientLevel : mLevel;
+  const message = (modelCare && modelCare.message && modelCare.message.trim()) ? modelCare.message.trim() : "";
+  return { level, message };
+}
+function careCopy(level){
+  if (level === "crisis") return {
+    head: "Please reach out — you matter",
+    body: "It sounds like you're in real pain right now, and reaching out takes courage. Prism is only a tool for thinking; this moment deserves a person who can be with you in it. You don't have to carry this by yourself." };
+  return {
+    head: "You don't have to hold this alone",
+    body: "What you're carrying sounds genuinely heavy — and it counts that you put it into words. Prism can help you think it through, but if it would help to talk to a real person, that's here for you, any time." };
+}
+function renderCare(care){
+  const p = $("carePanel");
+  if (!care || care.level === "none"){ p.classList.remove("show","crisis"); return; }
+  const def = careCopy(care.level);
+  $("careHead").textContent = def.head;
+  $("careBody").textContent = (care.message && care.message.trim()) ? care.message.trim() : def.body;
+  p.classList.toggle("crisis", care.level === "crisis");
+  p.classList.add("show");
+}
+
+/* ---------- live refraction via our serverless proxy ---------- */
+async function callRefract(situation, chosen){
+  let res;
+  try {
+    res = await fetch("/api/refract", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        situation,
+        lenses: chosen.map(l => ({ id: l.id, name: l.name, desc: l.desc }))
+      })
+    });
+  } catch (_) {
+    const e = new Error("Backend unreachable."); e.code = "BACKEND_DOWN"; throw e;
+  }
+  // No backend deployed (e.g. opened as a file / GitHub Pages): fall back quietly.
+  if (res.status === 404 || res.status === 405) { const e=new Error("No backend."); e.code="BACKEND_DOWN"; throw e; }
+
+  let json;
+  try { json = await res.json(); }
+  catch (_) { const e=new Error("Backend unreachable."); e.code="BACKEND_DOWN"; throw e; }
+
+  if (!res.ok) {
+    if (res.status === 501) { const e=new Error("AI not configured on the server."); e.code="BACKEND_DOWN"; throw e; }
+    throw new Error(json.error || `Refraction failed (${res.status}).`);
+  }
+  // align order to the chosen lenses
+  json.lenses = chosen.map(l => (json.lenses||[]).find(x => x.id === l.id)).filter(Boolean);
+  if (!json.lenses.length || !json.synthesis) throw new Error("The AI returned an unexpected shape.");
+  return json;
+}
+
+/* ---------- example mode (no key) ---------- *
+   Hand-written, perspective-true reflections so the experience is real
+   to demo offline. Live mode (Claude) tailors to any input.            */
+async function exampleReflect(situation, chosen){
+  await wait(1400);
+  const lvl = detectDistress(situation);
+  if (lvl !== "none") {
+    // When someone's struggling, the voices soften to validation only — no challenging.
+    const soft = {
+      future: { reflection:"From further down the road, this weight won't have been the whole story of you — even if right now it fills the whole sky.", question:"What would help you get through just the next hour?" },
+      mentor: { reflection:"I'm not going to push you right now. What you're feeling makes sense, and you don't have to earn the right to set it down for a moment.", question:"Who in your life would want to know you're hurting like this?" },
+      skeptic:{ reflection:"I'll stay quiet for now. This isn't a moment to argue with you — it's a moment to stay beside you.", question:"What's one small, gentle thing you could do for yourself today?" },
+      values: { reflection:"You matter — not for what you decide or produce, but simply because you're here. That was never something you had to earn.", question:"What has helped you hold on before?" },
+      child:  { reflection:"The younger you wouldn't want you fixed right now. They'd just want you safe, and held.", question:"What did feeling comforted used to feel like?" },
+      rival:  { reflection:"As the friend who tells you the truth: the truth is you deserve care, and reaching out is brave, not weak.", question:"Would you let one person in today?" }
+    };
+    return {
+      lenses: chosen.map(l => ({ id:l.id, ...(soft[l.id] || soft.mentor) })),
+      synthesis: "Right now the most important thing isn't solving anything — it's that you're not alone with this. Please consider reaching out to someone below. You deserve support, and this will not always feel the way it does right now.",
+      care: { level: lvl, message: "" }
+    };
+  }
+  const snippet = firstClause(situation);
+  const bank = {
+    future: {
+      reflection: `Looking back, this won't be the chapter that defined you — but how you treated yourself while deciding it might be.`,
+      question: `A year from now, which version of this will you be prouder you chose?`
+    },
+    mentor: {
+      reflection: `I hear how much "${snippet}" costs you. The weight you're carrying is real — and you don't have to earn the right to put some of it down.`,
+      question: `What would you tell someone you love if they described this exact situation to you?`
+    },
+    skeptic: {
+      reflection: `Notice the story underneath: "${snippet}". Is that the truth, or the version that keeps you safe from having to act?`,
+      question: `Which part of this are you calling a fact when it's actually a fear?`
+    },
+    values: {
+      reflection: `Held up against what you say matters most, "${snippet}" isn't really about the decision — it's about which of two things you're unwilling to betray.`,
+      question: `If you can't honor both, which one could you not live with abandoning?`
+    },
+    child: {
+      reflection: `The younger you didn't weigh every angle — they just knew what felt true. "${snippet}" would have looked simpler, and maybe clearer, to them.`,
+      question: `What did you want, before you learned to want what's reasonable?`
+    },
+    rival: {
+      reflection: `Real talk: "${snippet}" — you already know the answer, you're just looking for permission. I'm not going to give it. I'm going to make you say it.`,
+      question: `What are you hoping someone else will decide so you don't have to?`
+    }
+  };
+  return {
+    lenses: chosen.map(l => ({ id:l.id, ...bank[l.id] })),
+    synthesis: `Every angle keeps circling the same knot: you're treating a feeling as a problem to be solved, when it might be information to be heard. The question isn't only what to do — it's what this is trying to tell you about what you need.`
+  };
+}
+function firstClause(s){ const c=s.replace(/\s+/g," ").trim().split(/[,.;:—]/)[0].trim(); return c.length>64?c.slice(0,64).trim()+"…":c; }
+
+/* ---------- render ---------- */
+const LOAD_LINES = ["Take a breath…","Letting the light in…","Finding the angles…","Listening for what's underneath…"];
+let loadTimer = null;
+function setLoading(on){
+  if (on){
+    $("stage").style.display="none"; $("result").classList.remove("show");
+    $("loader").classList.add("show");
+    let i=0; $("ltext").textContent=LOAD_LINES[0];
+    loadTimer = setInterval(()=>{ i=(i+1)%LOAD_LINES.length; $("ltext").textContent=LOAD_LINES[i]; }, 1700);
+  } else {
+    clearInterval(loadTimer); $("loader").classList.remove("show");
+  }
+}
+
+function renderResult(text, chosen, data){
+  setLoading(false);
+  renderCare(data.care);
+  $("echo").textContent = text;
+  const grid = $("lensGrid"); grid.innerHTML="";
+  data.lenses.forEach((entry, i) => {
+    const meta = LENSES.find(l => l.id === entry.id) || {};
+    const card = document.createElement("div");
+    card.className = "lens-card"; card.style.setProperty("--lc", meta.color || "#aaa");
+    card.innerHTML = `
+      <div class="lens-name">
+        <span class="glyph" style="color:${cssVar(meta.color)}">${meta.glyph||""}</span>
+        <span class="nm">${meta.name||entry.id}</span>
+      </div>
+      <div class="lens-reflection">${esc(entry.reflection)}</div>
+      <div class="lens-question"><span class="ask">asks</span><span>${esc(entry.question)}</span></div>`;
+    grid.appendChild(card);
+    setTimeout(()=>card.classList.add("in"), 120 + i*150);
+  });
+  $("synText").textContent = data.synthesis;
+  const syn = $("synthesis"); syn.classList.remove("in"); void syn.offsetWidth;
+  setTimeout(()=>syn.classList.add("in"), 120 + data.lenses.length*150 + 100);
+
+  const rn = $("resultNotice");
+  if (_afterRenderNotice){ rn.textContent = _afterRenderNotice; rn.classList.add("show"); _afterRenderNotice = null; }
+  else { rn.classList.remove("show"); }
+
+  $("result").classList.add("show");
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+function cssVar(v){ if(!v) return "#aaa"; const m=v.match(/var\((--[\w-]+)\)/); return m?getComputedStyle(document.documentElement).getPropertyValue(m[1]).trim():v; }
+function esc(s){ const d=document.createElement("div"); d.textContent=s||""; return d.innerHTML; }
+
+function reset(){
+  $("result").classList.remove("show");
+  $("stage").style.display="flex";
+  $("situation").value=""; $("situation").focus();
+  current = null;
+  try { history.replaceState(null, "", location.pathname); } catch(_){}
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+/* ---------- history (localStorage) ---------- */
+const HIST_STORE = "prism_history";
+function loadHist(){ try { return JSON.parse(localStorage.getItem(HIST_STORE)||"[]"); } catch(_){ return []; } }
+function cacheLocally(item){
+  const h = loadHist().filter(x => x.id !== item.id);   // de-dupe
+  h.unshift(item);
+  localStorage.setItem(HIST_STORE, JSON.stringify(h.slice(0,40)));
+}
+async function saveCurrent(){
+  if (!current) return;
+  const btn = $("deeperBtn"); const orig = "Save & copy link";
+  btn.textContent = "Saving…"; btn.disabled = true;
+
+  let savedId = current.id || null;
+  if (!savedId){
+    try {
+      const res = await fetch("/api/reflections", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          situation: current.situation, lenses: current.lenses,
+          synthesis: current.synthesis, lensIds: current.lensIds || []
+        })
+      });
+      if (res.ok){ const j = await res.json(); savedId = j.id; }
+    } catch(_){ /* offline / no backend — fall back to local-only */ }
+  }
+
+  btn.disabled = false;
+  current.id = savedId || ("local-" + Date.now());
+  cacheLocally(current);
+
+  if (savedId){
+    const link = location.origin + location.pathname + "?r=" + encodeURIComponent(savedId);
+    try { history.replaceState(null, "", "?r=" + encodeURIComponent(savedId)); } catch(_){}
+    $("shareLink").value = link;
+    try { await navigator.clipboard.writeText(link); } catch(_){}
+    openModal("shareModal");
+    btn.textContent = "Saved ✓"; setTimeout(()=>btn.textContent=orig, 2200);
+  } else {
+    btn.textContent = "Saved on this device ✓"; setTimeout(()=>btn.textContent=orig, 2400);
+  }
+}
+
+/* fetch a shared reflection by id (deep link) */
+async function loadReflectionById(id){
+  // prefer local cache (works offline + for local- ids)
+  const cached = loadHist().find(x => x.id === id);
+  if (cached){ renderShared(cached); return true; }
+  if (String(id).startsWith("local-")) return false;
+  try {
+    const res = await fetch("/api/reflections?id=" + encodeURIComponent(id));
+    if (!res.ok) return false;
+    const item = await res.json();
+    renderShared(item); return true;
+  } catch(_){ return false; }
+}
+function renderShared(item){
+  current = item;
+  const chosen = item.lenses.map(e => LENSES.find(l => l.id === e.id)).filter(Boolean);
+  _afterRenderNotice = null;
+  renderResult(item.situation, chosen, item);
+}
+$("historyBtn").addEventListener("click", () => { renderHist(); openModal("historyModal"); });
+function renderHist(){
+  const list=$("histList"); const h=loadHist();
+  if (!h.length){ list.innerHTML='<div class="hist-empty">Nothing saved yet. Your reflections will gather here.</div>'; return; }
+  list.innerHTML="";
+  h.forEach((item) => {
+    const d=document.createElement("div"); d.className="hist-item";
+    const date=new Date(item.when).toLocaleDateString(undefined,{month:"short",day:"numeric"});
+    d.innerHTML=`<div class="ht">${esc(item.situation)}</div><div class="hm">${date} · ${item.lenses.length} perspectives</div>`;
+    d.addEventListener("click", () => {
+      closeModal("historyModal");
+      current=item;
+      const chosen=item.lenses.map(e=>LENSES.find(l=>l.id===e.id)).filter(Boolean);
+      renderResult(item.situation, chosen, item);
+    });
+    list.appendChild(d);
+  });
+}
+$("clearHist").addEventListener("click", () => { localStorage.removeItem(HIST_STORE); renderHist(); });
+
+const wait = ms => new Promise(r=>setTimeout(r,ms));
+function showNotice(msg, info){ const n=$("notice"); n.textContent=msg; n.className="notice show"+(info?" info":""); }
+function hideNotice(){ $("notice").classList.remove("show"); }
+
+/* greet + deep link */
+window.addEventListener("DOMContentLoaded", async () => {
+  const params = new URLSearchParams(location.search);
+  const rid = params.get("r");
+  if (rid){
+    setLoading(true);
+    const ok = await loadReflectionById(rid);
+    setLoading(false);
+    if (ok) return;                    // showed the shared reflection
+    showNotice("That reflection link couldn't be found — it may have been removed. Start a new one below.", true);
+    try { history.replaceState(null, "", location.pathname); } catch(_){}
+  }
+  setTimeout(()=>$("situation")?.focus(), 400);
+});
+</script>
+</body>
+</html>
