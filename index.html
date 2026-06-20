@@ -429,6 +429,37 @@
   .echo-note a { color:var(--c-future); cursor:pointer; text-decoration:none; border-bottom:1px dotted var(--line-bright); }
   .echo-note a:hover { color:var(--ink); }
 
+  /* ---------- journal (private daily writing + therapist-method reflection) ---------- */
+  .journal { display:none; max-width:760px; margin:0 auto; padding:34px 0 90px; }
+  .journal.show { display:block; }
+  .jr-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+  .jr-title { font-family:var(--serif); font-weight:300; font-size:clamp(30px,5vw,46px); line-height:1.04; margin-top:8px; }
+  .jr-title em { font-style:italic; }
+  .jr-sub { color:var(--ink-dim); font-family:var(--read); font-style:italic; font-size:16px; margin:14px 0 24px; line-height:1.55; }
+  .jr-field textarea { min-height:170px; }
+  .jr-actions { display:flex; gap:10px; align-items:center; }
+  .jr-insight[hidden] { display:none; }
+  .jr-card { border:1px solid var(--line-bright); border-radius:18px; padding:26px;
+    background:linear-gradient(180deg, rgba(179,156,255,0.05), rgba(255,255,255,0.012)); margin-top:18px; }
+  .jr-step-label { font-size:10.5px; letter-spacing:0.3em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:9px; }
+  .jr-mirror { font-family:var(--serif); font-weight:300; font-size:19px; line-height:1.55; color:var(--ink); }
+  .jr-emotions { display:flex; flex-wrap:wrap; gap:7px; margin-top:14px; }
+  .jr-emotion { font-size:12px; color:var(--ink); border:1px solid var(--line-bright); border-radius:999px; padding:4px 11px; background:rgba(255,255,255,0.03); }
+  .jr-pattern { margin-top:20px; padding-top:18px; border-top:1px solid var(--line); }
+  .jr-pattern .nm { color:var(--c-mentor); font-weight:600; }
+  .jr-pattern .nt { color:var(--ink-dim); font-size:14.5px; line-height:1.55; margin-top:5px; }
+  .jr-shift { margin-top:20px; padding-top:18px; border-top:1px solid var(--line); font-family:var(--serif);
+    font-weight:300; font-size:18px; color:var(--ink); line-height:1.55; }
+  .jr-shift .ask { display:block; font-family:var(--sans); color:var(--c-future); font-weight:600; margin-bottom:7px;
+    text-transform:uppercase; font-size:10.5px; letter-spacing:0.26em; }
+  .jr-entries-wrap { margin-top:36px; }
+  .jr-entry { border:1px solid var(--line); border-radius:13px; padding:14px 16px; margin-bottom:10px; cursor:pointer; transition:.2s; }
+  .jr-entry:hover { border-color:var(--line-bright); background:rgba(255,255,255,0.03); }
+  .jr-entry .je-d { font-size:11px; color:var(--ink-faint); letter-spacing:0.04em; margin-bottom:5px; }
+  .jr-entry .je-t { font-family:var(--read); font-style:italic; color:var(--ink); font-size:15px;
+    overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; }
+  .jr-entry .je-tag { font-size:10px; color:var(--c-future); margin-top:7px; letter-spacing:0.08em; text-transform:uppercase; }
+
   /* ---------- respect reduced motion (calm + accessible) ---------- */
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior:auto; }
@@ -455,6 +486,7 @@
       Prism
     </div>
     <div class="top-actions">
+      <button class="ghost-btn" id="journalBtn">Journal</button>
       <button class="ghost-btn" id="historyBtn">Reflections</button>
       <button class="ghost-btn" id="aboutBtn">About</button>
     </div>
@@ -612,6 +644,44 @@
         <div style="margin-top:11px;"><button class="refract-btn" id="fbSend">Send</button></div>
       </div>
       <div class="fb-thanks" id="fbThanks" style="display:none;"></div>
+    </div>
+  </section>
+
+  <!-- ============ JOURNAL ============ -->
+  <section class="journal" id="journal">
+    <div class="jr-head">
+      <div>
+        <div class="eyebrow">journal · just for you</div>
+        <h2 class="jr-title">How are you, <em>really</em>?</h2>
+      </div>
+      <button class="ghost-btn" id="journalBack">← Reflect</button>
+    </div>
+    <p class="jr-sub">A private place to write — daily, or whenever. It stays on this device. Prism only reflects back if you ask it to.</p>
+
+    <div class="field-shell jr-field">
+      <textarea id="jrText" maxlength="4000" placeholder="What feels heaviest or most pressing for you to explore right now? Write freely — no one else sees this."></textarea>
+      <div class="field-foot">
+        <span class="hint" id="jrDate"></span>
+        <div class="jr-actions">
+          <button class="ghost-btn" id="jrSave">Save entry</button>
+          <button class="refract-btn" id="jrReflect">Reflect with me</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ptoggle" id="jrConsent" role="switch" aria-checked="false" tabindex="0">
+      <div class="sw"></div>
+      <div class="tx">Let Prism reflect on what I write — a mirror, any patterns it gently notices, and one question.
+        <small>Off by default. Your writing stays on this device; nothing is sent anywhere unless you ask for a reflection.</small>
+      </div>
+    </div>
+
+    <div class="notice" id="jrNotice" style="margin-top:16px;"></div>
+    <div class="jr-insight" id="jrInsight" hidden></div>
+
+    <div class="jr-entries-wrap" id="jrEntriesWrap" style="display:none;">
+      <div class="pat-entries-label">past entries</div>
+      <div id="jrEntries"></div>
     </div>
   </section>
 
@@ -973,15 +1043,15 @@ $("closePrivacy").addEventListener("click", () => closeModal("privacyModal"));
 $("consentToggle").addEventListener("click", () => setConsent(!getConsent()));
 $("consentToggle").addEventListener("keydown", e => { if (e.key===" "||e.key==="Enter"){ e.preventDefault(); setConsent(!getConsent()); } });
 $("exportData").addEventListener("click", () => {
-  const data = { product:"Prism", exportedAt:new Date().toISOString(), dataUsageConsent:getConsent(), reflections:loadHist(), customLenses:loadCustomLenses() };
+  const data = { product:"Prism", exportedAt:new Date().toISOString(), dataUsageConsent:getConsent(), reflections:loadHist(), customLenses:loadCustomLenses(), journal:loadJournal() };
   const blob = new Blob([JSON.stringify(data,null,2)], { type:"application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob); a.download = "prism-my-data.json";
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
 });
 $("deleteData").addEventListener("click", () => {
-  if (!confirm("Delete every reflection and custom lens saved on this device, along with your settings? This can't be undone.")) return;
-  [HIST_STORE, CONSENT_STORE, CUSTOM_STORE, "prism_feedback_given"].forEach(k => localStorage.removeItem(k));
+  if (!confirm("Delete every reflection, journal entry, and custom lens saved on this device, along with your settings? This can't be undone.")) return;
+  [HIST_STORE, CONSENT_STORE, CUSTOM_STORE, JR_STORE, JR_CONSENT, "prism_feedback_given"].forEach(k => localStorage.removeItem(k));
   selected = new Set(DEFAULT_SELECTED);
   buildChips();
   renderConsent();
@@ -1628,6 +1698,142 @@ function maybeShowEcho(item){
 const wait = ms => new Promise(r=>setTimeout(r,ms));
 function showNotice(msg, info){ const n=$("notice"); n.textContent=msg; n.className="notice show"+(info?" info":""); }
 function hideNotice(){ $("notice").classList.remove("show"); }
+
+/* ============================================================
+   JOURNAL — a private daily writing space. Confidential by
+   default (on-device only). If the person opts in, Prism reflects
+   using the therapist method: The Mirror -> Pattern Recognition
+   -> The Shift (Rogers + CBT + Socratic), grounded and safe.
+   ============================================================ */
+const JR_STORE = "prism_journal";
+const JR_CONSENT = "prism_journal_insights";
+let jrCurrentId = null;
+
+function loadJournal(){ try { const a=JSON.parse(localStorage.getItem(JR_STORE)||"[]"); return Array.isArray(a)?a:[]; } catch(_){ return []; } }
+function saveJournal(arr){ try { localStorage.setItem(JR_STORE, JSON.stringify(arr.slice(0,200))); } catch(_){} }
+function jrConsentOn(){ return localStorage.getItem(JR_CONSENT) === "1"; }
+function renderJrConsent(){ const t=$("jrConsent"); const on=jrConsentOn(); t.classList.toggle("on",on); t.setAttribute("aria-checked", on?"true":"false"); }
+
+function upsertEntry(text, insight){
+  const arr = loadJournal();
+  if (jrCurrentId){
+    const i = arr.findIndex(e => e.id === jrCurrentId);
+    if (i >= 0){ arr[i].text = text; if (insight) arr[i].insight = insight; saveJournal(arr); return arr[i]; }
+  }
+  const e = { id:"j-"+Date.now(), when:Date.now(), text, insight: insight || null };
+  jrCurrentId = e.id; arr.unshift(e); saveJournal(arr); return e;
+}
+
+function showJournal(){
+  $("stage").style.display="none"; $("result").classList.remove("show"); $("loader").classList.remove("show");
+  $("journal").classList.add("show");
+  $("jrDate").textContent = new Date().toLocaleDateString(undefined,{weekday:"long", month:"long", day:"numeric"});
+  renderJrConsent(); renderJournalEntries();
+  window.scrollTo({top:0, behavior:"smooth"});
+  setTimeout(()=>$("jrText").focus(), 60);
+}
+function hideJournal(){ $("journal").classList.remove("show"); $("stage").style.display="flex"; window.scrollTo({top:0, behavior:"smooth"}); }
+
+$("journalBtn").addEventListener("click", () => {
+  jrCurrentId=null; $("jrText").value=""; $("jrInsight").hidden=true; $("jrInsight").innerHTML="";
+  $("jrNotice").classList.remove("show"); showJournal();
+});
+$("journalBack").addEventListener("click", hideJournal);
+$("jrConsent").addEventListener("click", () => { localStorage.setItem(JR_CONSENT, jrConsentOn()?"0":"1"); renderJrConsent(); });
+$("jrConsent").addEventListener("keydown", e => { if (e.key===" "||e.key==="Enter"){ e.preventDefault(); $("jrConsent").click(); } });
+
+$("jrSave").addEventListener("click", () => {
+  const t = $("jrText").value.trim();
+  if (!t){ $("jrText").focus(); return; }
+  upsertEntry(t); renderJournalEntries();
+  const b=$("jrSave"); b.textContent="Saved ✓"; setTimeout(()=>b.textContent="Save entry", 1600);
+});
+$("jrReflect").addEventListener("click", jrReflectNow);
+
+async function jrReflectNow(){
+  const text = $("jrText").value.trim();
+  $("jrNotice").classList.remove("show");
+  if (text.length < 4){ $("jrText").focus(); return; }
+  if (!jrConsentOn()){
+    showJrNotice("Turn on “Let Prism reflect on what I write” just below — then I'll respond. Your writing stays private either way.");
+    const c=$("jrConsent"); c.style.transition="box-shadow .3s"; c.style.boxShadow="0 0 0 2px rgba(179,156,255,0.5)"; setTimeout(()=>c.style.boxShadow="",1500);
+    return;
+  }
+  const entry = upsertEntry(text);
+  const ins = $("jrInsight"); ins.hidden=false;
+  ins.innerHTML = '<div class="jr-card"><div class="pat-thinking">Reading what you wrote, with care…</div></div>';
+  const recent = loadJournal().filter(e => e.id !== entry.id).slice(0,6).map(e => ({ when:e.when, text:e.text }));
+  let data;
+  try { data = await callJournalInsight(text, recent); }
+  catch(_){ data = exampleJournalInsight(text); }
+  data.care = mergeCare(detectDistress(text), data.care);
+  upsertEntry(text, data);
+  renderJournalInsight(data);
+  renderJournalEntries();
+}
+
+async function callJournalInsight(entry, recent){
+  let res;
+  try {
+    res = await fetch("/api/journal-insight", { method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ entry, recent }) });
+  } catch(_){ const e=new Error("down"); e.code="BACKEND_DOWN"; throw e; }
+  if (res.status===404 || res.status===405 || res.status===501){ const e=new Error("down"); e.code="BACKEND_DOWN"; throw e; }
+  let j; try { j = await res.json(); } catch(_){ const e=new Error("down"); e.code="BACKEND_DOWN"; throw e; }
+  if (!res.ok) throw new Error(j.error || "insight failed");
+  return j;
+}
+
+function exampleJournalInsight(text){
+  const lvl = detectDistress(text);
+  if (lvl !== "none"){
+    return { mirror:"What you've written sounds genuinely heavy, and it took something to put it into words. I'm here with it — and you don't have to carry it alone.",
+      emotions:["pain","heaviness"], patternName:"", patternNote:"", shift:"", care:{level:lvl, message:""} };
+  }
+  const snip = firstClause(text);
+  return {
+    mirror:`It sounds like “${snip}” is sitting heavily with you — and underneath the situation there may be a quieter feeling you haven't fully named yet. That's worth slowing down for.`,
+    emotions:["weariness"], patternName:"", patternNote:"",
+    shift:`If a close friend had written these exact words to you, what's the first thing you'd want them to know?`,
+    care:{level:"none", message:""}
+  };
+}
+
+function renderJournalInsight(d){
+  const ins = $("jrInsight"); ins.hidden=false;
+  const care = d.care && d.care.level !== "none";
+  const emo = (d.emotions||[]).length ? `<div class="jr-emotions">${d.emotions.map(e=>`<span class="jr-emotion">${esc(e)}</span>`).join("")}</div>` : "";
+  const pat = d.patternName ? `<div class="jr-pattern"><div class="jr-step-label">a pattern i gently notice</div><span class="nm">${esc(d.patternName)}</span><div class="nt">${esc(d.patternNote)}</div></div>` : "";
+  const shift = d.shift ? `<div class="jr-shift"><span class="ask">a question to sit with</span>${esc(d.shift)}</div>` : "";
+  const careBlock = care
+    ? `<div class="jr-pattern"><div class="nt">${esc((d.care.message && d.care.message.trim()) ? d.care.message : careCopy(d.care.level).body)}</div><div style="margin-top:12px;"><a class="care-link primary" id="jrCareLink">Find someone to talk to</a></div></div>`
+    : "";
+  ins.innerHTML = `<div class="jr-card">
+    <div class="jr-step-label">the mirror</div>
+    <div class="jr-mirror">${esc(d.mirror)}</div>
+    ${emo}${pat}${shift}${careBlock}
+  </div>`;
+  if (care){ const cl=$("jrCareLink"); if (cl) cl.addEventListener("click", () => openModal("resourcesModal")); }
+}
+
+function renderJournalEntries(){
+  const wrap = $("jrEntries"); const arr = loadJournal();
+  $("jrEntriesWrap").style.display = arr.length ? "" : "none";
+  wrap.innerHTML = "";
+  arr.forEach(e => {
+    const d = document.createElement("div"); d.className="jr-entry";
+    const date = new Date(e.when).toLocaleDateString(undefined,{month:"short", day:"numeric"});
+    d.innerHTML = `<div class="je-d">${date}</div><div class="je-t">${esc(e.text)}</div>${e.insight?'<div class="je-tag">reflected ✦</div>':''}`;
+    d.addEventListener("click", () => {
+      jrCurrentId = e.id; $("jrText").value = e.text;
+      if (e.insight) renderJournalInsight(e.insight);
+      else { $("jrInsight").hidden=true; $("jrInsight").innerHTML=""; }
+      window.scrollTo({top:0, behavior:"smooth"}); $("jrText").focus();
+    });
+    wrap.appendChild(d);
+  });
+}
+function showJrNotice(m){ const n=$("jrNotice"); n.textContent=m; n.className="notice show info"; n.style.marginTop="16px"; }
 
 /* greet + deep link */
 window.addEventListener("DOMContentLoaded", async () => {

@@ -27,6 +27,11 @@ first. Reflection, not resolution.
 - **Save & revisit** — every reflection can be saved to a private link you can open on any device.
 - **Private by design** — opt-in only (nothing is used to improve Prism unless you say so), export
   or delete your data anytime, and the AI key never touches the browser.
+- **Journal** — a private daily writing space (on-device, confidential). Opt in and Prism reflects
+  back with a therapist-grade method: **The Mirror** (names the emotion + the belief underneath),
+  **Pattern Recognition** (gently flags CBT cognitive distortions — catastrophizing, all-or-nothing,
+  mind-reading…), and **The Shift** (one Socratic reframing question). Validates the *feeling*, never
+  a distorted belief; softens entirely on distress.
 - **Remembers you** — reflections are journaled privately on your device, and a **Patterns** view
   surfaces what keeps surfacing across them (recurring themes, the lenses you reach for, an AI
   "what keeps surfacing" read). New reflections that echo an old one say so. This is the core
