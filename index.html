@@ -316,6 +316,36 @@
   .support-foot a { color:var(--ink-dim); text-decoration:none; border-bottom:1px dotted var(--line-bright); cursor:pointer; transition:.2s; }
   .support-foot a:hover { color:var(--ink); }
 
+  /* ---------- privacy toggle + rows ---------- */
+  .ptoggle { display:flex; align-items:flex-start; gap:13px; padding:18px 0 6px; cursor:pointer; }
+  .ptoggle .sw { width:44px; height:26px; border-radius:999px; background:rgba(255,255,255,0.1);
+    border:1px solid var(--line-bright); position:relative; flex:0 0 auto; transition:.2s; margin-top:2px; }
+  .ptoggle .sw::after { content:""; position:absolute; top:2px; left:2px; width:20px; height:20px;
+    border-radius:50%; background:var(--ink-dim); transition:.2s; }
+  .ptoggle.on .sw { background:linear-gradient(100deg,#cdeccf,#bfe9ea); border-color:transparent; }
+  .ptoggle.on .sw::after { left:20px; background:#10241a; }
+  .ptoggle .tx { font-size:14px; color:var(--ink); }
+  .ptoggle .tx small { display:block; color:var(--ink-faint); font-size:12px; margin-top:3px; line-height:1.5; }
+  .privacy-row { display:flex; gap:13px; align-items:flex-start; padding:13px 0; border-top:1px solid var(--line); }
+  .privacy-row:first-child { border-top:0; }
+  .privacy-row .pr-ic { width:20px; height:20px; flex:0 0 auto; color:var(--c-skeptic); margin-top:2px; }
+  .privacy-row .pr-t { font-size:14px; color:var(--ink); font-weight:500; }
+  .privacy-row .pr-d { font-size:12.5px; color:var(--ink-dim); line-height:1.5; margin-top:2px; }
+
+  /* ---------- end-of-session feedback ---------- */
+  .fb { margin-top:34px; border:1px dashed var(--line-bright); border-radius:16px; padding:22px; text-align:center; }
+  .fb.done { border-style:solid; background:rgba(255,255,255,0.02); }
+  .fb .fb-q { font-family:var(--serif); font-weight:300; font-size:18px; color:var(--ink); margin-bottom:15px; }
+  .fb .fb-btns { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  .fb .fb-btns .care-link[aria-pressed="true"] { background:rgba(179,156,255,0.16); border-color:rgba(179,156,255,0.5); color:var(--ink); }
+  .fb-note { margin-top:15px; display:none; max-width:440px; margin-left:auto; margin-right:auto; }
+  .fb-note.show { display:block; }
+  .fb-note textarea { width:100%; min-height:56px; resize:none; border:1px solid var(--line-bright);
+    background:rgba(0,0,0,0.25); color:var(--ink); border-radius:12px; padding:11px 13px;
+    font-family:var(--sans); font-size:13.5px; outline:0; }
+  .fb-note textarea:focus { border-color:rgba(179,156,255,0.5); }
+  .fb .fb-thanks { color:var(--ink-dim); font-size:14.5px; line-height:1.5; }
+
   /* ---------- respect reduced motion (calm + accessible) ---------- */
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior:auto; }
@@ -458,11 +488,25 @@
       <button class="refract-btn" id="againBtn">Reflect on something else</button>
       <button class="ghost-btn" id="deeperBtn">Save &amp; copy link</button>
     </div>
+
+    <div class="fb" id="feedback">
+      <div class="fb-q" id="fbQ">Did this help you see something you couldn't before?</div>
+      <div class="fb-btns" id="fbBtns">
+        <button class="care-link" data-fb="yes" aria-pressed="false">Yes, it did</button>
+        <button class="care-link" data-fb="no" aria-pressed="false">Not really</button>
+      </div>
+      <div class="fb-note" id="fbNote">
+        <textarea id="fbMsg" maxlength="1000" placeholder="Anything that would make Prism better for you? (optional)"></textarea>
+        <div style="margin-top:11px;"><button class="refract-btn" id="fbSend">Send</button></div>
+      </div>
+      <div class="fb-thanks" id="fbThanks" style="display:none;"></div>
+    </div>
   </section>
 
   <footer>
     Prism reflects; it doesn't decide. <span class="spec-mini"></span> Built for the SMG Bubble Cohort 001 “Reflection” Hackathon.
     <div class="support-foot">Going through something heavy? <a id="footSupport">You don't have to face it alone →</a></div>
+    <div class="support-foot"><a id="footPrivacy">Privacy &amp; your data</a></div>
   </footer>
 </div>
 
@@ -557,6 +601,43 @@
   </div>
 </div>
 
+<!-- ============ PRIVACY & DATA MODAL ============ -->
+<div class="modal-bg" id="privacyModal">
+  <div class="modal">
+    <h2>Privacy &amp; your data</h2>
+    <p class="m-sub">Prism is built private-first. Here's exactly what happens to what you write — in plain language.</p>
+
+    <div class="privacy-row">
+      <span class="pr-ic" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none"><rect x="4" y="9" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M7 9V6a3 3 0 016 0v3" stroke="currentColor" stroke-width="1.4"/></svg></span>
+      <div><div class="pr-t">Your words stay yours</div><div class="pr-d">A reflection is saved only if you choose to save it. When you do, it's reachable only through your own private link — there's no public list, no feed, no browsing other people's reflections.</div></div>
+    </div>
+    <div class="privacy-row">
+      <span class="pr-ic" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none"><path d="M10 2l6 3v4c0 4-2.7 7-6 9-3.3-2-6-5-6-9V5l6-3z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span>
+      <div><div class="pr-t">The AI key never touches your browser</div><div class="pr-d">Your reflection is sent to a secure server function that talks to the AI. Your device never holds any secret key, and requests aren't cached or indexed.</div></div>
+    </div>
+    <div class="privacy-row">
+      <span class="pr-ic" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.4"/><path d="M6 10l2.5 2.5L14 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <div><div class="pr-t">Nothing is sold or shared</div><div class="pr-d">Your reflections are never sold, advertised against, or shared with anyone. Feedback you send is just a rating and an optional note — never the content of what you reflected on.</div></div>
+    </div>
+
+    <div class="ptoggle" id="consentToggle" role="switch" aria-checked="false" tabindex="0">
+      <div class="sw"></div>
+      <div class="tx">Help improve Prism with my reflections
+        <small>Off by default. When on, your saved reflections may be reviewed privately to make Prism better. Turn it off and that never happens — guaranteed. You're in control either way.</small>
+      </div>
+    </div>
+
+    <p class="fineprint" style="margin-top:14px;">You can take everything with you or wipe it at any time:</p>
+    <div class="modal-actions" style="justify-content:space-between;">
+      <div style="display:flex; gap:10px;">
+        <button class="ghost-btn" id="exportData">Export my data</button>
+        <button class="ghost-btn" id="deleteData">Delete everything</button>
+      </div>
+      <button class="refract-btn" id="closePrivacy">Done</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ============================================================
    PRISM — refract a situation through chosen perspectives.
@@ -626,6 +707,30 @@ $("closeShare").addEventListener("click", () => closeModal("shareModal"));
 $("closeResources").addEventListener("click", () => closeModal("resourcesModal"));
 $("footSupport").addEventListener("click", () => openModal("resourcesModal"));
 $("careResources").addEventListener("click", () => openModal("resourcesModal"));
+
+/* ---------- privacy & consent (opt-in, private by default) ---------- */
+const CONSENT_STORE = "prism_consent";
+function getConsent(){ return localStorage.getItem(CONSENT_STORE) === "1"; }
+function setConsent(v){ localStorage.setItem(CONSENT_STORE, v ? "1" : "0"); renderConsent(); }
+function renderConsent(){ const t=$("consentToggle"); const on=getConsent(); t.classList.toggle("on",on); t.setAttribute("aria-checked", on?"true":"false"); }
+$("footPrivacy").addEventListener("click", () => { renderConsent(); openModal("privacyModal"); });
+$("closePrivacy").addEventListener("click", () => closeModal("privacyModal"));
+$("consentToggle").addEventListener("click", () => setConsent(!getConsent()));
+$("consentToggle").addEventListener("keydown", e => { if (e.key===" "||e.key==="Enter"){ e.preventDefault(); setConsent(!getConsent()); } });
+$("exportData").addEventListener("click", () => {
+  const data = { product:"Prism", exportedAt:new Date().toISOString(), dataUsageConsent:getConsent(), reflections:loadHist() };
+  const blob = new Blob([JSON.stringify(data,null,2)], { type:"application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "prism-my-data.json";
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+});
+$("deleteData").addEventListener("click", () => {
+  if (!confirm("Delete every reflection saved on this device, along with your settings? This can't be undone.")) return;
+  [HIST_STORE, CONSENT_STORE, "prism_feedback_given"].forEach(k => localStorage.removeItem(k));
+  renderConsent();
+  const b=$("deleteData"); b.textContent="Deleted ✓"; setTimeout(()=>b.textContent="Delete everything", 1900);
+});
+renderConsent();
 
 /* ---------- modals ---------- */
 function openModal(id){ $(id).classList.add("show"); }
@@ -711,6 +816,40 @@ function renderCare(care){
   $("careBody").textContent = (care.message && care.message.trim()) ? care.message.trim() : def.body;
   p.classList.toggle("crisis", care.level === "crisis");
   p.classList.add("show");
+}
+
+/* ---------- end-of-session feedback (voluntary, private) ---------- */
+let _fbHelpful;
+function resetFeedback(){
+  _fbHelpful = undefined;
+  $("feedback").classList.remove("done");
+  $("fbQ").textContent = "Did this help you see something you couldn't before?";
+  $("fbBtns").style.display = "";
+  document.querySelectorAll('#fbBtns [data-fb]').forEach(b => b.setAttribute("aria-pressed","false"));
+  $("fbNote").classList.remove("show");
+  $("fbMsg").value = "";
+  $("fbThanks").style.display = "none";
+}
+document.querySelectorAll('#fbBtns [data-fb]').forEach(btn => btn.addEventListener("click", () => {
+  _fbHelpful = btn.dataset.fb === "yes";
+  document.querySelectorAll('#fbBtns [data-fb]').forEach(b => b.setAttribute("aria-pressed", b===btn ? "true" : "false"));
+  $("fbNote").classList.add("show");
+  $("fbMsg").focus();
+}));
+$("fbSend").addEventListener("click", sendFeedback);
+async function sendFeedback(){
+  const message = $("fbMsg").value.trim();
+  if (_fbHelpful === undefined && !message) { $("fbMsg").focus(); return; }
+  // We send only the rating + optional note — never the reflection content.
+  const payload = { helpful: (_fbHelpful === undefined ? null : _fbHelpful), message: message || null, context: "session_end" };
+  try { await fetch("/api/feedback", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(payload) }); } catch(_){}
+  try { localStorage.setItem("prism_feedback_given", String((+localStorage.getItem("prism_feedback_given") || 0) + 1)); } catch(_){}
+  $("fbBtns").style.display = "none";
+  $("fbNote").classList.remove("show");
+  $("feedback").classList.add("done");
+  $("fbQ").textContent = "";
+  $("fbThanks").style.display = "block";
+  $("fbThanks").textContent = "Thank you — your honesty is exactly how Prism gets better. 🤍";
 }
 
 /* ---------- live refraction via our serverless proxy ---------- */
@@ -818,6 +957,7 @@ function setLoading(on){
 function renderResult(text, chosen, data){
   setLoading(false);
   renderCare(data.care);
+  resetFeedback();
   $("echo").textContent = text;
   const grid = $("lensGrid"); grid.innerHTML="";
   data.lenses.forEach((entry, i) => {
@@ -878,7 +1018,9 @@ async function saveCurrent(){
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           situation: current.situation, lenses: current.lenses,
-          synthesis: current.synthesis, lensIds: current.lensIds || []
+          synthesis: current.synthesis, lensIds: current.lensIds || [],
+          careLevel: (current.care && current.care.level) || "none",
+          allowImprovement: getConsent()
         })
       });
       if (res.ok){ const j = await res.json(); savedId = j.id; }

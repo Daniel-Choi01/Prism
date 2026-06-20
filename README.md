@@ -19,11 +19,26 @@ first. Reflection, not resolution.
 - **Refract** — write what's on your mind, pick the perspectives, and get one tight reflection +
   one sharp question from each, plus a synthesis of the tension they share.
 - **Six lenses** — Future You, The Mentor, The Skeptic, Your Values, Younger You, The Honest Friend
-  (choose 2–4). Each is a real, distinct voice.
+  (choose 2–4). Treated as *parts of you* with good intent (IFS) — even the challenging ones are
+  never cruel.
+- **Cares when it counts** — both the AI and a client-side check watch for genuine distress. If
+  someone's struggling, the voices soften to pure validation and a warm panel surfaces real crisis
+  resources (988, Crisis Text Line, findahelpline.com).
 - **Save & revisit** — every reflection can be saved to a private link you can open on any device.
-  Coming back to what you wrote is part of the practice.
-- **Private by design** — reflections are personal. The AI key never touches the browser, and a
-  saved reflection is reachable only by its random link.
+- **Private by design** — opt-in only (nothing is used to improve Prism unless you say so), export
+  or delete your data anytime, and the AI key never touches the browser.
+- **Listens back** — a gentle end-of-session feedback prompt; the rating + optional note (never your
+  reflection content) help Prism improve.
+
+## Grounded in real psychology
+Prism's method isn't improvised — the AI prompt is built on established frameworks so the responses
+are sound, not generic advice:
+- **Unconditional positive regard** (Carl Rogers) — accept the person; never judge or shame.
+- **Internal Family Systems** (R. Schwartz) — perspectives are *parts* with good intent; "no bad parts."
+- **Self-distancing / Solomon's Paradox** (Kross & Grossmann) — we reason more wisely about our
+  situation from the outside. This is literally what refraction does.
+- **Motivational Interviewing** — evoke the person's own wisdom; resist the urge to fix.
+- **Stoicism** (dichotomy of control) & **Frankl** (meaning) — applied lightly in the synthesis.
 
 ## Tech
 - **Frontend** — a single self-contained `index.html` (HTML/CSS + vanilla JS). No build step.
@@ -38,10 +53,13 @@ first. Reflection, not resolution.
 prism/
 ├─ index.html            ← the whole app (UI + client logic)
 ├─ api/
-│  ├─ refract.js         ← Claude Opus 4.8 proxy (holds ANTHROPIC_API_KEY)
-│  └─ reflections.js     ← save / load reflections in Supabase
-├─ supabase/schema.sql   ← the one table to create
+│  ├─ refract.js         ← Claude Opus 4.8 proxy + safety/care assessment (holds ANTHROPIC_API_KEY)
+│  ├─ reflections.js     ← save / load reflections in Supabase
+│  └─ feedback.js        ← store voluntary feedback (no reflection content)
+├─ supabase/schema.sql   ← tables + Row-Level Security (Phase 1 now, Phase 2 auth ready)
+├─ vercel.json           ← security headers (CSP, HSTS, no-store on /api, …)
 ├─ .env.example          ← required environment variables
+├─ SECURITY.md           ← the privacy & security model
 └─ package.json
 ```
 
@@ -73,10 +91,18 @@ Or just **open `index.html` directly** in a browser — with no backend reachabl
 
 ---
 
-## Notes on honesty & safety
-- Prism is a tool for reflection, not a substitute for professional support. It says so, and it
-  never pretends to diagnose or decide.
-- The Anthropic key is read only inside `/api/refract` (server-side env var). It is never sent to,
-  or readable from, the browser.
-- Saved reflections have no index and no listing endpoint — the random-UUID link is the only key.
-  Row-Level Security is on with no public policies, so only the server (service role) can read them.
+## Privacy, safety & security
+Full detail in [SECURITY.md](SECURITY.md). In short:
+- **Reflection, not treatment.** Prism never diagnoses or decides, and it says so. On signs of
+  distress it stops challenging, validates, and routes to real human help.
+- **Opt-in only.** Nothing you write is used to improve Prism unless you explicitly turn it on in
+  **Privacy & your data**. Off by default — and off means off.
+- **You own your data.** Export everything as JSON or delete it, any time, from the privacy panel.
+- **Secrets stay server-side.** The Anthropic and Supabase keys live only in Vercel env vars and
+  are read only inside `/api/*`. The browser never holds a secret.
+- **No leaking between people.** Reflections have no public list or feed; a saved one is reachable
+  only by its random link. Row-Level Security is enabled, and Phase 2 (accounts) isolates every
+  user's rows to `auth.uid()`.
+- **Hardened transport.** `vercel.json` sets a strict Content-Security-Policy, HSTS, `X-Frame-Options`,
+  a tight `Permissions-Policy`, and `no-store` on all API responses.
+- **Minimal feedback.** Feedback stores only a thumbs and an optional note — never your reflection.

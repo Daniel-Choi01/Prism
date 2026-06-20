@@ -45,6 +45,8 @@ export default async function handler(req, res) {
     const lenses = Array.isArray(body.lenses) ? body.lenses : null;
     const synthesis = (body.synthesis || "").toString().trim();
     const lensIds = Array.isArray(body.lensIds) ? body.lensIds.map(String) : [];
+    const careLevel = ["none","struggling","crisis"].includes(body.careLevel) ? body.careLevel : "none";
+    const allowImprovement = body.allowImprovement === true;   // opt-in only
 
     if (!situation || !lenses || !synthesis) {
       return res.status(400).json({ error: "Missing situation, lenses, or synthesis." });
@@ -67,7 +69,9 @@ export default async function handler(req, res) {
           situation,
           lenses: cleanLenses,
           synthesis,
-          lens_ids: lensIds.slice(0, 6)
+          lens_ids: lensIds.slice(0, 6),
+          care_level: careLevel,
+          allow_improvement: allowImprovement
         })
       });
       if (!r.ok) {

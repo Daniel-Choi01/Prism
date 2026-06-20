@@ -64,6 +64,15 @@ spectrum it hides.
 > one from the future. I didn't need new advice; I needed those voices *separated and named*, so
 > I could actually hear each one instead of letting the loudest win. That's all Prism does.
 
+**Grounded, not improvised** *(this is the depth that scores)*:
+> Prism's responses aren't vibes — the AI follows established psychology. **Carl Rogers'**
+> unconditional positive regard (accept, never judge). **Internal Family Systems** — the lenses
+> are *parts* of you with good intent, so even the Skeptic is never cruel ("no bad parts").
+> **Kross & Grossmann's self-distancing** (we reason more wisely about our own problems from the
+> outside — the literal science behind "refraction"). **Motivational Interviewing** (evoke your
+> wisdom, don't fix). When someone's in real pain, it stops challenging entirely and points them
+> to a person who can help — because a reflection tool that can't recognize a crisis isn't safe.
+
 ---
 
 ## 3 · Functionality — 20%  (✅ built — describe it plainly)
@@ -76,6 +85,13 @@ spectrum it hides.
 - **Real and usable:** deployed on Vercel; reflections save to a Supabase database and get a
   **private share link you can open on any device** — so it's a tool you'd actually return to,
   not a one-off demo.
+- **Cares when it counts:** detects genuine distress and, instead of pushing, softens every voice
+  to validation and surfaces real crisis resources (988, Crisis Text Line, findahelpline.com).
+- **Private by design:** opt-in only (off by default — never used unless you say yes), export or
+  delete your data anytime, secrets stay server-side, and Row-Level Security keeps one person's
+  reflections from ever reaching another.
+- **Listens back:** a gentle end-of-session feedback loop (a rating + optional note — never your
+  reflection content) that's how Prism keeps improving.
 - **Degrades gracefully:** open the file with no backend and it runs in example mode, so the
   experience is never broken.
 
