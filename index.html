@@ -7,25 +7,28 @@
 <meta name="description" content="Describe what's weighing on you. PRISM refracts it through other perspectives — your future self, a mentor, a skeptic, your values — so you can see the angles you're too close to see." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz@1,6..72&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --bg: #07070c;
-    --bg-2: #0c0c16;
-    --ink: #ece9f5;
-    --ink-dim: #9b97b0;
-    --ink-faint: #5f5b77;
-    --line: rgba(180,170,220,0.12);
-    --line-bright: rgba(180,170,220,0.26);
+    --bg: #0a0910;
+    --bg-2: #100e18;
+    --ink: #ece6da;        /* warm ivory — editorial, not techy purple-white */
+    --ink-dim: #a8a294;    /* warm grey */
+    --ink-faint: #6c6757;
+    --line: rgba(236,230,218,0.10);
+    --line-bright: rgba(236,230,218,0.20);
     --serif: "Fraunces", Georgia, serif;
-    --sans: "Space Grotesk", system-ui, sans-serif;
-    /* spectrum — refracted beams */
+    --read: "Newsreader", Georgia, serif;
+    --sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+    /* spectrum — refracted beams (also the lens accents) */
     --c-future: #b39cff;
     --c-mentor: #ffce7a;
     --c-skeptic: #6fe0e6;
     --c-values: #ff9ec4;
     --c-child:  #9bef9f;
     --c-rival:  #ff8a6b;
+    /* literal spectral order for the prism artwork */
+    --s1:#ff8a6b; --s2:#ffce7a; --s3:#9bef9f; --s4:#6fe0e6; --s5:#8ea2ff; --s6:#b39cff;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -41,21 +44,22 @@
     position: relative;
   }
 
-  /* ambient grain + glow */
+  /* atmosphere: a single warm light from above-left, a cool counter-light, and a vignette.
+     deliberately restrained — depth, not a rainbow glow. */
   body::before {
     content: "";
-    position: fixed; inset: 0;
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
     background:
-      radial-gradient(900px 600px at 50% -10%, rgba(150,120,255,0.10), transparent 60%),
-      radial-gradient(700px 500px at 85% 110%, rgba(255,180,120,0.06), transparent 60%),
-      radial-gradient(700px 500px at 10% 100%, rgba(110,224,230,0.05), transparent 60%);
-    pointer-events: none; z-index: 0;
+      radial-gradient(1100px 720px at 32% -8%, rgba(255,210,150,0.06), transparent 58%),
+      radial-gradient(900px 700px at 92% 8%, rgba(120,150,255,0.045), transparent 60%),
+      radial-gradient(1200px 900px at 50% 120%, rgba(150,120,200,0.05), transparent 60%),
+      radial-gradient(140% 120% at 50% 38%, transparent 58%, rgba(0,0,0,0.55) 100%); /* vignette */
   }
+  /* fine film grain */
   body::after {
     content: "";
-    position: fixed; inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
-    opacity: 0.025; pointer-events: none; z-index: 0; mix-blend-mode: screen;
+    position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.04; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   .wrap { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 0 24px; }
@@ -65,11 +69,9 @@
     display: flex; align-items: center; justify-content: space-between;
     padding: 26px 0 0; position: relative; z-index: 3;
   }
-  .brand { display: flex; align-items: center; gap: 12px; letter-spacing: 0.42em;
+  .brand { display: flex; align-items: center; gap: 11px; letter-spacing: 0.38em;
     font-weight: 600; font-size: 13px; text-transform: uppercase; color: var(--ink); }
-  .brand .spec { width: 30px; height: 8px; border-radius: 6px;
-    background: linear-gradient(90deg, var(--c-rival), var(--c-mentor), var(--c-child), var(--c-skeptic), var(--c-future), var(--c-values));
-    box-shadow: 0 0 16px rgba(160,140,255,0.5); }
+  .brand .brandmark { width: 30px; height: 22px; overflow: visible; }
   .top-actions { display: flex; gap: 8px; }
   .ghost-btn {
     font-family: var(--sans); font-size: 12px; letter-spacing: 0.08em;
@@ -86,22 +88,30 @@
   .eyebrow { font-size: 12px; letter-spacing: 0.45em; text-transform: uppercase;
     color: var(--ink-faint); margin-bottom: 26px; }
 
-  /* the prism artwork */
-  .glass { position: relative; width: 280px; height: 150px; margin: 0 auto 6px; }
-  .glass svg { width: 100%; height: 100%; overflow: visible; }
-  @keyframes beamPulse { 0%,100% { opacity:.5 } 50% { opacity:1 } }
-  @keyframes floaty { 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(-7px) } }
-  .glass .tri { animation: floaty 7s ease-in-out infinite; transform-origin: center; }
-  .glass .in-beam { animation: beamPulse 4s ease-in-out infinite; }
-  .glass .out-beam { opacity: .85; }
+  /* the prism artwork — a physically-correct dispersion, drawn on load */
+  .prism-stage { width: min(460px, 86vw); margin: 2px auto 0; }
+  .prism-svg { width: 100%; height: auto; overflow: visible; display: block; }
+  .pm-glass { filter: drop-shadow(0 10px 34px rgba(180,160,255,0.12)); opacity: 0; animation: pmFade 0.7s 0.1s ease forwards; }
+  .pm-edge { opacity: 0; animation: pmFade 0.8s 0.55s ease forwards; }
+  .pm-in { stroke-dasharray: 170; stroke-dashoffset: 170; animation: pmDraw 0.9s 0.15s cubic-bezier(.4,.5,.2,1) forwards; }
+  .pm-mid { opacity: 0; animation: pmFade 0.5s 0.95s ease forwards; }
+  .pm-fan .pm-beam {
+    stroke-dasharray: 210; stroke-dashoffset: 210; opacity: 0;
+    filter: drop-shadow(0 0 5px currentColor);
+    animation: pmDraw 1s calc(1.05s + var(--d) * 0.085s) cubic-bezier(.3,.6,.2,1) forwards;
+  }
+  @keyframes pmDraw { to { stroke-dashoffset: 0; opacity: 1; } }
+  @keyframes pmFade { to { opacity: 1; } }
 
   h1 { font-family: var(--serif); font-weight: 300; font-optical-sizing: auto;
     font-size: clamp(40px, 8vw, 86px); line-height: 1.0; letter-spacing: -0.02em;
     margin: 6px 0 0; }
-  h1 em { font-style: italic; background: linear-gradient(100deg, var(--c-future), var(--c-values) 55%, var(--c-mentor));
-    -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .lede { max-width: 560px; margin: 22px auto 0; color: var(--ink-dim);
-    font-size: clamp(15px, 2vw, 18px); }
+  h1 em { font-style: italic; font-weight: 400; color: var(--ink); position: relative; white-space: nowrap; }
+  h1 em::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0.08em; height: 2px; border-radius: 2px;
+    background: linear-gradient(90deg, var(--s1), var(--s2), var(--s3), var(--s4), var(--s5), var(--s6));
+    opacity: 0.9; box-shadow: 0 0 12px rgba(180,160,255,0.35); }
+  .lede { max-width: 540px; margin: 24px auto 0; color: var(--ink-dim);
+    font-family: var(--read); font-style: italic; font-size: clamp(16px, 2vw, 19px); line-height: 1.6; }
 
   /* intake field */
   .intake { width: min(680px, 100%); margin: 40px auto 0; }
@@ -124,14 +134,17 @@
     padding: 6px 10px 8px 18px; gap: 12px; }
   .hint { font-size: 12px; color: var(--ink-faint); letter-spacing: 0.02em; }
   .refract-btn {
-    font-family: var(--sans); font-weight: 600; font-size: 14px; letter-spacing: 0.04em;
-    color: #14101f; border: 0; cursor: pointer; padding: 12px 22px; border-radius: 14px;
-    background: linear-gradient(100deg, #d9caff, #ffe1b0);
-    box-shadow: 0 10px 30px -10px rgba(179,156,255,0.7); transition: transform .15s, box-shadow .2s, opacity .2s;
-    display: inline-flex; align-items: center; gap: 9px; white-space: nowrap;
+    font-family: var(--sans); font-weight: 600; font-size: 13.5px; letter-spacing: 0.04em;
+    color: #181320; border: 0; cursor: pointer; padding: 12px 22px; border-radius: 12px;
+    background: linear-gradient(180deg, #f4efe3, #ddd4c2);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.4) inset, 0 12px 30px -14px rgba(0,0,0,0.8);
+    transition: transform .15s, box-shadow .25s, filter .2s;
+    display: inline-flex; align-items: center; gap: 9px; white-space: nowrap; position: relative;
   }
-  .refract-btn:hover { transform: translateY(-1px); box-shadow: 0 14px 36px -10px rgba(179,156,255,0.9); }
+  .refract-btn:hover { transform: translateY(-1px); filter: brightness(1.04);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset, 0 16px 38px -14px rgba(150,130,220,0.55); }
   .refract-btn:active { transform: translateY(0); }
+  .refract-btn:focus-visible { outline: 2px solid var(--s5); outline-offset: 3px; }
   .refract-btn:disabled { opacity: .55; cursor: progress; }
 
   /* lens chooser */
@@ -162,8 +175,8 @@
   .result.show { display: block; }
   .result-head { text-align: center; margin-bottom: 8px; }
   .result-head .your-words {
-    font-family: var(--serif); font-style: italic; font-weight: 300;
-    font-size: clamp(20px, 3.4vw, 30px); line-height: 1.35; color: var(--ink);
+    font-family: var(--read); font-style: italic;
+    font-size: clamp(21px, 3.4vw, 31px); line-height: 1.38; color: var(--ink);
     max-width: 720px; margin: 0 auto; position: relative; padding: 0 8px;
   }
   .result-head .quote-mark { color: var(--ink-faint); font-style: normal; }
@@ -223,11 +236,9 @@
   /* ---------- loading ---------- */
   .loader { display: none; flex-direction: column; align-items: center; gap: 22px; padding: 70px 0; }
   .loader.show { display: flex; }
-  .loader .spin { width: 64px; height: 64px; position: relative; }
-  .loader .spin svg { animation: spin 3.4s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loader .ltext { font-family: var(--serif); font-style: italic; color: var(--ink-dim); font-size: 18px;
-    min-height: 27px; text-align: center; }
+  .loader .spin { position: relative; display: flex; }
+  .loader .ltext { font-family: var(--read); font-style: italic; color: var(--ink-dim); font-size: 19px;
+    min-height: 27px; text-align: center; letter-spacing: 0.01em; }
 
   /* error / notice */
   .notice { display: none; max-width: 620px; margin: 18px auto 0; padding: 14px 18px;
@@ -399,7 +410,8 @@
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior:auto; }
     *, *::before, *::after { animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
-    .glass .tri, .glass .in-beam, .loader .spin svg, .breath { animation:none !important; }
+    .breath { animation:none !important; }
+    .pm-in, .pm-mid, .pm-glass, .pm-edge, .pm-fan .pm-beam { animation:none !important; stroke-dashoffset:0 !important; opacity:1 !important; }
     .lens-card, .synthesis, .care { opacity:1 !important; transform:none !important; }
   }
 
@@ -409,7 +421,16 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="brand"><span class="spec"></span> Prism</div>
+    <div class="brand">
+      <svg class="brandmark" viewBox="0 0 30 22" aria-hidden="true">
+        <polygon points="15,3 25,18 5,18" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round" opacity="0.6"/>
+        <line x1="0" y1="12" x2="8.5" y2="12" stroke="currentColor" stroke-width="1.1" opacity="0.4"/>
+        <line x1="18" y1="13" x2="30" y2="8"  stroke="var(--s1)" stroke-width="1.3"/>
+        <line x1="18" y1="13" x2="30" y2="12" stroke="var(--s3)" stroke-width="1.3"/>
+        <line x1="18" y1="13" x2="30" y2="16" stroke="var(--s5)" stroke-width="1.3"/>
+      </svg>
+      Prism
+    </div>
     <div class="top-actions">
       <button class="ghost-btn" id="historyBtn">Reflections</button>
       <button class="ghost-btn" id="aboutBtn">About</button>
@@ -420,29 +441,37 @@
   <section class="stage" id="stage">
     <div class="eyebrow">a reflection tool · cohort 001</div>
 
-    <div class="glass" aria-hidden="true">
-      <svg viewBox="0 0 280 150">
-        <!-- incoming white beam -->
-        <line class="in-beam" x1="0" y1="75" x2="118" y2="75" stroke="white" stroke-width="2" opacity="0.85"/>
-        <!-- prism triangle -->
-        <g class="tri">
-          <polygon points="120,38 165,112 75,112" fill="rgba(255,255,255,0.05)" stroke="rgba(200,190,240,0.5)" stroke-width="1.2"/>
-          <polygon points="120,38 165,112 75,112" fill="url(#pg)" opacity="0.4"/>
-        </g>
-        <!-- refracted beams -->
-        <g class="out-beam">
-          <line x1="150" y1="95" x2="280" y2="40" stroke="var(--c-future)" stroke-width="2"/>
-          <line x1="150" y1="98" x2="280" y2="58" stroke="var(--c-values)" stroke-width="2"/>
-          <line x1="150" y1="101" x2="280" y2="76" stroke="var(--c-skeptic)" stroke-width="2"/>
-          <line x1="150" y1="104" x2="280" y2="94" stroke="var(--c-child)" stroke-width="2"/>
-          <line x1="150" y1="107" x2="280" y2="112" stroke="var(--c-mentor)" stroke-width="2"/>
-          <line x1="150" y1="110" x2="280" y2="130" stroke="var(--c-rival)" stroke-width="2"/>
-        </g>
+    <div class="prism-stage" aria-hidden="true">
+      <svg class="prism-svg" viewBox="0 0 420 232" role="img">
         <defs>
-          <linearGradient id="pg" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#b39cff"/><stop offset="1" stop-color="#ffce7a"/>
+          <linearGradient id="beamWhite" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+            <stop offset="0.7" stop-color="#fff" stop-opacity="0.85"/>
+            <stop offset="1" stop-color="#fff" stop-opacity="0.95"/>
+          </linearGradient>
+          <linearGradient id="prismFill" x1="0" y1="0" x2="0.6" y2="1">
+            <stop offset="0" stop-color="rgba(255,255,255,0.12)"/>
+            <stop offset="1" stop-color="rgba(255,255,255,0.015)"/>
           </linearGradient>
         </defs>
+        <!-- single white beam enters the left face -->
+        <line class="pm-in" x1="22" y1="118" x2="176" y2="118" stroke="url(#beamWhite)" stroke-width="2"/>
+        <!-- refracted internal segment, to the exit point on the right face -->
+        <line class="pm-mid" x1="176" y1="118" x2="233" y2="131" stroke="#fff" stroke-width="1.4" opacity="0.45"/>
+        <!-- dispersion: one origin on the right face, fanning red→violet -->
+        <g class="pm-fan" stroke-width="2.4" stroke-linecap="round">
+          <line class="pm-beam" style="--d:0" x1="233" y1="131" x2="406" y2="116" stroke="var(--s1)"/>
+          <line class="pm-beam" style="--d:1" x1="233" y1="131" x2="406" y2="130" stroke="var(--s2)"/>
+          <line class="pm-beam" style="--d:2" x1="233" y1="131" x2="406" y2="144" stroke="var(--s3)"/>
+          <line class="pm-beam" style="--d:3" x1="233" y1="131" x2="406" y2="158" stroke="var(--s4)"/>
+          <line class="pm-beam" style="--d:4" x1="233" y1="131" x2="406" y2="172" stroke="var(--s5)"/>
+          <line class="pm-beam" style="--d:5" x1="233" y1="131" x2="406" y2="186" stroke="var(--s6)"/>
+        </g>
+        <!-- the prism: an upright triangle, beam crosses through it -->
+        <polygon class="pm-glass" points="200,58 254,170 146,170" fill="url(#prismFill)"
+          stroke="rgba(236,230,218,0.42)" stroke-width="1.25" stroke-linejoin="round"/>
+        <polygon class="pm-edge" points="200,58 254,170 146,170" fill="none"
+          stroke="rgba(255,255,255,0.14)" stroke-width="0.5" stroke-linejoin="round"/>
       </svg>
     </div>
 
@@ -492,12 +521,12 @@
     <div class="orbit">
       <div class="breath"></div>
       <div class="spin">
-        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-          <polygon points="32,10 52,50 12,50" stroke="rgba(200,190,240,0.5)" stroke-width="1.4" fill="rgba(255,255,255,0.04)"/>
-          <line x1="0" y1="34" x2="22" y2="34" stroke="white" stroke-width="2"/>
-          <line x1="42" y1="40" x2="64" y2="22" stroke="var(--c-future)" stroke-width="2"/>
-          <line x1="42" y1="44" x2="64" y2="44" stroke="var(--c-skeptic)" stroke-width="2"/>
-          <line x1="42" y1="48" x2="64" y2="62" stroke="var(--c-mentor)" stroke-width="2"/>
+        <svg width="104" height="62" viewBox="0 0 104 62" fill="none">
+          <line x1="4" y1="31" x2="40" y2="31" stroke="#fff" stroke-width="1.6" opacity="0.7"/>
+          <polygon points="50,12 66,46 34,46" fill="rgba(255,255,255,0.05)" stroke="rgba(236,230,218,0.42)" stroke-width="1" stroke-linejoin="round"/>
+          <line x1="60" y1="33" x2="100" y2="24" stroke="var(--s1)" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="60" y1="33" x2="100" y2="33" stroke="var(--s3)" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="60" y1="33" x2="100" y2="42" stroke="var(--s5)" stroke-width="1.8" stroke-linecap="round"/>
         </svg>
       </div>
     </div>
