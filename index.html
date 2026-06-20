@@ -346,6 +346,55 @@
   .fb-note textarea:focus { border-color:rgba(179,156,255,0.5); }
   .fb .fb-thanks { color:var(--ink-dim); font-size:14.5px; line-height:1.5; }
 
+  /* ---------- stance: "what would help right now?" ---------- */
+  .stance { margin: 24px auto 0; max-width: 640px; }
+  .stance .label { font-size:11px; letter-spacing:0.32em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:12px; }
+  .stance-opts { display:flex; gap:9px; justify-content:center; flex-wrap:wrap; }
+  .stance-opt { font-family:var(--sans); font-size:13px; cursor:pointer; padding:9px 16px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-dim); background:rgba(255,255,255,0.015); transition:.2s; }
+  .stance-opt:hover { border-color:var(--line-bright); }
+  .stance-opt[aria-pressed="true"] { color:var(--ink); border-color:var(--line-bright); background:rgba(179,156,255,0.10); }
+  .stance-opt:focus-visible { outline:2px solid var(--line-bright); outline-offset:2px; }
+
+  /* ---------- custom lens ---------- */
+  .chip-add { border-style:dashed; color:var(--ink-faint); }
+  .chip-add:hover { color:var(--ink); }
+  .chip .chip-edit { margin-left:2px; opacity:.5; font-weight:600; cursor:pointer; padding:0 3px; border-radius:6px; }
+  .chip .chip-edit:hover, .chip .chip-edit:focus-visible { opacity:1; outline:1px solid var(--line-bright); }
+  .swatches { display:flex; gap:10px; margin-top:4px; flex-wrap:wrap; }
+  .swatch { width:30px; height:30px; border-radius:50%; border:1px solid var(--line);
+    background:radial-gradient(circle, var(--lc), transparent 72%); cursor:pointer; opacity:.55; transition:.2s; }
+  .swatch[aria-checked="true"] { opacity:1; border-color:var(--lc); box-shadow:0 0 12px var(--lc); }
+  .swatch:focus-visible { outline:2px solid var(--lc); outline-offset:2px; }
+  .modal textarea#lensDesc { width:100%; min-height:64px; resize:none; border:1px solid var(--line-bright);
+    background:rgba(0,0,0,0.35); color:var(--ink); border-radius:12px; padding:11px 13px; font-family:var(--sans); font-size:14px; outline:0; }
+  .modal textarea#lensDesc:focus { border-color:rgba(179,156,255,0.5); }
+
+  /* ---------- go deeper (single-voice dialogue inside a card) ---------- */
+  .deeper-toggle { margin-top:14px; font-family:var(--sans); font-size:12px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--ink-faint); background:transparent; border:0; cursor:pointer; padding:4px 0; transition:.2s; display:inline-flex; align-items:center; gap:7px; }
+  .deeper-toggle:hover, .deeper-toggle:focus-visible { color:var(--lc); outline:none; }
+  .deeper-toggle:focus-visible { text-decoration:underline; }
+  .deeper-toggle::after { content:''; width:5px; height:5px; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor; transform:rotate(45deg); transition:.2s; }
+  .deeper-toggle[aria-expanded="true"]::after { transform:rotate(-135deg); }
+  .lens-thread { margin-top:8px; border-top:1px solid var(--line); padding-top:14px; display:flex; flex-direction:column; gap:12px; }
+  .lens-thread[hidden] { display:none; }
+  .turn { font-size:14.5px; line-height:1.55; }
+  .turn.part { font-family:var(--serif); font-weight:300; color:var(--ink); }
+  .turn.part .ask { color:var(--lc); font-weight:600; margin-right:8px; }
+  .turn.you { color:var(--ink-dim); padding-left:14px; border-left:2px solid var(--line-bright); }
+  .turn.you .who { display:block; font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:3px; }
+  .turn.thinking { color:var(--ink-faint); font-style:italic; }
+  .turn.closer { color:var(--ink-dim); font-style:italic; }
+  .deeper-reply { display:flex; flex-direction:column; gap:9px; }
+  .deeper-reply textarea { width:100%; min-height:54px; resize:none; border:1px solid var(--line-bright); background:rgba(0,0,0,0.25);
+    color:var(--ink); border-radius:12px; padding:11px 13px; font-family:var(--sans); font-size:14px; outline:0; }
+  .deeper-reply textarea:focus { border-color:var(--lc); }
+  .deeper-send { align-self:flex-end; font-family:var(--sans); font-weight:600; font-size:13px; color:#14101f; border:0; cursor:pointer;
+    padding:9px 16px; border-radius:11px; background:var(--lc); opacity:.92; }
+  .deeper-send:hover { opacity:1; } .deeper-send:disabled { opacity:.5; cursor:progress; }
+  .deeper-send:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+
   /* ---------- respect reduced motion (calm + accessible) ---------- */
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior:auto; }
@@ -412,6 +461,15 @@
         </div>
       </div>
 
+      <div class="stance">
+        <div class="label">What would help right now?</div>
+        <div class="stance-opts" id="stanceOpts" role="group" aria-label="What would help right now?">
+          <button class="stance-opt" data-stance="witness" aria-pressed="false">Just be heard</button>
+          <button class="stance-opt" data-stance="explore" aria-pressed="true">See it differently</button>
+          <button class="stance-opt" data-stance="decide" aria-pressed="false">Work toward a decision</button>
+        </div>
+      </div>
+
       <div class="lenses-pick">
         <div class="label">Refract through</div>
         <div class="chips" id="chips"></div>
@@ -450,7 +508,7 @@
   <section class="result" id="result">
     <div class="notice info" id="resultNotice" style="margin-bottom:22px;"></div>
 
-    <div class="care" id="carePanel">
+    <div class="care" id="carePanel" aria-live="assertive">
       <div class="care-head">
         <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 20S3.5 14.5 3.5 8.8C3.5 6 5.6 4.2 7.8 4.2c1.8 0 3 1.1 4.2 2.7 1.2-1.6 2.4-2.7 4.2-2.7 2.2 0 4.3 1.8 4.3 4.6C20.5 14.5 12 20 12 20z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span>
         <span class="h" id="careHead"></span>
@@ -478,6 +536,7 @@
     </div>
 
     <div class="lens-grid" id="lensGrid"></div>
+    <div id="deeperLive" class="sr" aria-live="polite"></div>
 
     <div class="synthesis" id="synthesis">
       <div class="syn-label"><span class="spec"></span> what the light reveals</div>
@@ -638,6 +697,29 @@
   </div>
 </div>
 
+<!-- ============ ADD/EDIT LENS MODAL ============ -->
+<div class="modal-bg" id="lensModal" role="dialog" aria-modal="true" aria-labelledby="lensModalTitle">
+  <div class="modal">
+    <h2 id="lensModalTitle">Add a lens</h2>
+    <p class="m-sub">A perspective already inside you — a person, a part, a future self. Prism voices every lens as a part of you that means well.</p>
+    <label for="lensName">Name</label>
+    <input type="text" id="lensName" maxlength="32" autocomplete="off" placeholder="e.g. My grandmother, Me at 80, The friend I lost" />
+    <label for="lensDesc" style="margin-top:16px;">How this part sees things</label>
+    <textarea id="lensDesc" maxlength="160" placeholder="What would this voice notice or care about?"></textarea>
+    <div style="display:flex; justify-content:flex-end;"><span id="lensDescCount" class="hint">0/160</span></div>
+    <label style="margin-top:14px;">Color</label>
+    <div id="lensColors" class="swatches" role="radiogroup" aria-label="Lens color"></div>
+    <div class="notice" id="lensErr" style="margin-top:14px;" aria-live="polite"></div>
+    <div class="modal-actions" style="justify-content:space-between;">
+      <button class="ghost-btn" id="lensDelete" hidden>Delete</button>
+      <div style="display:flex; gap:10px;">
+        <button class="ghost-btn" id="lensCancel">Cancel</button>
+        <button class="refract-btn" id="lensSave">Save lens</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ============================================================
    PRISM — refract a situation through chosen perspectives.
@@ -677,28 +759,146 @@ const EXAMPLES = [
 let selected = new Set(DEFAULT_SELECTED);
 const $ = id => document.getElementById(id);
 
+/* ---------- lenses: built-in + custom ---------- */
+const BUILTIN_LENSES = LENSES;
+const CUSTOM_STORE = "prism_lenses";
+const MAX_CUSTOM = 8;
+const GENERIC_GLYPH = '<svg viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.4"/><path d="M11 3v16M3 11h16" stroke="currentColor" stroke-width="1" opacity=".5"/></svg>';
+const SPECTRUM = [
+  {v:"var(--c-future)",name:"Violet"},{v:"var(--c-mentor)",name:"Amber"},
+  {v:"var(--c-skeptic)",name:"Cyan"},{v:"var(--c-values)",name:"Rose"},
+  {v:"var(--c-child)",name:"Green"},{v:"var(--c-rival)",name:"Coral"},
+];
+function loadCustomLenses(){ try { const a=JSON.parse(localStorage.getItem(CUSTOM_STORE)||"[]"); return Array.isArray(a)?a.map(l=>({...l,custom:true})):[]; } catch(_){ return []; } }
+function saveCustomLenses(arr){ try { localStorage.setItem(CUSTOM_STORE, JSON.stringify(arr.slice(0,MAX_CUSTOM))); } catch(_){ showLensErr("Couldn't save on this device."); } }
+function allLenses(){ return BUILTIN_LENSES.concat(loadCustomLenses()); }
+function lensMeta(id){
+  return allLenses().find(l=>l.id===id)
+      || (current && current.customMeta && current.customMeta.find(c=>c.id===id))
+      || null;
+}
+
 /* ---------- build lens chips ---------- */
 const chips = $("chips");
-LENSES.forEach(l => {
+function buildChips(){
+  chips.innerHTML = "";
+  allLenses().forEach(makeChip);
+  chips.appendChild(addLensChip());
+}
+function makeChip(l){
   const b = document.createElement("button");
   b.className = "chip"; b.style.setProperty("--lc", l.color);
-  b.setAttribute("aria-pressed", selected.has(l.id));
-  b.dataset.id = l.id;
-  b.innerHTML = `<span class="dot"></span>${l.name}`;
-  b.title = l.desc;
-  b.addEventListener("click", () => {
-    if (selected.has(l.id)) {
-      if (selected.size <= 2) { flashHint("Keep at least two perspectives — refraction needs contrast."); return; }
-      selected.delete(l.id);
-    } else {
-      if (selected.size >= 4) { flashHint("Four perspectives is the sweet spot. Deselect one first."); return; }
-      selected.add(l.id);
-    }
-    b.setAttribute("aria-pressed", selected.has(l.id));
-  });
+  b.setAttribute("aria-pressed", selected.has(l.id)); b.dataset.id = l.id;
+  b.title = l.desc || l.name;
+  b.innerHTML = `<span class="dot"></span>${esc(l.name)}`;   // esc — custom names are user text
+  if (l.custom){
+    const e = document.createElement("span");
+    e.className="chip-edit"; e.tabIndex=0; e.setAttribute("role","button");
+    e.setAttribute("aria-label","Edit lens "+l.name); e.textContent="⋯";
+    e.addEventListener("click", ev=>{ ev.stopPropagation(); openLensModal(l); });
+    e.addEventListener("keydown", ev=>{ if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); ev.stopPropagation(); openLensModal(l); } });
+    b.appendChild(e);
+  }
+  b.addEventListener("click", () => toggleSelect(l.id, b));
   chips.appendChild(b);
-});
+}
+function toggleSelect(id, b){
+  if (selected.has(id)){
+    if (selected.size<=2){ flashHint("Keep at least two perspectives — refraction needs contrast."); return; }
+    selected.delete(id);
+  } else {
+    if (selected.size>=4){ flashHint("Four perspectives is the sweet spot. Deselect one first."); return; }
+    selected.add(id);
+  }
+  b.setAttribute("aria-pressed", selected.has(id));
+}
+function addLensChip(){
+  if (loadCustomLenses().length >= MAX_CUSTOM){
+    const span=document.createElement("span"); span.className="hint";
+    span.textContent="Up to eight lenses — edit or remove one to add another."; return span;
+  }
+  const b=document.createElement("button"); b.className="chip chip-add";
+  b.textContent="+ Add a lens"; b.addEventListener("click", ()=>openLensModal(null)); return b;
+}
 function flashHint(msg){ const h=$("charhint"); const old=h.textContent; h.textContent=msg; h.style.color="var(--c-mentor)"; setTimeout(()=>{h.textContent=old;h.style.color="";},2600); }
+buildChips();
+
+/* ---------- add / edit custom lens ---------- */
+let editingId = null, pickedColor = SPECTRUM[0].v, _reframeSeen = false;
+const SELF_ATTACK = /\b(worthless|hate myself|i'?m stupid|pathetic|kill (myself|me)|hurt myself|loser|nobody loves|i'?m nothing|disgusting)\b/i;
+function showLensErr(m){ const e=$("lensErr"); e.textContent=m; e.classList.add("show"); }
+function clearLensErr(){ const e=$("lensErr"); e.textContent=""; e.classList.remove("show"); }
+function defaultColor(){ const used=loadCustomLenses().map(l=>l.color); return (SPECTRUM.find(s=>!used.includes(s.v))||SPECTRUM[0]).v; }
+function renderSwatches(){
+  const box=$("lensColors"); box.innerHTML="";
+  SPECTRUM.forEach(s=>{
+    const b=document.createElement("button"); b.type="button"; b.className="swatch";
+    b.setAttribute("role","radio"); b.style.setProperty("--lc", s.v); b.dataset.color=s.v;
+    b.setAttribute("aria-label", s.name); b.setAttribute("aria-checked", s.v===pickedColor?"true":"false");
+    b.tabIndex = (s.v===pickedColor)?0:-1;
+    b.addEventListener("click", ()=>{ pickedColor=s.v; renderSwatches(); });
+    box.appendChild(b);
+  });
+}
+function openLensModal(lens){
+  clearLensErr(); _reframeSeen=false;
+  if (lens){
+    editingId=lens.id; $("lensModalTitle").textContent="Edit lens";
+    $("lensName").value=lens.name; $("lensDesc").value=lens.desc; pickedColor=lens.color; $("lensDelete").hidden=false;
+  } else {
+    editingId=null; $("lensModalTitle").textContent="Add a lens";
+    $("lensName").value=""; $("lensDesc").value=""; pickedColor=defaultColor(); $("lensDelete").hidden=true;
+  }
+  $("lensDescCount").textContent = $("lensDesc").value.length+"/160";
+  renderSwatches(); openModal("lensModal");
+}
+$("lensCancel").addEventListener("click", ()=>closeModal("lensModal"));
+$("lensDesc").addEventListener("input", e=>{
+  const n=e.target.value.length, c=$("lensDescCount");
+  c.textContent=n+"/160"; c.style.color = n>140 ? "var(--c-mentor)" : "";
+});
+function validateLens(name, desc){
+  if (!name || !desc) return "Give your lens a name and a short description.";
+  const dup = allLenses().some(l=>l.id!==editingId && (l.name||"").trim().toLowerCase()===name.trim().toLowerCase());
+  if (dup) return "You already have a lens by that name — pick another.";
+  return null;
+}
+$("lensSave").addEventListener("click", ()=>{
+  const name=$("lensName").value.trim(), desc=$("lensDesc").value.trim();
+  clearLensErr();
+  const err=validateLens(name,desc);
+  if (err){ showLensErr(err); $("lensName").focus(); return; }
+  if (SELF_ATTACK.test(name+" "+desc) && !_reframeSeen){
+    _reframeSeen=true;
+    showLensErr("Prism voices every part as one that means well — this will be heard with care, never cruelty. Save again to add it.");
+    return;
+  }
+  const list = loadCustomLenses();
+  if (editingId){
+    saveCustomLenses(list.map(l=>l.id===editingId ? {...l, name, desc, color:pickedColor} : l));
+  } else {
+    if (list.length>=MAX_CUSTOM){ showLensErr("You can keep up to eight lenses."); return; }
+    const obj = { id:"custom-"+Date.now().toString(36), name, desc, color:pickedColor, custom:true, created:Date.now() };
+    saveCustomLenses(list.concat(obj));
+    if (selected.size<4) selected.add(obj.id);
+  }
+  buildChips(); closeModal("lensModal");
+});
+$("lensDelete").addEventListener("click", ()=>{
+  if (!editingId) return;
+  if (!confirm("Delete this lens?")) return;
+  saveCustomLenses(loadCustomLenses().filter(l=>l.id!==editingId));
+  selected.delete(editingId);
+  buildChips(); closeModal("lensModal");
+});
+
+/* ---------- stance: what would help right now ---------- */
+let stance = "explore";
+const STANCE_LABEL = { witness:"just be heard, with no pushing", explore:"see it from new angles", decide:"get clearer about a decision (without being told what to do)" };
+document.querySelectorAll("#stanceOpts .stance-opt").forEach(btn => btn.addEventListener("click", () => {
+  stance = btn.dataset.stance;
+  document.querySelectorAll("#stanceOpts .stance-opt").forEach(b => b.setAttribute("aria-pressed", b===btn ? "true":"false"));
+}));
 
 /* ---------- about + share + resources modals ---------- */
 $("aboutBtn").addEventListener("click", () => openModal("aboutModal"));
@@ -718,24 +918,36 @@ $("closePrivacy").addEventListener("click", () => closeModal("privacyModal"));
 $("consentToggle").addEventListener("click", () => setConsent(!getConsent()));
 $("consentToggle").addEventListener("keydown", e => { if (e.key===" "||e.key==="Enter"){ e.preventDefault(); setConsent(!getConsent()); } });
 $("exportData").addEventListener("click", () => {
-  const data = { product:"Prism", exportedAt:new Date().toISOString(), dataUsageConsent:getConsent(), reflections:loadHist() };
+  const data = { product:"Prism", exportedAt:new Date().toISOString(), dataUsageConsent:getConsent(), reflections:loadHist(), customLenses:loadCustomLenses() };
   const blob = new Blob([JSON.stringify(data,null,2)], { type:"application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob); a.download = "prism-my-data.json";
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
 });
 $("deleteData").addEventListener("click", () => {
-  if (!confirm("Delete every reflection saved on this device, along with your settings? This can't be undone.")) return;
-  [HIST_STORE, CONSENT_STORE, "prism_feedback_given"].forEach(k => localStorage.removeItem(k));
+  if (!confirm("Delete every reflection and custom lens saved on this device, along with your settings? This can't be undone.")) return;
+  [HIST_STORE, CONSENT_STORE, CUSTOM_STORE, "prism_feedback_given"].forEach(k => localStorage.removeItem(k));
+  selected = new Set(DEFAULT_SELECTED);
+  buildChips();
   renderConsent();
   const b=$("deleteData"); b.textContent="Deleted ✓"; setTimeout(()=>b.textContent="Delete everything", 1900);
 });
 renderConsent();
 
-/* ---------- modals ---------- */
-function openModal(id){ $(id).classList.add("show"); }
-function closeModal(id){ $(id).classList.remove("show"); }
+/* ---------- modals (focus-managed + Escape) ---------- */
+let _modalReturnFocus = null;
+function openModal(id){
+  _modalReturnFocus = document.activeElement;
+  const m = $(id); m.classList.add("show");
+  const f = m.querySelector('input,textarea,button,[tabindex]');
+  if (f) setTimeout(()=>f.focus(), 30);
+}
+function closeModal(id){
+  $(id).classList.remove("show");
+  if (_modalReturnFocus && _modalReturnFocus.focus) { try { _modalReturnFocus.focus(); } catch(_){} }
+}
 document.querySelectorAll(".modal-bg").forEach(bg => bg.addEventListener("click", e => { if (e.target === bg) bg.classList.remove("show"); }));
+document.addEventListener("keydown", e => { if (e.key === "Escape") document.querySelectorAll(".modal-bg.show").forEach(bg => bg.classList.remove("show")); });
 $("closeHist").addEventListener("click", () => closeModal("historyModal"));
 
 /* ---------- examples ---------- */
@@ -758,16 +970,17 @@ async function refract(){
   hideNotice();
   if (text.length < 12) { showNotice("Give it a little more — a sentence or two about what's actually going on.", false); $("situation").focus(); return; }
 
-  const chosen = LENSES.filter(l => selected.has(l.id));
+  const chosen = allLenses().filter(l => selected.has(l.id));
+  if (chosen.length < 2) { showNotice("Pick at least two perspectives to refract through.", false); return; }
   setLoading(true);
   current = null;
 
   let data;
   try {
-    data = await callRefract(text, chosen);          // live: Claude via /api/refract
+    data = await callRefract(text, chosen, stance);  // live: Claude via /api/refract
   } catch (err) {
     console.warn("Live refraction unavailable, using example mode:", err.message);
-    data = await exampleReflect(text, chosen);        // graceful fallback
+    data = await exampleReflect(text, chosen, stance); // graceful fallback
     if (err.code === "BACKEND_DOWN") {
       flashAfterRender("Showing example mode — the live AI backend isn't reachable from here. It runs once deployed.");
     } else {
@@ -777,8 +990,12 @@ async function refract(){
   // Safety: combine the model's read with a client-side scan (belt and suspenders).
   data.care = mergeCare(detectDistress(text), data.care);
 
+  // cosmetic meta so custom lens names/colors survive a local re-open
+  const customMeta = chosen.filter(l => l.custom).map(({id,name,color}) => ({id,name,color}));
+
   current = { situation: text, lenses: data.lenses, synthesis: data.synthesis,
-              care: data.care, when: Date.now(), lensIds: chosen.map(l=>l.id) };
+              care: data.care, stance, when: Date.now(), lensIds: chosen.map(l=>l.id),
+              customMeta };
   renderResult(text, chosen, data);
 }
 let _afterRenderNotice = null;
@@ -787,8 +1004,8 @@ function flashAfterRender(msg){ _afterRenderNotice = msg; }
 /* ---------- safety / care ---------- */
 function detectDistress(text){
   const t = " " + String(text).toLowerCase().replace(/\s+/g," ") + " ";
-  const crisis = /(kill (myself|me)\b|killing myself|end (my|this) life|ending my life|take my (own )?life|want to die|wanna die|don'?t want to (be here|live|wake up|exist)|better off (dead|without me)|no reason to (live|go on|be here)|can'?t go on|can'?t do this anymore|suicid|harm myself|hurt myself|cut myself|end it all|not want to be alive)/;
-  const struggling = /(hopeless|worthless|empty inside|feel numb|feeling numb|can'?t cope|breaking down|falling apart|so depressed|really depressed|severely depressed|hate myself|giving up on|no point in|can'?t take (it|this)|drowning|unbearable|nothing matters)/;
+  const crisis = /(kill (myself|me)\b|killing myself|end (my|this) life|ending my life|take my (own )?life|want to die|wanna die|want to be dead|wish i (was|were|wasn'?t|weren'?t) (dead|here|alive|gone|around)|don'?t want to (be here|be alive|live|wake up|exist|go on)|not want to (be here|be alive|live|exist)|better off (dead|without me|if i wasn'?t here|if i weren'?t here)|no reason to (live|go on|be here)|nothing to live for|can'?t go on|can'?t do this anymore|can'?t keep going|suicid|harm myself|hurt myself|cut myself|end it all|rather (be dead|not be here|not exist|not wake up))/;
+  const struggling = /(hopeless|worthless|empty inside|feel numb|feeling numb|can'?t cope|breaking down|falling apart|so depressed|really depressed|severely depressed|hate myself|giving up on|no point in|can'?t take (it|this)|drowning|unbearable|nothing matters|nothing left|can'?t do this)/;
   if (crisis.test(t)) return "crisis";
   if (struggling.test(t)) return "struggling";
   return "none";
@@ -853,7 +1070,7 @@ async function sendFeedback(){
 }
 
 /* ---------- live refraction via our serverless proxy ---------- */
-async function callRefract(situation, chosen){
+async function callRefract(situation, chosen, stance){
   let res;
   try {
     res = await fetch("/api/refract", {
@@ -861,6 +1078,7 @@ async function callRefract(situation, chosen){
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         situation,
+        stance: stance || "explore",
         lenses: chosen.map(l => ({ id: l.id, name: l.name, desc: l.desc }))
       })
     });
@@ -887,7 +1105,7 @@ async function callRefract(situation, chosen){
 /* ---------- example mode (no key) ---------- *
    Hand-written, perspective-true reflections so the experience is real
    to demo offline. Live mode (Claude) tailors to any input.            */
-async function exampleReflect(situation, chosen){
+async function exampleReflect(situation, chosen, stance){
   await wait(1400);
   const lvl = detectDistress(situation);
   if (lvl !== "none") {
@@ -907,6 +1125,28 @@ async function exampleReflect(situation, chosen){
     };
   }
   const snippet = firstClause(situation);
+  const generic = (l) => ({
+    reflection: `Seen through ${l.name}, "${snippet}" looks less like a verdict and more like something still in motion — and the part of you that named this lens is trying to look out for you.`,
+    question: `If ${l.name} could say one true, kind thing about this, what would it be?`
+  });
+
+  if (stance === "witness") {
+    // "Just be heard" — witnessing, no challenge, questions optional/gentle.
+    const heard = {
+      future: { reflection:`I'm just here with this for now. "${snippet}" — that's a lot to be carrying.`, question:null },
+      mentor: { reflection:`You don't have to make this make sense yet. I hear you, and what you feel is allowed.`, question:null },
+      skeptic:{ reflection:`No challenge from me right now — I'm just listening to what you said.`, question:null },
+      values: { reflection:`Whatever you decide, it doesn't change that this matters to you — and so do you.`, question:null },
+      child:  { reflection:`The younger you would just want to sit close while you feel this.`, question:null },
+      rival:  { reflection:`I'm not going to push. I'm just glad you said it out loud.`, question:null }
+    };
+    return {
+      lenses: chosen.map(l => ({ id:l.id, ...(heard[l.id] || { reflection:`I hear you. "${snippet}" — thank you for putting it into words.`, question:null }) })),
+      synthesis: `You said it, and it was heard. Nothing here needs solving right now — sometimes being witnessed is the whole thing. Stay with it as long as you need.`,
+      care: { level:"none", message:"" }
+    };
+  }
+
   const bank = {
     future: {
       reflection: `Looking back, this won't be the chapter that defined you — but how you treated yourself while deciding it might be.`,
@@ -933,9 +1173,12 @@ async function exampleReflect(situation, chosen){
       question: `What are you hoping someone else will decide so you don't have to?`
     }
   };
+  const synth = stance === "decide"
+    ? `Underneath every angle is one real fork: two things you care about that can't both win here. Naming that trade honestly — not picking it for you — is what makes the choice yours.`
+    : `Every angle keeps circling the same knot: you're treating a feeling as a problem to be solved, when it might be information to be heard. The question isn't only what to do — it's what this is trying to tell you about what you need.`;
   return {
-    lenses: chosen.map(l => ({ id:l.id, ...bank[l.id] })),
-    synthesis: `Every angle keeps circling the same knot: you're treating a feeling as a problem to be solved, when it might be information to be heard. The question isn't only what to do — it's what this is trying to tell you about what you need.`
+    lenses: chosen.map(l => ({ id:l.id, ...(bank[l.id] || generic(l)) })),
+    synthesis: synth
   };
 }
 function firstClause(s){ const c=s.replace(/\s+/g," ").trim().split(/[,.;:—]/)[0].trim(); return c.length>64?c.slice(0,64).trim()+"…":c; }
@@ -960,17 +1203,24 @@ function renderResult(text, chosen, data){
   resetFeedback();
   $("echo").textContent = text;
   const grid = $("lensGrid"); grid.innerHTML="";
+  bindDeeper(grid);
   data.lenses.forEach((entry, i) => {
-    const meta = LENSES.find(l => l.id === entry.id) || {};
+    const meta = lensMeta(entry.id) || { name: entry.id };
+    const color = meta.color || "var(--c-future)";
+    const nm = esc(meta.name || entry.id);
     const card = document.createElement("div");
-    card.className = "lens-card"; card.style.setProperty("--lc", meta.color || "#aaa");
+    card.className = "lens-card"; card.style.setProperty("--lc", color);
+    const qHtml = entry.question
+      ? `<div class="lens-question"><span class="ask">asks</span><span>${esc(entry.question)}</span></div>` : "";
     card.innerHTML = `
       <div class="lens-name">
-        <span class="glyph" style="color:${cssVar(meta.color)}">${meta.glyph||""}</span>
-        <span class="nm">${meta.name||entry.id}</span>
+        <span class="glyph" style="color:${cssVar(color)}">${meta.glyph || GENERIC_GLYPH}</span>
+        <span class="nm">${nm}</span>
       </div>
       <div class="lens-reflection">${esc(entry.reflection)}</div>
-      <div class="lens-question"><span class="ask">asks</span><span>${esc(entry.question)}</span></div>`;
+      ${qHtml}
+      <button class="deeper-toggle" data-id="${esc(entry.id)}" aria-expanded="false" aria-controls="thread-${esc(entry.id)}">Go deeper with ${nm}</button>
+      <div class="lens-thread" id="thread-${esc(entry.id)}" hidden></div>`;
     grid.appendChild(card);
     setTimeout(()=>card.classList.add("in"), 120 + i*150);
   });
@@ -987,6 +1237,139 @@ function renderResult(text, chosen, data){
 }
 function cssVar(v){ if(!v) return "#aaa"; const m=v.match(/var\((--[\w-]+)\)/); return m?getComputedStyle(document.documentElement).getPropertyValue(m[1]).trim():v; }
 function esc(s){ const d=document.createElement("div"); d.textContent=s||""; return d.innerHTML; }
+
+/* ---------- go deeper: a short, single-voice dialogue with one part ---------- */
+const MAX_DEEPER_TURNS = 3;
+function bindDeeper(grid){
+  if (grid._deeperBound) return;
+  grid.addEventListener("click", e => {
+    const t = e.target.closest(".deeper-toggle"); if (t){ toggleDeeper(t.dataset.id); return; }
+    const s = e.target.closest(".deeper-send");   if (s){ sendDeeper(s.dataset.id); }
+  });
+  grid.addEventListener("keydown", e => {
+    const ta = e.target.closest(".deeper-reply textarea");
+    if (ta && (e.metaKey||e.ctrlKey) && e.key === "Enter"){ e.preventDefault(); sendDeeper(ta.dataset.id); }
+  });
+  grid._deeperBound = true;
+}
+function lensEntry(id){ return current && current.lenses && current.lenses.find(e => e.id === id); }
+function partTurns(thread){ return thread.filter(t => t.role === "part").length; }
+function rankCare(c){ return {none:0, struggling:1, crisis:2}[(c && c.level) || "none"]; }
+function announce(msg){ const l=$("deeperLive"); if(l){ l.textContent=""; setTimeout(()=>l.textContent=msg, 30); } }
+
+function toggleDeeper(id){
+  const entry = lensEntry(id); if(!entry) return;
+  const box = $("thread-"+id); if(!box) return;
+  const btn = box.previousElementSibling;
+  const opening = box.hidden;
+  box.hidden = !opening; if(btn) btn.setAttribute("aria-expanded", opening ? "true" : "false");
+  if (opening){
+    if (!entry.thread) entry.thread = [{ role:"part", text:entry.reflection, question:entry.question || null }];
+    renderThread(id);
+    const ta = box.querySelector(".deeper-reply textarea"); if(ta) ta.focus();
+  }
+}
+
+function renderThread(id){
+  const entry = lensEntry(id); const box = $("thread-"+id); if(!entry || !box) return;
+  const meta = lensMeta(id) || {}; const nm = esc(meta.name || id);
+  const crisis = entry.thread.some(t => t.care && t.care.level === "crisis");
+  let html = "";
+  entry.thread.forEach(t => {
+    if (t.role === "part"){
+      html += `<div class="turn part">${esc(t.text)}`;
+      if (t.question) html += `<span style="display:block;margin-top:8px;color:var(--lc)"><span class="ask">asks</span> ${esc(t.question)}</span>`;
+      html += `</div>`;
+    } else {
+      html += `<div class="turn you"><span class="who">You</span>${esc(t.text)}</div>`;
+    }
+  });
+  const capped = partTurns(entry.thread) >= MAX_DEEPER_TURNS;
+  const readonly = current && current._readonly;
+  if (capped || crisis){
+    html += `<div class="turn closer">This feels like a good place to sit with it for a while.</div>`;
+  } else if (!readonly){
+    html += `<div class="deeper-reply">
+      <textarea data-id="${esc(id)}" placeholder="Say more to ${nm}…" maxlength="1000" aria-label="Your reply to ${nm}"></textarea>
+      <button class="deeper-send" data-id="${esc(id)}">Reply</button></div>`;
+  }
+  box.innerHTML = html;
+}
+
+async function sendDeeper(id){
+  const entry = lensEntry(id); const box = $("thread-"+id); if(!entry || !box) return;
+  const ta = box.querySelector(".deeper-reply textarea"); if(!ta) return;
+  const text = ta.value.trim();
+  if (text.length < 2){ ta.focus(); return; }
+  entry.thread.push({ role:"you", text });
+  renderThread(id);
+  const rb = box.querySelector(".deeper-reply"); if(rb) rb.remove();
+  const thinking = document.createElement("div"); thinking.className="turn part thinking"; thinking.textContent="…";
+  box.appendChild(thinking);
+  announce(((lensMeta(id)||{}).name || "This part") + " is reflecting…");
+
+  let reply;
+  try { reply = await callDeepen(id); }
+  catch(_){ reply = await exampleDeepen(id); }
+
+  // SAFETY per turn: re-scan the user reply, merge with model care, never de-escalate
+  const merged = mergeCare(detectDistress(text), reply.care);
+  const prior = entry.thread.reduce((m,t)=>Math.max(m, rankCare(t.care)), rankCare(current.care));
+  const finalCare = rankCare(merged) >= prior ? merged : { level:["none","struggling","crisis"][prior], message: merged.message };
+  entry.thread.push({ role:"part", text:reply.reply, question:(finalCare.level==="crisis" ? null : reply.question), care:finalCare });
+
+  if (rankCare(finalCare) >= rankCare(current.care)) { current.care = finalCare; renderCare(current.care); }
+  renderThread(id);
+  announce(((lensMeta(id)||{}).name || "This part") + " replied.");
+  const nta = box.querySelector(".deeper-reply textarea"); if(nta) nta.focus();
+}
+
+async function callDeepen(id){
+  const entry = lensEntry(id); const meta = lensMeta(id) || {};
+  const messages = entry.thread.map(t => ({
+    role: t.role === "part" ? "assistant" : "user",
+    text: (t.role === "part" && t.question) ? `${t.text}\n\n${t.question}` : t.text
+  }));
+  let res;
+  try {
+    res = await fetch("/api/deepen", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ situation: current.situation, lens:{ id: meta.id||id, name: meta.name||id, desc: meta.desc||"" }, messages })
+    });
+  } catch(_){ const e=new Error("Backend unreachable."); e.code="BACKEND_DOWN"; throw e; }
+  if (res.status===404 || res.status===405){ const e=new Error("No backend."); e.code="BACKEND_DOWN"; throw e; }
+  let json; try { json = await res.json(); } catch(_){ const e=new Error("Backend unreachable."); e.code="BACKEND_DOWN"; throw e; }
+  if (!res.ok){
+    if (res.status===501){ const e=new Error("AI not configured."); e.code="BACKEND_DOWN"; throw e; }
+    throw new Error(json.error || `Deepen failed (${res.status}).`);
+  }
+  return {
+    reply: String(json.reply||""),
+    question: json.question || null,
+    care: (json.care && ["none","struggling","crisis"].includes(json.care.level)) ? json.care : {level:"none",message:""}
+  };
+}
+
+async function exampleDeepen(id){
+  await wait(1100);
+  const entry = lensEntry(id); const meta = lensMeta(id) || {};
+  const last = [...entry.thread].reverse().find(t => t.role === "you");
+  const lvl = detectDistress(last ? last.text : "");
+  if (lvl !== "none"){
+    return { reply:"Thank you for trusting me with that. You don't have to hold it alone, and nothing you've said changes that you deserve care.", question:null, care:{level:lvl, message:""} };
+  }
+  const snip = firstClause(last ? last.text : "");
+  const bank = {
+    future:{ r:`From further on, "${snip}" reads less like a wall and more like a turn.`, q:`What would the version of you who came through this want you to remember?` },
+    mentor:{ r:`I hear "${snip}". That's honest, and it matters that you said it.`, q:`What's the smallest true next step you'd respect yourself for?` },
+    skeptic:{ r:`So when you say "${snip}" — is that the whole of it, or the safest version?`, q:`What would you have to admit if that weren't quite true?` },
+    values:{ r:`"${snip}" keeps pointing back to something you care about underneath.`, q:`Which value is quietly asking to be honored here?` },
+    child:{ r:`The younger you would hear "${snip}" simply.`, q:`What did you want, before you learned to want what's reasonable?` },
+    rival:{ r:`Real talk: "${snip}" — you're circling something you already half-know.`, q:`What are you hoping won't turn out to be true?` }
+  };
+  const b = bank[id] || { r:`Sitting with "${snip}", the part of you that named ${meta.name||"this lens"} is still listening.`, q:`What feels most true about it right now?` };
+  return { reply:b.r, question:b.q, care:{level:"none", message:""} };
+}
 
 function reset(){
   $("result").classList.remove("show");
@@ -1053,12 +1436,13 @@ async function loadReflectionById(id){
     const res = await fetch("/api/reflections?id=" + encodeURIComponent(id));
     if (!res.ok) return false;
     const item = await res.json();
+    item._readonly = true;            // a reflection opened from a shared link is view-only
     renderShared(item); return true;
   } catch(_){ return false; }
 }
 function renderShared(item){
   current = item;
-  const chosen = item.lenses.map(e => LENSES.find(l => l.id === e.id)).filter(Boolean);
+  const chosen = item.lenses.map(e => lensMeta(e.id) || {id:e.id, name:e.id}).filter(Boolean);
   _afterRenderNotice = null;
   renderResult(item.situation, chosen, item);
 }
@@ -1073,8 +1457,8 @@ function renderHist(){
     d.innerHTML=`<div class="ht">${esc(item.situation)}</div><div class="hm">${date} · ${item.lenses.length} perspectives</div>`;
     d.addEventListener("click", () => {
       closeModal("historyModal");
-      current=item;
-      const chosen=item.lenses.map(e=>LENSES.find(l=>l.id===e.id)).filter(Boolean);
+      current=item;                    // own-device item stays continuable (no _readonly)
+      const chosen=item.lenses.map(e=>lensMeta(e.id) || {id:e.id, name:e.id}).filter(Boolean);
       renderResult(item.situation, chosen, item);
     });
     list.appendChild(d);

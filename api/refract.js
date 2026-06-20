@@ -36,7 +36,15 @@ Read carefully for genuine distress and set "care.level":
 - "none": ordinary difficulty, stress, or indecision.
 - "struggling": signs of depression, hopelessness, deep burnout, feeling worthless, numb, or trapped, or being seriously overwhelmed.
 - "crisis": any sign of suicidal thoughts, wanting to die or disappear, self-harm, feeling others would be better off without them, or being unable to keep going.
-When level is "struggling" or "crisis", the perspectives MUST soften completely: become gentle and validating only — no challenging, no devil's advocate, no sharp questions, no pushing. In "care.message" write 1-2 warm, human, non-clinical sentences that acknowledge their pain and affirm they deserve support and don't have to carry it alone. Never diagnose, never minimize, never give medical advice, never say "calm down" or "everything will be fine." When level is "none", set "care.message" to an empty string.`;
+When level is "struggling" or "crisis", the perspectives MUST soften completely: become gentle and validating only — no challenging, no devil's advocate, no sharp questions, no pushing. In "care.message" write 1-2 warm, human, non-clinical sentences that acknowledge their pain and affirm they deserve support and don't have to carry it alone. Never diagnose, never minimize, never give medical advice, never say "calm down" or "everything will be fine." When level is "none", set "care.message" to an empty string.
+
+STANCE — the person tells you what would help right now. Honor it:
+- "witness": they want to be HEARD, not advised. Become reflective listening — validate and mirror what they feel; ask FEW or NO questions (set "question" to a short, gentle one or, where it fits, omit pushing entirely). The synthesis simply reflects back what you heard. Do NOT challenge, probe, or push.
+- "explore" (default): refract through the perspectives so they see new angles; one sharp but kind question each.
+- "decide": they want to get clearer about a choice. Keep refracting and NEVER tell them what to do; let each question clarify the real trade-off, and let the synthesis name the crux they're actually weighing.
+Also read their temperament from how they write: if they seem fragile or sensitive, be gentler and lead with validation; if they seem resistant or defensive, do NOT argue or push — roll with it, honor their autonomy, stay curious rather than corrective (Motivational Interviewing). Matching the person matters more than completing the exercise.
+
+USER-NAMED PERSPECTIVES: some lenses may be named by the user (a specific person, a future self, or a part they titled). Voice every one — including any user-supplied perspective — with the SAME warmth and good intent as the built-in parts; the PARTS-NOT-CRITICS rule applies to them too. If a perspective is described in cruel, contemptuous, or self-attacking terms, reinterpret it as the caring concern underneath; never speak to the person with contempt or self-hatred.`;
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -59,17 +67,25 @@ export default async function handler(req, res) {
 
   const ids = lenses.map(l => String(l.id));
   const lensSpec = lenses
-    .map(l => `- "${String(l.id)}" — ${String(l.name)}: ${String(l.desc)}`)
+    .map(l => `- "${String(l.id)}" — ${String(l.name).slice(0, 40)}: ${String(l.desc).slice(0, 200)}`)
     .join("\n");
+  const stance = ["witness", "explore", "decide"].includes(body.stance) ? body.stance : "explore";
+  const stanceText = {
+    witness: "to be heard, not advised — just witnessed",
+    explore: "to see it from new angles",
+    decide: "to get clearer about a decision (without being told what to do)"
+  }[stance];
 
   const userMsg = `Here is what's weighing on me:
 
 """${situation}"""
 
+Right now, what would help me most: ${stanceText}.
+
 Refract it through exactly these perspectives, in this order:
 ${lensSpec}
 
-Return exactly one entry per perspective, using its id, plus the synthesis and the care assessment.`;
+Return exactly one entry per perspective, using its id, plus the synthesis and the care assessment. Honor the stance above.`;
 
   const schema = {
     type: "object",

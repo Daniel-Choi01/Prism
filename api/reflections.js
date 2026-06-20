@@ -54,12 +54,28 @@ export default async function handler(req, res) {
     if (situation.length > 2000 || synthesis.length > 2000 || lenses.length > 6) {
       return res.status(400).json({ error: "Payload too large." });
     }
-    // sanitize lens entries
-    const cleanLenses = lenses.slice(0, 6).map(l => ({
-      id: String(l.id || ""),
-      reflection: String(l.reflection || "").slice(0, 800),
-      question: String(l.question || "").slice(0, 800)
-    }));
+    // sanitize lens entries (incl. an optional capped go-deeper thread)
+    const cleanLenses = lenses.slice(0, 6).map(l => {
+      const out = {
+        id: String(l.id || ""),
+        reflection: String(l.reflection || "").slice(0, 800),
+        question: String(l.question || "").slice(0, 800)
+      };
+      if (Array.isArray(l.thread)) {
+        out.thread = l.thread.slice(0, 8).map(t => {
+          const turn = {
+            role: t.role === "you" ? "you" : "part",
+            text: String(t.text || "").slice(0, 1000)
+          };
+          if (t.question) turn.question = String(t.question).slice(0, 800);
+          if (t.care && ["none", "struggling", "crisis"].includes(t.care.level)) {
+            turn.care = { level: t.care.level, message: String(t.care.message || "").slice(0, 400) };
+          }
+          return turn;
+        });
+      }
+      return out;
+    });
 
     try {
       const r = await fetch(base, {
