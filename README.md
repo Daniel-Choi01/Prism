@@ -27,6 +27,10 @@ first. Reflection, not resolution.
 - **Save & revisit** — every reflection can be saved to a private link you can open on any device.
 - **Private by design** — opt-in only (nothing is used to improve Prism unless you say so), export
   or delete your data anytime, and the AI key never touches the browser.
+- **Remembers you** — reflections are journaled privately on your device, and a **Patterns** view
+  surfaces what keeps surfacing across them (recurring themes, the lenses you reach for, an AI
+  "what keeps surfacing" read). New reflections that echo an old one say so. This is the core
+  difference from a one-off chat: a stateless LLM can answer once, but it can't see *you over time*.
 - **Listens back** — a gentle end-of-session feedback prompt; the rating + optional note (never your
   reflection content) help Prism improve.
 
@@ -80,6 +84,8 @@ prism/
    - `SUPABASE_URL`
    - `SUPABASE_SERVICE_ROLE_KEY`
 4. Deploy. Done.
+
+**Verify the wiring:** open `https://YOUR-SITE.vercel.app/api/health` — it reports (without exposing any secret) whether the Anthropic key and Supabase vars are present. `"ready": true` means you're fully connected.
 
 ### Local development
 ```bash
