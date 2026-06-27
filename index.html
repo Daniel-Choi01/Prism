@@ -1051,10 +1051,13 @@ function memoryContext(excludeWhen){
   return { past, themes };
 }
 
+let _busy = false;   // guards against double-submits to /api/converse
 async function converse(){
+  if (_busy) return;
   const text = $("situation").value.trim();
   hideNotice();
   if (text.length < 4) { showNotice("Tell me a little about what's on your mind.", false); $("situation").focus(); return; }
+  _busy = true;
   setLoading(true);
   current = null;
   const when = Date.now();
@@ -1075,12 +1078,14 @@ async function converse(){
   renderConvo(convo);
   cacheLocally(current);          // auto-journal — private, on-device; this is what makes memory possible
   maybeShowEcho({ situation:text, when });
+  _busy = false;
 }
 
 async function sendReply(){
-  if (!current || current._readonly) return;
+  if (_busy || !current || current._readonly) return;
   const ta = $("replyText"); const text = ta.value.trim();
   if (text.length < 2){ ta.focus(); return; }
+  _busy = true; $("replySend").disabled = true;
   current.turns.push({ role:"you", text });
   ta.value = "";
   renderConvo(current);
@@ -1102,6 +1107,7 @@ async function sendReply(){
   renderCare(current.care);
   cacheLocally(current);
   liveSay("Prism replied.");
+  _busy = false; $("replySend").disabled = false;
 }
 let _afterRenderNotice = null;
 function flashAfterRender(msg){ _afterRenderNotice = msg; }
@@ -1264,6 +1270,7 @@ function renderConvo(convo){
     setTimeout(()=>d.classList.add("in"), 40 + Math.min(i,8)*70);
   });
   $("convoReply").style.display = convo._readonly ? "none" : "";
+  $("deeperBtn").style.display = convo._readonly ? "none" : "";   // can't re-share a shared link
   $("replyText").value = "";
 
   const rn = $("resultNotice");
