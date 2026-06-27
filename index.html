@@ -650,6 +650,22 @@
   .bx-cycles { font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-faint); min-height:16px; margin-top:8px; }
   .bx-controls { display:flex; gap:11px; justify-content:center; align-items:center; margin-top:22px; flex-wrap:wrap; }
   .bx-hint { font-size:12px; color:var(--ink-faint); margin-top:16px; line-height:1.55; }
+  /* grounding (5-4-3-2-1) — the second calm tool */
+  .calm-switch { display:flex; gap:6px; justify-content:center; margin-bottom:18px; }
+  .calm-tab { font-family:var(--sans); font-size:12.5px; letter-spacing:0.04em; cursor:pointer; padding:8px 16px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-dim); background:rgba(255,255,255,0.015); transition:.2s; }
+  .calm-tab:hover { color:var(--ink); border-color:var(--line-bright); }
+  .calm-tab[aria-selected="true"] { color:var(--ink); border-color:rgba(179,156,255,0.5); background:rgba(179,156,255,0.10); }
+  .calm-tab:focus-visible { outline:2px solid var(--line-bright); outline-offset:2px; }
+  .gr-stage { text-align:center; padding:10px 0 4px; min-height:248px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; }
+  .gr-num { font-family:var(--serif); font-weight:300; font-size:84px; line-height:1; color:transparent;
+    background:linear-gradient(100deg,var(--s4),var(--s6)); -webkit-background-clip:text; background-clip:text; }
+  .gr-sense { font-family:var(--read); font-style:italic; font-size:23px; color:var(--ink); margin-top:6px; }
+  .gr-hint { font-size:13.5px; color:var(--ink-dim); max-width:360px; line-height:1.55; margin-top:8px; }
+  .gr-dots { display:flex; gap:8px; margin-top:20px; }
+  .gr-dots i { width:8px; height:8px; border-radius:50%; background:var(--line-bright); transition:.25s; }
+  .gr-dots i.on { background:var(--c-future); box-shadow:0 0 8px var(--c-future); transform:scale(1.25); }
+  .gr-dots i.done { background:var(--c-skeptic); }
 
   /* ============================================================
      RICHER PATTERNS — mood-over-time chart + theme bars.
@@ -1204,18 +1220,42 @@
 <!-- ============ BREATHE MODAL ============ -->
 <div class="modal-bg" id="breatheModal">
   <div class="modal breathe-modal">
-    <h2>Take a breath</h2>
-    <p class="m-sub">Box breathing — in for four, hold for four, out for four, hold for four. Follow the circle. A minute here can quiet a racing mind before you reflect.</p>
-    <div class="bx-stage">
-      <div class="bx-glow" aria-hidden="true"></div>
-      <div class="bx-orb" id="bxOrb"><span class="bx-count" id="bxCount">4</span></div>
+    <div class="calm-switch" role="tablist" aria-label="Calm tools">
+      <button class="calm-tab" id="calmTabBreathe" role="tab" aria-selected="true">Breathe</button>
+      <button class="calm-tab" id="calmTabGround" role="tab" aria-selected="false">Grounding</button>
     </div>
-    <div class="bx-phase" id="bxPhase">Breathe in</div>
-    <div class="bx-cycles" id="bxCycles"></div>
-    <div class="bx-controls">
-      <button class="refract-btn" id="bxToggle">Pause</button>
+
+    <div id="bxBreathe">
+      <h2>Take a breath</h2>
+      <p class="m-sub">Box breathing — in for four, hold for four, out for four, hold for four. Follow the circle. A minute here can quiet a racing mind before you reflect.</p>
+      <div class="bx-stage">
+        <div class="bx-glow" aria-hidden="true"></div>
+        <div class="bx-orb" id="bxOrb"><span class="bx-count" id="bxCount">4</span></div>
+      </div>
+      <div class="bx-phase" id="bxPhase">Breathe in</div>
+      <div class="bx-cycles" id="bxCycles"></div>
+      <div class="bx-controls">
+        <button class="refract-btn" id="bxToggle">Pause</button>
+      </div>
+      <p class="bx-hint">When you're ready, close this and come back to what you were holding. There's no rush.</p>
     </div>
-    <p class="bx-hint">When you're ready, close this and come back to what you were holding. There's no rush.</p>
+
+    <div id="bxGround" hidden>
+      <h2>Find your feet</h2>
+      <p class="m-sub">The 5-4-3-2-1 exercise — a gentle way back into your body and the present moment when your mind is spinning. Take each step slowly.</p>
+      <div class="gr-stage">
+        <div class="gr-num" id="grNum">5</div>
+        <div class="gr-sense" id="grSense">things you can see</div>
+        <div class="gr-hint" id="grHint">Look around and name them, slowly — out loud or in your head.</div>
+        <div class="gr-dots" id="grDots" aria-hidden="true"></div>
+      </div>
+      <div class="bx-controls">
+        <button class="ghost-btn" id="grBack">Back</button>
+        <button class="refract-btn" id="grNext">Next</button>
+      </div>
+      <p class="bx-hint">There's no right pace. When you've noticed each one, you're back here, now.</p>
+    </div>
+
     <div class="modal-actions">
       <button class="ghost-btn" id="closeBreathe">I feel steadier</button>
     </div>
@@ -1303,10 +1343,45 @@ function bxStart(){ bx.running = true; bx.raf = requestAnimationFrame(bxFrame); 
 function bxPause(){ bx.running = false; cancelAnimationFrame(bx.raf); bx.t0 = 0; $("bxToggle").textContent = "Resume"; }
 function bxReset(){ cancelAnimationFrame(bx.raf); bx.running = false; bx.t0 = 0; bx.elapsed = 0;
   $("bxOrb").style.transform = "scale(0.55)"; $("bxCount").textContent = "4"; $("bxPhase").textContent = "Breathe in"; $("bxCycles").textContent = ""; }
-function openBreathe(){ bxReset(); openModal("breatheModal"); bxStart(); }
+function openBreathe(){ grStep = 0; bxReset(); openModal("breatheModal"); calmShow("breathe"); }
 $("breatheFab").addEventListener("click", openBreathe);
 $("bxToggle").addEventListener("click", () => { if (bx.running) bxPause(); else bxStart(); });
 $("closeBreathe").addEventListener("click", () => { bxPause(); closeModal("breatheModal"); });
+
+/* two calm tools share one modal: box breathing + 5-4-3-2-1 grounding */
+function calmShow(which){
+  const breathing = which === "breathe";
+  $("bxBreathe").hidden = !breathing;
+  $("bxGround").hidden = breathing;
+  $("calmTabBreathe").setAttribute("aria-selected", String(breathing));
+  $("calmTabGround").setAttribute("aria-selected", String(!breathing));
+  if (breathing){ if (!bx.running) bxStart(); } else { bxPause(); grRender(); }
+}
+$("calmTabBreathe").addEventListener("click", () => calmShow("breathe"));
+$("calmTabGround").addEventListener("click", () => calmShow("ground"));
+
+const GROUND = [
+  { n:5, sense:"things you can see",   hint:"Look around and name them, slowly — out loud or in your head." },
+  { n:4, sense:"things you can feel",  hint:"The chair beneath you, your feet on the floor, the air on your skin." },
+  { n:3, sense:"things you can hear",  hint:"Near and far. Let each sound just arrive, without judging it." },
+  { n:2, sense:"things you can smell", hint:"Or two scents you like and can call to mind right now." },
+  { n:1, sense:"thing you can taste",  hint:"Or one slow breath, noticing your mouth and jaw soften." }
+];
+let grStep = 0;
+function grRender(){
+  const s = GROUND[grStep];
+  $("grNum").textContent = s.n;
+  $("grSense").textContent = s.sense;
+  $("grHint").textContent = s.hint;
+  $("grDots").innerHTML = GROUND.map((_,i)=>`<i class="${i<grStep?'done':i===grStep?'on':''}"></i>`).join("");
+  $("grBack").style.visibility = grStep === 0 ? "hidden" : "";
+  $("grNext").textContent = grStep === GROUND.length-1 ? "Done" : "Next";
+}
+$("grNext").addEventListener("click", () => {
+  if (grStep < GROUND.length-1){ grStep++; grRender(); }
+  else { grStep = 0; calmShow("breathe"); }   // gently return to the breath
+});
+$("grBack").addEventListener("click", () => { if (grStep > 0){ grStep--; grRender(); } });
 
 /* ============================================================
    VOICE INPUT — dictate into any field (Web Speech API).
