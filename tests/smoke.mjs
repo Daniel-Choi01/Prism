@@ -97,6 +97,9 @@ try {
     await page.locator("#deeperBtn").click();
     await page.waitForTimeout(400);
     check("save reports success", /saved/i.test(await page.locator("#deeperBtn").textContent()));
+    await page.locator("#exportBtn").click();
+    await page.waitForTimeout(200);
+    check("download reflection as markdown", /downloaded/i.test(await page.locator("#exportBtn").textContent()));
     check("conversation flow: no errors", errors.length === 0, errors.join("; "));
     await ctx.close();
   }
@@ -150,6 +153,29 @@ try {
     check("check-in saves to localStorage",
       (await page.evaluate(() => JSON.parse(localStorage.getItem("prism_checkins") || "[]").length)) === 1);
     check("tabs/journal/check-in: no errors", errors.length === 0, errors.join("; "));
+    await ctx.close();
+  }
+
+  /* ===== 4c. Check-in streak summary (seeded) ===== */
+  {
+    const ctx = await browser.newContext();
+    const page = await ctx.newPage();
+    await page.goto(URL, { waitUntil: "domcontentloaded" });
+    await page.evaluate(() => {
+      const day = 86400000, now = Date.now();
+      localStorage.setItem("prism_identity", JSON.stringify({ mode: "guest", since: now }));
+      localStorage.setItem("prism_onboarded", "1");
+      localStorage.setItem("prism_checkins", JSON.stringify([
+        { when: now, mood: 3, word: "", grateful: "" },
+        { when: now - day, mood: 2, word: "", grateful: "" },
+        { when: now - 2 * day, mood: 4, word: "", grateful: "" },
+      ]));
+    });
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(400);
+    await page.locator('#tabs .tab[data-view="checkin"]').click();
+    await page.waitForTimeout(200);
+    check("check-in streak + average summary renders", /streak|averaged/i.test(await page.locator("#ciSummary").textContent()));
     await ctx.close();
   }
 
@@ -217,6 +243,10 @@ try {
     await page.locator("#grNext").click();
     await page.waitForTimeout(80);
     check("grounding advances", (await page.locator("#grNum").textContent()) === "4");
+    await page.locator("#calmTabBreathe").click();
+    await page.waitForTimeout(80);
+    await page.locator('#bxPattern button[data-pat="relax"]').click();
+    check("breathing rhythm switches", (await page.locator('#bxPattern button[data-pat="relax"]').getAttribute("aria-pressed")) === "true");
     await page.keyboard.press("Escape");
     check("calm tools: no errors", errors.length === 0, errors.join("; "));
     await ctx.close();

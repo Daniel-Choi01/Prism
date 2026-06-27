@@ -959,6 +959,7 @@
     <div class="result-actions">
       <button class="refract-btn" id="againBtn">Reflect on something else</button>
       <button class="ghost-btn" id="deeperBtn">Save &amp; copy link</button>
+      <button class="ghost-btn" id="exportBtn">Download</button>
     </div>
 
     <div class="fb" id="feedback">
@@ -1060,6 +1061,7 @@
     </div>
 
     <div id="ciTrendWrap" style="display:none; margin-top:32px;">
+      <div class="pat-mood-read" id="ciSummary" style="margin-bottom:14px;"></div>
       <div class="pat-label">your last two weeks</div>
       <div class="pat-mood" id="ciTrend"></div>
       <div class="pat-entries-label" style="margin-top:18px;">recent check-ins</div>
@@ -1396,13 +1398,18 @@
 
     <div id="bxBreathe">
       <h2>Take a breath</h2>
-      <p class="m-sub">Box breathing — in for four, hold for four, out for four, hold for four. Follow the circle. A minute here can quiet a racing mind before you reflect.</p>
+      <p class="m-sub">Breathe with the circle. Pick a rhythm below — a minute here can quiet a racing mind before you reflect.</p>
       <div class="bx-stage">
         <div class="bx-glow" aria-hidden="true"></div>
         <div class="bx-orb" id="bxOrb"><span class="bx-count" id="bxCount">4</span></div>
       </div>
       <div class="bx-phase" id="bxPhase">Breathe in</div>
       <div class="bx-cycles" id="bxCycles"></div>
+      <div class="seg" id="bxPattern" style="max-width:300px; margin:14px auto 0;" role="group" aria-label="Breathing rhythm">
+        <button data-pat="box" aria-pressed="true">Box</button>
+        <button data-pat="relax" aria-pressed="false">4·7·8</button>
+        <button data-pat="calm" aria-pressed="false">4·6</button>
+      </div>
       <div class="bx-controls">
         <button class="refract-btn" id="bxToggle">Pause</button>
       </div>
@@ -1515,24 +1522,27 @@ document.addEventListener("keydown", (e) => {
    smooth and independent of the global motion setting (the user
    opted into this one). Reachable from any screen via the FAB.
    ============================================================ */
-const BX_PHASES = [
-  { name:"Breathe in",  dur:4000, from:0.55, to:1    },
-  { name:"Hold",        dur:4000, from:1,    to:1    },
-  { name:"Breathe out", dur:4000, from:1,    to:0.55 },
-  { name:"Hold",        dur:4000, from:0.55, to:0.55 }
-];
-const BX_CYCLE = BX_PHASES.reduce((s,p)=>s+p.dur,0);
+// three breathing patterns; each phase is [label, seconds, scaleFrom, scaleTo]
+const BX_PATTERNS = {
+  box:   [["Breathe in",4,0.55,1],["Hold",4,1,1],["Breathe out",4,1,0.55],["Hold",4,0.55,0.55]],
+  relax: [["Breathe in",4,0.55,1],["Hold",7,1,1],["Breathe out",8,1,0.55]],
+  calm:  [["Breathe in",4,0.55,1],["Breathe out",6,1,0.55]]
+};
+let bxPattern = "box";
+function bxPhases(){ return BX_PATTERNS[bxPattern].map(p => ({ name:p[0], dur:p[1]*1000, from:p[2], to:p[3] })); }
 const bx = { raf:0, running:false, t0:0, elapsed:0 };
 function bxEase(t){ return 0.5 - 0.5*Math.cos(Math.PI*Math.max(0,Math.min(1,t))); }   // easeInOutSine
 function bxFrame(ts){
   if (!bx.running) return;
   if (!$("breatheModal").classList.contains("show")){ bx.running=false; return; }     // closed via backdrop / Escape
+  const phases = bxPhases();
+  const cycleLen = phases.reduce((s,p)=>s+p.dur,0);
   if (!bx.t0) bx.t0 = ts - bx.elapsed;
   bx.elapsed = ts - bx.t0;
-  const inCycle = bx.elapsed % BX_CYCLE;
-  const cycles = Math.floor(bx.elapsed / BX_CYCLE);
-  let acc = 0, ph = BX_PHASES[0], local = 0;
-  for (const p of BX_PHASES){ if (inCycle < acc + p.dur){ ph = p; local = inCycle - acc; break; } acc += p.dur; }
+  const inCycle = bx.elapsed % cycleLen;
+  const cycles = Math.floor(bx.elapsed / cycleLen);
+  let acc = 0, ph = phases[0], local = 0;
+  for (const p of phases){ if (inCycle < acc + p.dur){ ph = p; local = inCycle - acc; break; } acc += p.dur; }
   $("bxOrb").style.transform = `scale(${(ph.from + (ph.to - ph.from) * bxEase(local / ph.dur)).toFixed(3)})`;
   $("bxCount").textContent = String(Math.ceil((ph.dur - local) / 1000));
   $("bxPhase").textContent = ph.name;
@@ -1545,6 +1555,11 @@ function bxReset(){ cancelAnimationFrame(bx.raf); bx.running = false; bx.t0 = 0;
   $("bxOrb").style.transform = "scale(0.55)"; $("bxCount").textContent = "4"; $("bxPhase").textContent = "Breathe in"; $("bxCycles").textContent = ""; }
 function openBreathe(){ grStep = 0; bxReset(); openModal("breatheModal"); calmShow("breathe"); }
 $("breatheFab").addEventListener("click", openBreathe);
+document.querySelectorAll('#bxPattern button').forEach(b => b.addEventListener("click", () => {
+  bxPattern = b.dataset.pat;
+  document.querySelectorAll('#bxPattern button').forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  bxReset(); bxStart();   // restart on the new rhythm
+}));
 $("bxToggle").addEventListener("click", () => { if (bx.running) bxPause(); else bxStart(); });
 $("closeBreathe").addEventListener("click", () => { bxPause(); closeModal("breatheModal"); });
 
@@ -1694,6 +1709,29 @@ $("refractBtn").addEventListener("click", converse);
 $("situation").addEventListener("keydown", e => { if ((e.metaKey||e.ctrlKey) && e.key === "Enter") converse(); });
 $("againBtn").addEventListener("click", reset);
 $("deeperBtn").addEventListener("click", saveCurrent);
+$("exportBtn").addEventListener("click", exportReflection);
+
+/* download the current reflection as a clean Markdown file — it's yours to keep */
+function reflectionToMarkdown(c){
+  const when = new Date(c.when || Date.now());
+  let md = `# A reflection — ${when.toLocaleString()}\n\n`;
+  (c.turns || []).forEach(t => {
+    if (t.role === "you") md += `**You:** ${t.text}\n\n`;
+    else { md += `**Prism:** ${t.text}\n\n`; if (t.question) md += `> ${t.question}\n\n`; }
+  });
+  md += `\n---\n_Saved from Prism — a private reflection tool. This stays yours._\n`;
+  return md;
+}
+function exportReflection(){
+  if (!current) return;
+  const blob = new Blob([reflectionToMarkdown(current)], { type: "text/markdown" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "prism-reflection-" + new Date(current.when || Date.now()).toISOString().slice(0, 10) + ".md";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  const b = $("exportBtn"); b.textContent = "Downloaded ✓"; setTimeout(() => b.textContent = "Download", 1800);
+}
 $("replySend").addEventListener("click", sendReply);
 $("replyText").addEventListener("keydown", e => { if ((e.metaKey||e.ctrlKey) && e.key === "Enter") sendReply(); });
 
@@ -2006,7 +2044,11 @@ const ENC_BANK = [
   "Caring this much about getting it right isn't a flaw to fix. It's just pointed somewhere hard right now.",
   "You've made it through every single worst day you've had so far. That's a record that has never once been broken.",
   "Being unsure isn't the same as being lost. Sometimes it just means you're being honest about something that genuinely is unclear.",
-  "You're allowed to want more and still be grateful for what you have. Both can be true without canceling each other out."
+  "You're allowed to want more and still be grateful for what you have. Both can be true without canceling each other out.",
+  "Progress only you can see still counts. Not everything worth doing leaves a mark other people get to applaud.",
+  "You're not behind. There's no real schedule for this, however loudly it insists there is one.",
+  "Needing help was never the part where you failed. It's usually the part where you started being honest.",
+  "The version of you that's tired and still here isn't a lesser one. It's the one doing the actual hard part."
 ];
 function exampleEncourage(){ return ENC_BANK[Math.floor(Date.now()/9000) % ENC_BANK.length]; }
 
@@ -2046,7 +2088,11 @@ const WIS_BANK = [
   { source:"Carl Jung", idea:"What you refuse to look at in yourself doesn't disappear — it runs things from the shadows. Turning toward the part you'd rather not see is often where the change quietly begins.", prompt:"What's the thing about yourself you keep pushing out of sight — and what might it actually need from you?" },
   { source:"Self-compassion — Kristin Neff", idea:"Treating yourself like someone you're responsible for protecting isn't soft. It's usually the more honest, and more sustainable, way to be human and imperfect.", prompt:"What would you do differently today if you spoke to yourself the way you'd speak to someone you love?" },
   { source:"Stoicism — Seneca", idea:"We suffer more often in imagination than in reality. The mind sprints ahead into a hundred futures, and most of them never arrive.", prompt:"Which of the fears you're carrying is about what's happening now, and which is about a future that hasn't come?" },
-  { source:"Kahlil Gibran", idea:"The deeper that sorrow carves into you, the more joy you can later hold. The same hollow that pain digs is often what ends up making room for something good.", prompt:"Where has something hard quietly made more room in you than you expected?" }
+  { source:"Kahlil Gibran", idea:"The deeper that sorrow carves into you, the more joy you can later hold. The same hollow that pain digs is often what ends up making room for something good.", prompt:"Where has something hard quietly made more room in you than you expected?" },
+  { source:"Lao Tzu — Tao Te Ching", idea:"Muddy water clears when it's left still. Some answers don't come from pushing harder — they surface on their own once you stop stirring.", prompt:"What might become clear if you let this rest for a day instead of forcing it?" },
+  { source:"Pema Chödrön", idea:"You are the sky; everything else is just the weather. The feeling moving through you is real, but it isn't the whole of who you are.", prompt:"If this feeling is weather passing through, what's the steadier sky underneath it?" },
+  { source:"Acceptance & Commitment Therapy", idea:"You can carry a difficult feeling with you and still walk toward what matters. You don't have to wait for it to leave before you start.", prompt:"What small thing that matters to you could you do today, even while the hard feeling rides along?" },
+  { source:"Brené Brown", idea:"Vulnerability isn't weakness — it's the truest measure of courage. Letting yourself be seen without knowing how it'll land is where real connection starts.", prompt:"Where might letting yourself be seen, just a little, change something for you?" }
 ];
 function exampleWisdom(){ return WIS_BANK[Math.floor(Date.now()/9000) % WIS_BANK.length]; }
 
@@ -2451,7 +2497,17 @@ const JR_PROMPTS = [
   "Where am I being crueler to myself than I'd ever be to someone I love?",
   "What am I quietly proud of that I've given myself zero credit for?",
   "What's the story I keep telling about this — and who taught me to tell it that way?",
-  "What have I been waiting for permission to do?"
+  "What have I been waiting for permission to do?",
+  "What have I outgrown that I'm still carrying out of pure habit?",
+  "If I trusted myself a little more, what's the first thing I'd do differently?",
+  "What am I pretending not to know?",
+  "Where did I abandon myself today to keep someone else comfortable?",
+  "What's the feeling I reach for my phone, or food, or noise to avoid?",
+  "Who would I be if I stopped trying to be impressive?",
+  "What part of me needs to hear that it's allowed to rest?",
+  "What would count as a good week that has nothing to do with being productive?",
+  "What's the kindest true thing someone could say to me right now — and why can't I say it to myself?",
+  "What am I grieving that I never gave myself permission to call a loss?"
 ];
 let _jrPromptIdx = -1;
 function jrRenderPrompt(){ $("jrPromptText").textContent = JR_PROMPTS[_jrPromptIdx]; $("jrPromptCard").hidden = false; }
@@ -2510,6 +2566,14 @@ function renderCheckins(){
   wrap.style.display = "";
   const series = all.slice().sort((a,b)=>a.when-b.when).slice(-14).map(e => ({ when:e.when, score:(CI_MOODS[e.mood]||CI_MOODS[2]).s, care:"none" }));
   $("ciTrend").innerHTML = renderMoodChart(series);
+  // current streak (consecutive days up to today or yesterday) + two-week average
+  const days = new Set(all.map(e => new Date(e.when).toDateString()));
+  let streak = 0; const d = new Date();
+  if (!days.has(d.toDateString())) d.setDate(d.getDate() - 1);   // yesterday still counts as "kept up"
+  while (days.has(d.toDateString())){ streak++; d.setDate(d.getDate() - 1); }
+  const avg = series.reduce((s,p)=>s+p.score,0) / series.length;
+  const avgLabel = avg < -0.5 ? "rough" : avg < -0.15 ? "low" : avg < 0.2 ? "okay" : avg < 0.6 ? "good" : "bright";
+  $("ciSummary").innerHTML = `${streak > 1 ? `A <b>${streak}-day</b> check-in streak. ` : ""}These two weeks have averaged <b>${avgLabel}</b>.`;
   $("ciEntries").innerHTML = all.slice(0,7).map(e => {
     const m = CI_MOODS[e.mood] || CI_MOODS[2];
     const d = new Date(e.when).toLocaleDateString(undefined,{month:"short",day:"numeric"});
