@@ -30,8 +30,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Nothing to record." });
   }
 
+  const root = url.trim().replace(/\/+$/, "").replace(/\/(rest|auth|storage|realtime)\/v1$/i, "").replace(/\/+$/, "");
   try {
-    const r = await fetch(url.replace(/\/+$/, "") + "/rest/v1/feedback", {
+    const r = await fetch(root + "/rest/v1/feedback", {
       method: "POST",
       headers: {
         "apikey": key,

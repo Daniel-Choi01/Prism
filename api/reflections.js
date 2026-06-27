@@ -14,7 +14,9 @@ export default async function handler(req, res) {
     // Persistence not configured — frontend falls back to on-device saving.
     return res.status(501).json({ error: "Reflection storage is not configured on the server." });
   }
-  const base = url.replace(/\/+$/, "") + "/rest/v1/reflections";
+  // tolerate a pasted "…/rest/v1" endpoint by normalizing back to the base project URL
+  const root = url.trim().replace(/\/+$/, "").replace(/\/(rest|auth|storage|realtime)\/v1$/i, "").replace(/\/+$/, "");
+  const base = root + "/rest/v1/reflections";
   const sbHeaders = {
     "apikey": key,
     "authorization": `Bearer ${key}`,
