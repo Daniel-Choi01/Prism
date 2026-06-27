@@ -662,6 +662,22 @@
   .pat-bar-track { flex:1; height:9px; border-radius:999px; background:rgba(255,255,255,0.05); overflow:hidden; }
   .pat-bar-fill { display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,var(--s4),var(--s6)); }
   .pat-bar-n { flex:0 0 auto; font-size:12px; color:var(--ink-faint); min-width:16px; text-align:left; }
+
+  /* ============================================================
+     VOICE INPUT — dictate instead of type (Web Speech API).
+     Hidden entirely where the browser doesn't support it.
+     A natural fit for "say it out loud."
+     ============================================================ */
+  .foot-actions { display:flex; align-items:center; gap:8px; }
+  .voice-btn { position:relative; flex:0 0 auto; width:42px; height:42px; border-radius:12px; cursor:pointer; padding:0;
+    border:1px solid var(--line-bright); background:rgba(255,255,255,0.03); color:var(--ink-dim);
+    display:inline-flex; align-items:center; justify-content:center; transition:border-color .2s, color .2s, background .2s; }
+  .voice-btn:hover { color:var(--ink); border-color:rgba(179,156,255,0.5); }
+  .voice-btn:focus-visible { outline:2px solid var(--s5); outline-offset:2px; }
+  .voice-btn svg { width:18px; height:18px; }
+  .voice-btn.recording { color:var(--c-rival); border-color:rgba(255,138,107,0.6); background:rgba(255,138,107,0.12);
+    animation:micPulse 1.6s ease-out infinite; }
+  @keyframes micPulse { 0%,100%{ box-shadow:0 0 0 0 rgba(255,138,107,0.5);} 50%{ box-shadow:0 0 0 7px rgba(255,138,107,0);} }
 </style>
 </head>
 <body>
@@ -775,10 +791,15 @@
         <textarea id="situation" maxlength="2000" placeholder="What's on your mind? Say anything — the messy, the unfinished, the thing you wouldn't say out loud. There's no one here to judge you, and it stays on your device."></textarea>
         <div class="field-foot">
           <span class="hint" id="charhint">However it comes out is fine.</span>
-          <button class="refract-btn" id="refractBtn">
-            Reflect
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 8h8M9 8l4-7M9 8l4 7" stroke="#181320" stroke-width="1.6" stroke-linecap="round"/></svg>
-          </button>
+          <div class="foot-actions">
+            <button class="voice-btn" id="micSituation" data-ta="situation" aria-label="Dictate with your voice" title="Dictate with your voice">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </button>
+            <button class="refract-btn" id="refractBtn">
+              Reflect
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 8h8M9 8l4-7M9 8l4 7" stroke="#181320" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -833,6 +854,9 @@
 
     <div class="convo-reply" id="convoReply">
       <textarea id="replyText" maxlength="2000" placeholder="Say more, or follow wherever your mind goes next…" aria-label="Continue the conversation"></textarea>
+      <button class="voice-btn" id="micReply" data-ta="replyText" aria-label="Dictate with your voice" title="Dictate with your voice">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
       <button class="refract-btn" id="replySend">Reply</button>
     </div>
 
@@ -871,6 +895,9 @@
       <div class="field-foot">
         <span class="hint" id="jrDate"></span>
         <div class="jr-actions">
+          <button class="voice-btn" id="micJournal" data-ta="jrText" aria-label="Dictate with your voice" title="Dictate with your voice">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
           <button class="ghost-btn" id="jrSave">Save entry</button>
           <button class="refract-btn" id="jrReflect">Reflect with me</button>
         </div>
@@ -1272,6 +1299,57 @@ function openBreathe(){ bxReset(); openModal("breatheModal"); bxStart(); }
 $("breatheFab").addEventListener("click", openBreathe);
 $("bxToggle").addEventListener("click", () => { if (bx.running) bxPause(); else bxStart(); });
 $("closeBreathe").addEventListener("click", () => { bxPause(); closeModal("breatheModal"); });
+
+/* ============================================================
+   VOICE INPUT — dictate into any field (Web Speech API).
+   Buttons are hidden entirely where the API isn't supported.
+   One shared recognizer; handlers are bound to their own instance
+   so switching fields mid-dictation can't corrupt the new one.
+   ============================================================ */
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+let _rec = null, _recTA = null, _recBase = "";
+function stopVoice(){ if (_rec){ try { _rec.stop(); } catch(_){} } }
+function startVoice(btn, ta){
+  let rec; try { rec = new SpeechRec(); } catch(_){ return; }
+  _rec = rec; _recTA = ta;
+  rec.lang = navigator.language || "en-US";
+  rec.continuous = true; rec.interimResults = true;
+  const cap = ta.maxLength > 0 ? ta.maxLength : 4000;
+  _recBase = ta.value ? ta.value.replace(/\s+$/,"") + " " : "";
+  btn.classList.add("recording"); btn.setAttribute("aria-label","Stop dictating");
+  liveSay("Listening — speak now.");
+  const done = () => { btn.classList.remove("recording"); btn.setAttribute("aria-label","Dictate with your voice"); if (_rec === rec){ _rec = null; _recTA = null; } };
+  rec.onresult = (e) => {
+    if (_rec !== rec) return;
+    let interim = "";
+    for (let i=e.resultIndex; i<e.results.length; i++){
+      const tr = e.results[i][0].transcript;
+      if (e.results[i].isFinal) _recBase += tr; else interim += tr;
+    }
+    ta.value = (_recBase + interim).slice(0, cap);
+  };
+  rec.onerror = (e) => {
+    if (e && (e.error === "not-allowed" || e.error === "service-not-allowed")){
+      btn.title = "Microphone is blocked — allow it in your browser to dictate.";
+      setTimeout(()=>{ btn.title = "Dictate with your voice"; }, 4000);
+    }
+  };
+  rec.onend = done;
+  try { rec.start(); } catch(_){ done(); }
+}
+function toggleVoice(btn, ta){
+  if (_rec && _recTA === ta){ stopVoice(); return; }   // same field → stop
+  if (_rec){ stopVoice(); }                             // switching fields → stop the old one first
+  startVoice(btn, ta);
+}
+(function initVoice(){
+  if (!SpeechRec){ document.querySelectorAll('.voice-btn').forEach(b => b.style.display = "none"); return; }
+  document.querySelectorAll('.voice-btn').forEach(btn => {
+    const ta = $(btn.dataset.ta);
+    if (!ta){ btn.style.display = "none"; return; }
+    btn.addEventListener("click", () => toggleVoice(btn, ta));
+  });
+})();
 
 /* ---------- about + share + resources modals ---------- */
 $("aboutBtn").addEventListener("click", () => openModal("aboutModal"));
