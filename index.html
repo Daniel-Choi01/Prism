@@ -1971,7 +1971,7 @@ async function converse(){
   let data;
   try { data = await callConverse(convo.turns, memoryContext(when)); }
   catch (err) {
-    data = exampleConverse(convo.turns);
+    data = await exampleConverse(convo.turns);
     flashAfterRender(err.code === "BACKEND_DOWN"
       ? "Showing example mode — the live AI isn't reachable from here. It runs once deployed."
       : (err.message || "Couldn't reach the AI; showing example mode."));
@@ -2001,12 +2001,12 @@ async function sendReply(){
 
   let data;
   try { data = await callConverse(current.turns, memoryContext(current.when)); }
-  catch(_){ data = exampleConverse(current.turns); }
+  catch(_){ data = await exampleConverse(current.turns); }
 
   const merged = mergeCare(detectDistress(text), data.care);
   const prior = current.turns.reduce((m,t)=>Math.max(m, rankCare(t.care)), rankCare(current.care));
   const finalCare = rankCare(merged) >= prior ? merged : { level:["none","struggling","crisis"][prior], message: merged.message };
-  current.turns.push({ role:"prism", text:data.reply, question:(finalCare.level==="crisis" ? (data.question||null) : (data.question||null)), care:finalCare });
+  current.turns.push({ role:"prism", text:data.reply, question:(data.question || null), care:finalCare });
   current.care = rankCare(finalCare) >= rankCare(current.care) ? finalCare : current.care;
   renderConvo(current);
   renderCare(current.care);
@@ -2088,15 +2088,18 @@ async function sendFeedback(){
 /* ---------- the reflective conversation via our serverless proxy ---------- */
 async function callConverse(turns, memory){
   let res;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 40000);   // don't let a stalled request spin the loader forever
   try {
     res = await fetch("/api/converse", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages: turns.map(t => ({ role:t.role, text:t.text })), memory })
+      body: JSON.stringify({ messages: turns.map(t => ({ role:t.role, text:t.text })), memory }),
+      signal: ctrl.signal
     });
   } catch (_) {
-    const e = new Error("Backend unreachable."); e.code = "BACKEND_DOWN"; throw e;
-  }
+    const e = new Error("Backend unreachable or timed out."); e.code = "BACKEND_DOWN"; throw e;
+  } finally { clearTimeout(timer); }
   if (res.status === 404 || res.status === 405) { const e=new Error("No backend."); e.code="BACKEND_DOWN"; throw e; }
   let json;
   try { json = await res.json(); }
@@ -2105,9 +2108,11 @@ async function callConverse(turns, memory){
     if (res.status === 501) { const e=new Error("AI not configured on the server."); e.code="BACKEND_DOWN"; throw e; }
     throw new Error(json.error || `Reflection failed (${res.status}).`);
   }
+  const reply = String(json.reply || "").trim();
   return {
-    reply: String(json.reply || ""),
-    question: json.question || null,
+    // never render an empty reflection, even if the model returns a blank reply
+    reply: reply || "I'm here, and I'm with what you said. Tell me a little more about that?",
+    question: (typeof json.question === "string" && json.question.trim()) ? json.question : null,
     care: (json.care && ["none","struggling","crisis"].includes(json.care.level)) ? json.care : { level:"none", message:"" }
   };
 }
@@ -2169,10 +2174,10 @@ function renderConvo(convo){
   convo.turns.forEach((t, i) => {
     const d = document.createElement("div");
     if (t.role === "you"){
-      d.className = "turn you"; d.innerHTML = `<span class="who">You</span>${esc(t.text)}`;
+      d.className = "turn you"; d.innerHTML = `<span class="who">You</span>${escNl(t.text)}`;
     } else {
       d.className = "turn prism";
-      let h = esc(t.text);
+      let h = escNl(t.text);
       if (t.question) h += `<span class="q">${esc(t.question)}</span>`;
       d.innerHTML = h;
     }
@@ -2191,6 +2196,10 @@ function renderConvo(convo){
   window.scrollTo({top:0, behavior:"smooth"});
 }
 function esc(s){ const d=document.createElement("div"); d.textContent=s||""; return d.innerHTML; }
+// escape, then keep the writer's paragraph/line breaks (still XSS-safe — escaping happens first)
+function escNl(s){ return esc(s).replace(/\n{2,}/g, "<br><br>").replace(/\n/g, "<br>"); }
+// abort a fetch that stalls, so a hung request can't leave a loader spinning forever
+function timeoutSignal(ms){ const c = new AbortController(); setTimeout(() => c.abort(), ms); return c.signal; }
 
 function reset(){
   $("situation").value=""; current = null;
@@ -2249,7 +2258,7 @@ async function loadEncourage(){
   msg.textContent = text;
 }
 async function callEncourage(){
-  const res = await fetch("/api/encourage", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ memory: memoryContext(-1) }) });
+  const res = await fetch("/api/encourage", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ memory: memoryContext(-1) }), signal: timeoutSignal(30000) });
   if (res.status===404||res.status===405||res.status===501) throw new Error("down");
   const j = await res.json(); if (!res.ok || !j.message) throw new Error(j.error||"down");
   return j.message;
@@ -2303,7 +2312,7 @@ async function loadWisdom(){
   $("wisPrompt").textContent = w.prompt || "";
 }
 async function callWisdom(){
-  const res = await fetch("/api/wisdom", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ memory: memoryContext(-1) }) });
+  const res = await fetch("/api/wisdom", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ memory: memoryContext(-1) }), signal: timeoutSignal(30000) });
   if (res.status===404||res.status===405||res.status===501) throw new Error("down");
   const j = await res.json(); if (!res.ok || !j.idea) throw new Error(j.error||"down");
   return j;
@@ -2576,7 +2585,7 @@ async function writeLetterNow(){
   box.innerHTML = `<div class="letter-card"><div class="letter-body">${esc(letter).replace(/\n/g,"<br>")}</div><div class="letter-sign">— Prism</div></div>`;
 }
 async function callLetter(){
-  const res = await fetch("/api/letter", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ memory: memoryContext(-1) }) });
+  const res = await fetch("/api/letter", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ memory: memoryContext(-1) }), signal: timeoutSignal(35000) });
   if (res.status===404 || res.status===405 || res.status===501) throw new Error("down");
   const j = await res.json(); if (!res.ok || !j.letter) throw new Error(j.error || "down");
   return j.letter;
@@ -2600,7 +2609,7 @@ async function callPatterns(h){
   const reflections = h.map(x=>({ situation:String(x.situation||"").slice(0,400), synthesis:String(x.synthesis||"").slice(0,300), when:x.when }));
   let res;
   try {
-    res = await fetch("/api/patterns", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ reflections }) });
+    res = await fetch("/api/patterns", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ reflections }), signal: timeoutSignal(35000) });
   } catch(_){ const e=new Error("down"); e.code="BACKEND_DOWN"; throw e; }
   if (res.status===404 || res.status===405 || res.status===501){ const e=new Error("down"); e.code="BACKEND_DOWN"; throw e; }
   let j; try { j = await res.json(); } catch(_){ const e=new Error("down"); e.code="BACKEND_DOWN"; throw e; }
@@ -2713,7 +2722,7 @@ async function callJournalInsight(entry, recent){
   let res;
   try {
     res = await fetch("/api/journal-insight", { method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ entry, recent }) });
+      body: JSON.stringify({ entry, recent }), signal: timeoutSignal(35000) });
   } catch(_){ const e=new Error("down"); e.code="BACKEND_DOWN"; throw e; }
   if (res.status===404 || res.status===405 || res.status===501){ const e=new Error("down"); e.code="BACKEND_DOWN"; throw e; }
   let j; try { j = await res.json(); } catch(_){ const e=new Error("down"); e.code="BACKEND_DOWN"; throw e; }

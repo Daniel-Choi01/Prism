@@ -90,10 +90,12 @@ try {
     await page.waitForSelector("#result.show", { timeout: 8000 });
     await page.waitForTimeout(300);
     check("reflect produces a conversation", (await page.locator("#convo .turn").count()) === 2);
+    check("Prism's reflection actually has content", ((await page.locator("#convo .turn.prism").first().innerText()).trim().length) > 20);
     await page.locator("#replyText").fill("I think I'm scared people will be disappointed in me.");
     await page.locator("#replySend").click();
     await page.waitForTimeout(1600);
     check("reply extends the conversation", (await page.locator("#convo .turn").count()) === 4);
+    check("Prism's follow-up has content", ((await page.locator("#convo .turn.prism").last().innerText()).trim().length) > 20);
     await page.locator("#deeperBtn").click();
     await page.waitForTimeout(400);
     check("save reports success", /saved/i.test(await page.locator("#deeperBtn").textContent()));
