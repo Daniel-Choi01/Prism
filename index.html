@@ -2177,7 +2177,10 @@ const ENC_BANK = [
   "Needing help was never the part where you failed. It's usually the part where you started being honest.",
   "The version of you that's tired and still here isn't a lesser one. It's the one doing the actual hard part.",
   "You can be doing badly at a hard thing and still be doing fine as a person. Those aren't the same scoreboard.",
-  "However slowly you're moving, you're still facing forward. That counts more than the pace does."
+  "However slowly you're moving, you're still facing forward. That counts more than the pace does.",
+  "You don't have to earn the right to feel okay. It's allowed to be a baseline, not a prize.",
+  "That it still hurts means you haven't gone numb — and staying tender in a hard world is its own quiet strength.",
+  "You can start over at any hour. The day isn't a test you've already failed by noon."
 ];
 function exampleEncourage(){ return ENC_BANK[Math.floor(Date.now()/9000) % ENC_BANK.length]; }
 
@@ -2223,7 +2226,10 @@ const WIS_BANK = [
   { source:"Acceptance & Commitment Therapy", idea:"You can carry a difficult feeling with you and still walk toward what matters. You don't have to wait for it to leave before you start.", prompt:"What small thing that matters to you could you do today, even while the hard feeling rides along?" },
   { source:"Brené Brown", idea:"Vulnerability isn't weakness — it's the truest measure of courage. Letting yourself be seen without knowing how it'll land is where real connection starts.", prompt:"Where might letting yourself be seen, just a little, change something for you?" },
   { source:"James Baldwin", idea:"Not everything that is faced can be changed, but nothing can be changed until it is faced. Looking squarely at a thing isn't the same as being beaten by it.", prompt:"What have you been looking away from that might soften a little if you turned toward it?" },
-  { source:"Stoicism — Marcus Aurelius", idea:"The obstacle in the path becomes the path. What stands in your way is often the very material the next step is made from.", prompt:"If this difficulty were the way forward rather than the blockage, what would it be asking of you?" }
+  { source:"Stoicism — Marcus Aurelius", idea:"The obstacle in the path becomes the path. What stands in your way is often the very material the next step is made from.", prompt:"If this difficulty were the way forward rather than the blockage, what would it be asking of you?" },
+  { source:"Rumi", idea:"The wound is the place where the light enters you. What broke open is often also where something new becomes possible.", prompt:"Where has a crack in your life quietly let something in that you actually needed?" },
+  { source:"Thich Nhat Hanh", idea:"Feelings come and go like clouds in a windy sky. Your breath is the anchor — you can be with a feeling without being carried off by it.", prompt:"Could you stay with what you feel for three slow breaths, without trying to fix it or flee it?" },
+  { source:"Stoicism — Epictetus", idea:"It isn't events that disturb us, but our judgments about them. Two people meet the same moment and live in different worlds because of the story each tells about it.", prompt:"What judgment have you layered onto this — and is it the only one available to you?" }
 ];
 function exampleWisdom(){ return WIS_BANK[Math.floor(Date.now()/9000) % WIS_BANK.length]; }
 
@@ -2613,6 +2619,18 @@ async function callJournalInsight(entry, recent){
   return j;
 }
 
+// Offline journal reflections — varied so example mode feels alive. (Live mode
+// is where it's genuinely personal; these are grounded human fallbacks.)
+const EX_JOURNAL = [
+  { m:(s)=>`It sounds like “${s}” is sitting heavily with you — and underneath the situation there may be a quieter feeling you haven't fully named yet. That's worth slowing down for.`,
+    e:["weariness"], shift:`If a close friend had written these exact words to you, what's the first thing you'd want them to know?` },
+  { m:(s)=>`Reading “${s},” I notice you're describing what happened, but stepping carefully around how it actually felt. The feeling is usually the part that needs the air.`,
+    e:["something held back"], shift:`If you let yourself feel one degree more of this, what would be there?` },
+  { m:(s)=>`There's a tiredness in “${s}” that sounds less like one bad day and more like something you've been carrying for a while.`,
+    e:["tiredness","quiet strain"], shift:`What's the smallest thing that would let you set even a little of this down?` },
+  { m:(s)=>`“${s}” — you're being awfully fair to everyone in this except yourself. I notice that.`,
+    e:["self-criticism"], shift:`What would change if you extended yourself the same understanding you're giving everyone else here?` }
+];
 function exampleJournalInsight(text){
   const lvl = detectDistress(text);
   if (lvl !== "none"){
@@ -2620,12 +2638,8 @@ function exampleJournalInsight(text){
       emotions:["pain","heaviness"], patternName:"", patternNote:"", shift:"", care:{level:lvl, message:""} };
   }
   const snip = firstClause(text);
-  return {
-    mirror:`It sounds like “${snip}” is sitting heavily with you — and underneath the situation there may be a quieter feeling you haven't fully named yet. That's worth slowing down for.`,
-    emotions:["weariness"], patternName:"", patternNote:"",
-    shift:`If a close friend had written these exact words to you, what's the first thing you'd want them to know?`,
-    care:{level:"none", message:""}
-  };
+  const pick = EX_JOURNAL[Math.abs(text.length * 3) % EX_JOURNAL.length];
+  return { mirror:pick.m(snip), emotions:pick.e, patternName:"", patternNote:"", shift:pick.shift, care:{level:"none", message:""} };
 }
 
 function renderJournalInsight(d){
@@ -2695,7 +2709,13 @@ const JR_PROMPTS = [
   "What's one thing that would make tomorrow two percent lighter?",
   "What do I keep apologizing for that I don't actually need to?",
   "What have I been calling 'lazy' that might honestly be 'exhausted'?",
-  "If I could feel one thing less today, what would it be — and what's quietly feeding it?"
+  "If I could feel one thing less today, what would it be — and what's quietly feeding it?",
+  "What would I attempt if I knew no one would judge the result?",
+  "What's a feeling I've been treating as a problem instead of as a signal?",
+  "What's true about me today that wasn't true a year ago?",
+  "What am I holding my breath waiting to be over?",
+  "If today were enough exactly as it was, what would I stop chasing?",
+  "Who do I become around the person I think about most — and do I actually like them?"
 ];
 let _jrPromptIdx = -1;
 function jrRenderPrompt(){ $("jrPromptText").textContent = JR_PROMPTS[_jrPromptIdx]; $("jrPromptCard").hidden = false; }
