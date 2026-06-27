@@ -693,6 +693,17 @@
   .ci-entry .ce-t { font-size:13.5px; color:var(--ink-dim); line-height:1.45; }
   .ci-entry .ce-t b { color:var(--ink); font-weight:600; }
 
+  /* journal prompt library */
+  .jr-prompts { margin-bottom:18px; }
+  .jr-prompt-card { margin-top:12px; border:1px solid var(--line-bright); border-radius:14px; padding:16px 18px;
+    background:rgba(179,156,255,0.05); }
+  .jr-prompt-text { font-family:var(--read); font-style:italic; font-size:17px; color:var(--ink); line-height:1.5; }
+  .jr-prompt-actions { display:flex; gap:18px; margin-top:13px; }
+  .link-btn { background:none; border:0; cursor:pointer; font-family:var(--sans); font-size:12.5px; letter-spacing:0.04em;
+    color:var(--c-future); padding:0; }
+  .link-btn:hover { color:var(--ink); text-decoration:underline; }
+  .link-btn:focus-visible { outline:2px solid var(--line-bright); outline-offset:2px; }
+
   /* ============================================================
      RICHER PATTERNS — mood-over-time chart + theme bars.
      Computed entirely on-device from your own reflections; makes the
@@ -940,6 +951,17 @@
       <button class="ghost-btn" id="journalBack">← Reflect</button>
     </div>
     <p class="jr-sub">A private place to write — daily, or whenever. It stays on this device. Prism only reflects back if you ask it to.</p>
+
+    <div class="jr-prompts">
+      <button class="ghost-btn" id="jrPromptBtn">Need a prompt? ✦</button>
+      <div class="jr-prompt-card" id="jrPromptCard" hidden>
+        <span class="jr-prompt-text" id="jrPromptText"></span>
+        <div class="jr-prompt-actions">
+          <button class="link-btn" id="jrPromptUse">Write on this →</button>
+          <button class="link-btn" id="jrPromptNext">Another</button>
+        </div>
+      </div>
+    </div>
 
     <div class="field-shell jr-field">
       <textarea id="jrText" maxlength="4000" placeholder="What feels heaviest or most pressing for you to explore right now? Write freely — no one else sees this."></textarea>
@@ -2186,6 +2208,7 @@ function upsertEntry(text, insight){
 function journalInit(){
   jrCurrentId=null; $("jrText").value=""; $("jrInsight").hidden=true; $("jrInsight").innerHTML="";
   $("jrNotice").classList.remove("show");
+  $("jrPromptCard").hidden = true; _jrPromptIdx = -1;
   $("jrDate").textContent = new Date().toLocaleDateString(undefined,{weekday:"long", month:"long", day:"numeric"});
   renderJrConsent(); renderJournalEntries();
   setTimeout(()=>$("jrText").focus(), 60);
@@ -2286,6 +2309,38 @@ function renderJournalEntries(){
   });
 }
 function showJrNotice(m){ const n=$("jrNotice"); n.textContent=m; n.className="notice show info"; n.style.marginTop="16px"; }
+
+/* ---------- journal prompt library (curated, grounded reflective prompts) ---------- */
+const JR_PROMPTS = [
+  "What am I feeling right now, underneath the busyness — and where do I notice it in my body?",
+  "What's something I'm carrying that I haven't said out loud to anyone yet?",
+  "If a close friend were in my exact situation, what would I want them to hear?",
+  "What did today ask of me — and what, if anything, did it give back?",
+  "What am I avoiding, and what am I afraid would happen if I faced it?",
+  "When did I last feel most like myself? What was different then?",
+  "What would 'enough' look like today — not perfect, just enough?",
+  "What's one thing I'm grateful for that I usually walk right past?",
+  "What belief about myself am I treating as a fact right now? Is it actually true?",
+  "What do I need more of in my days, and what do I need less of?",
+  "Who or what is taking up the most space in my head — and is that fair to me?",
+  "If nothing had to be solved today, what would I most want to simply feel or notice?",
+  "What's a small kindness I could offer myself this week?",
+  "What am I quietly proud of that I haven't given myself any credit for?",
+  "What's the story I keep telling about this — and is there another, truer way to tell it?",
+  "Where am I being harder on myself than I would ever be on someone I love?"
+];
+let _jrPromptIdx = -1;
+function jrRenderPrompt(){ $("jrPromptText").textContent = JR_PROMPTS[_jrPromptIdx]; $("jrPromptCard").hidden = false; }
+$("jrPromptBtn").addEventListener("click", () => {
+  _jrPromptIdx = _jrPromptIdx < 0 ? (new Date().getDate() % JR_PROMPTS.length) : (_jrPromptIdx + 1) % JR_PROMPTS.length;
+  jrRenderPrompt();
+});
+$("jrPromptNext").addEventListener("click", () => { _jrPromptIdx = (_jrPromptIdx + 1) % JR_PROMPTS.length; jrRenderPrompt(); });
+$("jrPromptUse").addEventListener("click", () => {
+  const ta = $("jrText"), t = $("jrPromptText").textContent;
+  ta.value = (ta.value.trim() ? ta.value.trim() + "\n\n" : "") + t + "\n";
+  ta.focus(); try { ta.setSelectionRange(ta.value.length, ta.value.length); } catch(_){}
+});
 
 /* ============================================================
    DAILY CHECK-IN — mood + optional word + gratitude, on-device.
