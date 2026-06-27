@@ -608,6 +608,40 @@
   .why-honest { margin-top:22px; border:1px solid var(--line-bright); border-radius:14px; padding:18px 20px;
     background:linear-gradient(180deg, rgba(179,156,255,0.05), rgba(255,255,255,0.01)); }
   .why-honest .why-b { font-family:var(--read); font-style:italic; font-size:15px; line-height:1.6; color:var(--ink); }
+
+  /* ============================================================
+     CALM TOOLS — a guided breathing exercise, reachable anywhere.
+     Box breathing (4-4-4-4): a research-backed way to settle the
+     nervous system. The orb is driven by requestAnimationFrame, so
+     it stays smooth and is unaffected by the global motion settings
+     (this animation IS the function — the user opted into it).
+     ============================================================ */
+  .breathe-fab { position:fixed; right:20px; bottom:20px; z-index:60; display:none; align-items:center; gap:8px;
+    font-family:var(--sans); font-size:12px; letter-spacing:0.06em; color:var(--ink-dim); cursor:pointer;
+    padding:10px 15px; border-radius:999px; border:1px solid var(--line-bright);
+    background:linear-gradient(180deg, rgba(20,20,32,0.92), rgba(12,12,22,0.92)); backdrop-filter:blur(8px);
+    box-shadow:0 12px 34px -18px rgba(0,0,0,0.9); transition:.2s; }
+  .breathe-fab:hover { color:var(--ink); border-color:rgba(179,156,255,0.5); transform:translateY(-1px); }
+  .breathe-fab:focus-visible { outline:2px solid var(--s5); outline-offset:2px; }
+  .breathe-fab .bf-dot { width:9px; height:9px; border-radius:50%; flex:0 0 auto;
+    background:radial-gradient(circle, var(--c-future), transparent 72%); box-shadow:0 0 10px var(--c-future);
+    animation:breathe 8s ease-in-out infinite; }
+  @media (max-width:520px){ .breathe-fab .bf-label { display:none; } .breathe-fab { padding:11px; } }
+
+  .breathe-modal { text-align:center; }
+  .bx-stage { position:relative; height:248px; display:flex; align-items:center; justify-content:center; margin:6px 0 4px; }
+  .bx-glow { position:absolute; width:200px; height:200px; border-radius:50%;
+    background:radial-gradient(circle, rgba(179,156,255,0.18), transparent 70%); }
+  .bx-orb { position:relative; width:150px; height:150px; border-radius:50%;
+    border:1px solid rgba(179,156,255,0.45);
+    background:radial-gradient(circle at 38% 34%, rgba(179,156,255,0.30), rgba(111,224,230,0.10) 60%, transparent 75%);
+    box-shadow:0 0 50px -8px rgba(179,156,255,0.45), inset 0 0 30px rgba(255,255,255,0.05);
+    display:flex; align-items:center; justify-content:center; will-change:transform; }
+  .bx-count { font-family:var(--serif); font-weight:300; font-size:40px; color:var(--ink); line-height:1; }
+  .bx-phase { font-family:var(--read); font-style:italic; font-size:22px; color:var(--ink); min-height:30px; margin-top:6px; letter-spacing:0.01em; }
+  .bx-cycles { font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-faint); min-height:16px; margin-top:8px; }
+  .bx-controls { display:flex; gap:11px; justify-content:center; align-items:center; margin-top:22px; flex-wrap:wrap; }
+  .bx-hint { font-size:12px; color:var(--ink-faint); margin-top:16px; line-height:1.55; }
 </style>
 </head>
 <body>
@@ -874,6 +908,11 @@
   </footer>
 </div>
 
+<!-- ============ BREATHE (calm tool, reachable anywhere) ============ -->
+<button class="breathe-fab" id="breatheFab" aria-label="Take a guided breath">
+  <span class="bf-dot" aria-hidden="true"></span><span class="bf-label">Breathe</span>
+</button>
+
 <!-- ============ ABOUT MODAL ============ -->
 <div class="modal-bg" id="aboutModal">
   <div class="modal">
@@ -1107,6 +1146,27 @@
   </div>
 </div>
 
+<!-- ============ BREATHE MODAL ============ -->
+<div class="modal-bg" id="breatheModal">
+  <div class="modal breathe-modal">
+    <h2>Take a breath</h2>
+    <p class="m-sub">Box breathing — in for four, hold for four, out for four, hold for four. Follow the circle. A minute here can quiet a racing mind before you reflect.</p>
+    <div class="bx-stage">
+      <div class="bx-glow" aria-hidden="true"></div>
+      <div class="bx-orb" id="bxOrb"><span class="bx-count" id="bxCount">4</span></div>
+    </div>
+    <div class="bx-phase" id="bxPhase">Breathe in</div>
+    <div class="bx-cycles" id="bxCycles"></div>
+    <div class="bx-controls">
+      <button class="refract-btn" id="bxToggle">Pause</button>
+    </div>
+    <p class="bx-hint">When you're ready, close this and come back to what you were holding. There's no rush.</p>
+    <div class="modal-actions">
+      <button class="ghost-btn" id="closeBreathe">I feel steadier</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ============================================================
    PRISM — refract a situation through chosen perspectives.
@@ -1154,6 +1214,44 @@ document.querySelectorAll('#setText button').forEach(b => b.addEventListener("cl
 $("whyBtn").addEventListener("click", () => openModal("whyModal"));
 $("closeWhy").addEventListener("click", () => closeModal("whyModal"));
 $("whyToTalk2").addEventListener("click", () => { closeModal("whyModal"); showView("reflect"); });
+
+/* ============================================================
+   BREATHE — guided box breathing (4-4-4-4), rAF-driven so it's
+   smooth and independent of the global motion setting (the user
+   opted into this one). Reachable from any screen via the FAB.
+   ============================================================ */
+const BX_PHASES = [
+  { name:"Breathe in",  dur:4000, from:0.55, to:1    },
+  { name:"Hold",        dur:4000, from:1,    to:1    },
+  { name:"Breathe out", dur:4000, from:1,    to:0.55 },
+  { name:"Hold",        dur:4000, from:0.55, to:0.55 }
+];
+const BX_CYCLE = BX_PHASES.reduce((s,p)=>s+p.dur,0);
+const bx = { raf:0, running:false, t0:0, elapsed:0 };
+function bxEase(t){ return 0.5 - 0.5*Math.cos(Math.PI*Math.max(0,Math.min(1,t))); }   // easeInOutSine
+function bxFrame(ts){
+  if (!bx.running) return;
+  if (!$("breatheModal").classList.contains("show")){ bx.running=false; return; }     // closed via backdrop / Escape
+  if (!bx.t0) bx.t0 = ts - bx.elapsed;
+  bx.elapsed = ts - bx.t0;
+  const inCycle = bx.elapsed % BX_CYCLE;
+  const cycles = Math.floor(bx.elapsed / BX_CYCLE);
+  let acc = 0, ph = BX_PHASES[0], local = 0;
+  for (const p of BX_PHASES){ if (inCycle < acc + p.dur){ ph = p; local = inCycle - acc; break; } acc += p.dur; }
+  $("bxOrb").style.transform = `scale(${(ph.from + (ph.to - ph.from) * bxEase(local / ph.dur)).toFixed(3)})`;
+  $("bxCount").textContent = String(Math.ceil((ph.dur - local) / 1000));
+  $("bxPhase").textContent = ph.name;
+  $("bxCycles").textContent = cycles > 0 ? `${cycles} full breath${cycles>1?"s":""}` : "follow the circle";
+  bx.raf = requestAnimationFrame(bxFrame);
+}
+function bxStart(){ bx.running = true; bx.raf = requestAnimationFrame(bxFrame); $("bxToggle").textContent = "Pause"; }
+function bxPause(){ bx.running = false; cancelAnimationFrame(bx.raf); bx.t0 = 0; $("bxToggle").textContent = "Resume"; }
+function bxReset(){ cancelAnimationFrame(bx.raf); bx.running = false; bx.t0 = 0; bx.elapsed = 0;
+  $("bxOrb").style.transform = "scale(0.55)"; $("bxCount").textContent = "4"; $("bxPhase").textContent = "Breathe in"; $("bxCycles").textContent = ""; }
+function openBreathe(){ bxReset(); openModal("breatheModal"); bxStart(); }
+$("breatheFab").addEventListener("click", openBreathe);
+$("bxToggle").addEventListener("click", () => { if (bx.running) bxPause(); else bxStart(); });
+$("closeBreathe").addEventListener("click", () => { bxPause(); closeModal("breatheModal"); });
 
 /* ---------- about + share + resources modals ---------- */
 $("aboutBtn").addEventListener("click", () => openModal("aboutModal"));
@@ -1922,6 +2020,7 @@ async function boot(){
 
 function showWelcome(){
   $("welcome").classList.add("show");
+  $("breatheFab").style.display = "none";   // hidden behind/over the login gate
   const cloud = !!sb;
   $("wcCloud").style.display   = cloud ? "" : "none";
   $("wcNoCloud").style.display = cloud ? "none" : "";
@@ -1929,6 +2028,7 @@ function showWelcome(){
 }
 function enterApp(rid){
   $("welcome").classList.remove("show");
+  $("breatheFab").style.display = "flex";   // calm tool now reachable from any screen
   renderAccount();
   if (rid){
     setLoading(true);
