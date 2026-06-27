@@ -116,6 +116,29 @@ try {
     await ctx.close();
   }
 
+  /* ===== 3b. Resume a recent reflection ===== */
+  {
+    const ctx = await browser.newContext();
+    const page = await ctx.newPage();
+    await page.goto(URL, { waitUntil: "domcontentloaded" });
+    await page.evaluate(() => {
+      const now = Date.now();
+      localStorage.setItem("prism_identity", JSON.stringify({ mode: "guest", since: now }));
+      localStorage.setItem("prism_onboarded", "1");
+      localStorage.setItem("prism_history", JSON.stringify([
+        { id: "local-1", when: now - 3600000, situation: "deciding whether to switch jobs",
+          turns: [{ role: "you", text: "deciding whether to switch jobs" }, { role: "prism", text: "...", question: "?" }], care: { level: "none" } },
+      ]));
+    });
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(500);
+    check("resume hint shows for a recent reflection", await page.locator("#resumeHint").isVisible());
+    await page.locator("#resumeLink").click();
+    await page.waitForTimeout(300);
+    check("resume opens the conversation", await page.locator("#result").evaluate((el) => el.classList.contains("show")));
+    await ctx.close();
+  }
+
   /* ===== 4. Tabs + journal + check-in ===== */
   {
     const { ctx, page, errors } = await freshPage();

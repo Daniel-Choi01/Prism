@@ -441,6 +441,12 @@
   .echo-note a { color:var(--c-future); cursor:pointer; text-decoration:none; border-bottom:1px dotted var(--line-bright); }
   .echo-note a:hover { color:var(--ink); }
 
+  /* "pick up where you left off" on the intake */
+  .resume-hint { margin-top:18px; font-size:13px; color:var(--ink-faint); line-height:1.55; }
+  .resume-hint[hidden] { display:none; }
+  .resume-hint a { color:var(--c-future); cursor:pointer; border-bottom:1px dotted var(--line-bright); text-decoration:none; }
+  .resume-hint a:hover { color:var(--ink); }
+
   /* ---------- journal (private daily writing + therapist-method reflection) ---------- */
   .journal { display:none; max-width:760px; margin:0 auto; padding:34px 0 90px; }
   .journal.show { display:block; }
@@ -940,6 +946,8 @@
         <a data-ex="0">“Should I drop the team I helped start?”</a> ·
         <a data-ex="1">“Everyone thinks I have it together.”</a>
       </div>
+
+      <div class="resume-hint" id="resumeHint" hidden></div>
 
       <p class="grounding">Private to this device, patient, and judgment-free — somewhere to think out loud. Not therapy, and never a replacement for a real person; if you're carrying something heavy, Prism will always point you toward someone who can help.</p>
 
@@ -2080,7 +2088,7 @@ function showView(name){
     const hasConvo = current && current.turns;
     $("stage").style.display = hasConvo ? "none" : "flex";
     $("result").classList.toggle("show", !!hasConvo);
-    if (!hasConvo) setTimeout(()=>$("situation")?.focus(), 60);
+    if (!hasConvo){ setTimeout(()=>$("situation")?.focus(), 60); maybeResume(); }
   } else {
     $("stage").style.display = "none";
     $("result").classList.remove("show");
@@ -2092,6 +2100,19 @@ function showView(name){
   window.scrollTo({top:0, behavior:"smooth"});
 }
 document.querySelectorAll("#tabs .tab").forEach(t => t.addEventListener("click", () => showView(t.dataset.view)));
+
+/* gently offer to continue a recent unfinished reflection from the intake */
+function maybeResume(){
+  const el = $("resumeHint"); if (!el) return;
+  el.hidden = true; el.innerHTML = "";
+  if (current) return;
+  const last = loadHist().find(x => (x.turns||[]).length >= 2 && x.when);
+  if (!last || (Date.now() - last.when) / 86400000 > 14) return;   // only within ~2 weeks
+  const when = new Date(last.when).toLocaleDateString(undefined, { month:"short", day:"numeric" });
+  el.innerHTML = `Last time (${when}) you were sitting with “${esc(firstClause(last.situation))}”. <a id="resumeLink">Pick it back up →</a>`;
+  el.hidden = false;
+  const lk = $("resumeLink"); if (lk) lk.addEventListener("click", () => { current = last; renderConvo(last); });
+}
 
 /* ---------- encouragement (honest, never sycophantic) ---------- */
 let _encLoaded = false;
@@ -2128,7 +2149,9 @@ const ENC_BANK = [
   "Progress only you can see still counts. Not everything worth doing leaves a mark other people get to applaud.",
   "You're not behind. There's no real schedule for this, however loudly it insists there is one.",
   "Needing help was never the part where you failed. It's usually the part where you started being honest.",
-  "The version of you that's tired and still here isn't a lesser one. It's the one doing the actual hard part."
+  "The version of you that's tired and still here isn't a lesser one. It's the one doing the actual hard part.",
+  "You can be doing badly at a hard thing and still be doing fine as a person. Those aren't the same scoreboard.",
+  "However slowly you're moving, you're still facing forward. That counts more than the pace does."
 ];
 function exampleEncourage(){ return ENC_BANK[Math.floor(Date.now()/9000) % ENC_BANK.length]; }
 
@@ -2172,7 +2195,9 @@ const WIS_BANK = [
   { source:"Lao Tzu — Tao Te Ching", idea:"Muddy water clears when it's left still. Some answers don't come from pushing harder — they surface on their own once you stop stirring.", prompt:"What might become clear if you let this rest for a day instead of forcing it?" },
   { source:"Pema Chödrön", idea:"You are the sky; everything else is just the weather. The feeling moving through you is real, but it isn't the whole of who you are.", prompt:"If this feeling is weather passing through, what's the steadier sky underneath it?" },
   { source:"Acceptance & Commitment Therapy", idea:"You can carry a difficult feeling with you and still walk toward what matters. You don't have to wait for it to leave before you start.", prompt:"What small thing that matters to you could you do today, even while the hard feeling rides along?" },
-  { source:"Brené Brown", idea:"Vulnerability isn't weakness — it's the truest measure of courage. Letting yourself be seen without knowing how it'll land is where real connection starts.", prompt:"Where might letting yourself be seen, just a little, change something for you?" }
+  { source:"Brené Brown", idea:"Vulnerability isn't weakness — it's the truest measure of courage. Letting yourself be seen without knowing how it'll land is where real connection starts.", prompt:"Where might letting yourself be seen, just a little, change something for you?" },
+  { source:"James Baldwin", idea:"Not everything that is faced can be changed, but nothing can be changed until it is faced. Looking squarely at a thing isn't the same as being beaten by it.", prompt:"What have you been looking away from that might soften a little if you turned toward it?" },
+  { source:"Stoicism — Marcus Aurelius", idea:"The obstacle in the path becomes the path. What stands in your way is often the very material the next step is made from.", prompt:"If this difficulty were the way forward rather than the blockage, what would it be asking of you?" }
 ];
 function exampleWisdom(){ return WIS_BANK[Math.floor(Date.now()/9000) % WIS_BANK.length]; }
 
@@ -2640,7 +2665,11 @@ const JR_PROMPTS = [
   "What part of me needs to hear that it's allowed to rest?",
   "What would count as a good week that has nothing to do with being productive?",
   "What's the kindest true thing someone could say to me right now — and why can't I say it to myself?",
-  "What am I grieving that I never gave myself permission to call a loss?"
+  "What am I grieving that I never gave myself permission to call a loss?",
+  "What's one thing that would make tomorrow two percent lighter?",
+  "What do I keep apologizing for that I don't actually need to?",
+  "What have I been calling 'lazy' that might honestly be 'exhausted'?",
+  "If I could feel one thing less today, what would it be — and what's quietly feeding it?"
 ];
 let _jrPromptIdx = -1;
 function jrRenderPrompt(){ $("jrPromptText").textContent = JR_PROMPTS[_jrPromptIdx]; $("jrPromptCard").hidden = false; }
