@@ -964,7 +964,7 @@
     </div>
 
     <div class="field-shell jr-field">
-      <textarea id="jrText" maxlength="4000" placeholder="What feels heaviest or most pressing for you to explore right now? Write freely — no one else sees this."></textarea>
+      <textarea id="jrText" maxlength="4000" placeholder="What's actually going on with you today? Write it however it comes out — no one else ever sees this."></textarea>
       <div class="field-foot">
         <span class="hint" id="jrDate"></span>
         <div class="jr-actions">
@@ -2312,22 +2312,22 @@ function showJrNotice(m){ const n=$("jrNotice"); n.textContent=m; n.className="n
 
 /* ---------- journal prompt library (curated, grounded reflective prompts) ---------- */
 const JR_PROMPTS = [
-  "What am I feeling right now, underneath the busyness — and where do I notice it in my body?",
-  "What's something I'm carrying that I haven't said out loud to anyone yet?",
-  "If a close friend were in my exact situation, what would I want them to hear?",
-  "What did today ask of me — and what, if anything, did it give back?",
-  "What am I avoiding, and what am I afraid would happen if I faced it?",
-  "When did I last feel most like myself? What was different then?",
-  "What would 'enough' look like today — not perfect, just enough?",
-  "What's one thing I'm grateful for that I usually walk right past?",
-  "What belief about myself am I treating as a fact right now? Is it actually true?",
-  "What do I need more of in my days, and what do I need less of?",
-  "Who or what is taking up the most space in my head — and is that fair to me?",
-  "If nothing had to be solved today, what would I most want to simply feel or notice?",
-  "What's a small kindness I could offer myself this week?",
-  "What am I quietly proud of that I haven't given myself any credit for?",
-  "What's the story I keep telling about this — and is there another, truer way to tell it?",
-  "Where am I being harder on myself than I would ever be on someone I love?"
+  "What's the thing I keep almost writing here, then talking myself out of?",
+  "If I stopped saying I'm fine, what would I admit first?",
+  "What am I carrying today that nobody around me knows about?",
+  "What would I say right now if I were the friend I actually needed?",
+  "What am I angry about that I keep calling something else?",
+  "When did I last feel fully like myself — and what was I doing?",
+  "What does 'enough' look like today? Not my best. Just enough.",
+  "What good thing happened that I almost let slip past me?",
+  "What am I telling myself is true that I've never once checked?",
+  "What am I tired of pretending doesn't bother me?",
+  "Who's been living rent-free in my head — and did I ever invite them in?",
+  "If nothing had to be fixed today, what would I let myself just feel?",
+  "Where am I being crueler to myself than I'd ever be to someone I love?",
+  "What am I quietly proud of that I've given myself zero credit for?",
+  "What's the story I keep telling about this — and who taught me to tell it that way?",
+  "What have I been waiting for permission to do?"
 ];
 let _jrPromptIdx = -1;
 function jrRenderPrompt(){ $("jrPromptText").textContent = JR_PROMPTS[_jrPromptIdx]; $("jrPromptCard").hidden = false; }
