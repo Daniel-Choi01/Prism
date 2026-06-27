@@ -271,7 +271,7 @@
     cursor: pointer; transition: .2s; }
   .hist-item:hover { border-color: var(--line-bright); background: rgba(255,255,255,0.03); }
   .hist-item .ht { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--ink);
-    overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; }
   .hist-item .hm { font-size: 11px; color: var(--ink-faint); margin-top: 6px; letter-spacing: 0.04em; }
   .hist-empty { color: var(--ink-faint); font-style: italic; text-align: center; padding: 24px 0; }
 
@@ -642,6 +642,26 @@
   .bx-cycles { font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-faint); min-height:16px; margin-top:8px; }
   .bx-controls { display:flex; gap:11px; justify-content:center; align-items:center; margin-top:22px; flex-wrap:wrap; }
   .bx-hint { font-size:12px; color:var(--ink-faint); margin-top:16px; line-height:1.55; }
+
+  /* ============================================================
+     RICHER PATTERNS — mood-over-time chart + theme bars.
+     Computed entirely on-device from your own reflections; makes the
+     "Prism remembers you" claim something you can actually SEE.
+     ============================================================ */
+  .pat-mood { margin:2px 0 6px; }
+  .pat-mood svg { width:100%; height:auto; display:block; overflow:visible; }
+  .pat-mood-axis { display:flex; justify-content:space-between; font-size:10.5px; color:var(--ink-faint); letter-spacing:0.04em; margin-top:4px; }
+  .pat-mood-read { font-size:13px; color:var(--ink-dim); line-height:1.55; margin:10px 0 4px; }
+  .pat-mood-read b { color:var(--ink); font-weight:600; }
+  .pat-legend { display:flex; gap:15px; flex-wrap:wrap; font-size:11px; color:var(--ink-faint); margin-top:9px; }
+  .pat-legend span { display:inline-flex; align-items:center; gap:6px; }
+  .pat-legend i { width:8px; height:8px; border-radius:50%; display:inline-block; flex:0 0 auto; }
+  .pat-bars { display:flex; flex-direction:column; gap:9px; margin-bottom:6px; }
+  .pat-bar { display:flex; align-items:center; gap:11px; }
+  .pat-bar-w { width:94px; flex:0 0 auto; font-size:13px; color:var(--ink); text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .pat-bar-track { flex:1; height:9px; border-radius:999px; background:rgba(255,255,255,0.05); overflow:hidden; }
+  .pat-bar-fill { display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,var(--s4),var(--s6)); }
+  .pat-bar-n { flex:0 0 auto; font-size:12px; color:var(--ink-faint); min-width:16px; text-align:left; }
 </style>
 </head>
 <body>
@@ -1763,6 +1783,48 @@ function analyzePatterns(){
   return { count:h.length, spanDays, themes };
 }
 
+/* ---------- mood over time — scored on-device from the person's OWN words ---------- */
+const MOOD_NEG = new Set("sad sadness anxious anxiety afraid scared fear fearful worried worry worrying stress stressed overwhelmed exhausted tired drained lonely alone isolated lost stuck trapped hopeless worthless empty numb guilt guilty ashamed shame angry anger frustrated frustration hurt hurting pain painful crying broken failing failure hate dread dreading panic panicked depressed depression miserable difficult struggle struggling struggled doubt regret resent resentful jealous insecure rejected abandoned betrayed helpless defeated burnout terrible awful horrible worse worst heavy dark sick".split(/\s+/));
+const MOOD_POS = new Set("happy happiness joy joyful glad grateful gratitude thankful hopeful hope hopefulness calm calmer peace peaceful proud pride love loved loving excited excitement content relief relieved better good great strong stronger confident brave courage courageous free freedom light lighter clear clarity growth growing learn learned learning accomplish accomplished achieved achievement success connected supported safe warm kind optimistic energized motivated inspired enjoy enjoyed enjoying smile smiling laugh laughed laughing healing healed progress okay alright".split(/\s+/));
+const MOOD_NEGATORS = new Set("not no never cant cannot dont didnt wasnt isnt arent wont without barely hardly nothing".split(/\s+/));
+function moodTokens(s){ return String(s||"").toLowerCase().replace(/['’]/g,"").split(/[^a-z]+/).filter(Boolean); }
+function moodOf(item){
+  let text = item.situation || "";
+  if (Array.isArray(item.turns)) text += " " + item.turns.filter(t=>t.role==="you").map(t=>t.text||"").join(" ");
+  const toks = moodTokens(text);
+  let score = 0, hits = 0;
+  for (let i=0;i<toks.length;i++){
+    let v = MOOD_POS.has(toks[i]) ? 1 : MOOD_NEG.has(toks[i]) ? -1 : 0;
+    if (!v) continue;
+    if (i>0 && MOOD_NEGATORS.has(toks[i-1])) v = -v;   // light negation handling ("not happy", "no hope")
+    score += v; hits++;
+  }
+  let norm = hits ? Math.max(-1, Math.min(1, score / Math.max(4, Math.sqrt(hits)*2))) : 0;
+  const lvl = (item.care && item.care.level) || "none";   // the safety signal dominates the tone read
+  if (lvl === "crisis") norm = Math.min(norm, -0.85);
+  else if (lvl === "struggling") norm = Math.min(norm, -0.45);
+  return norm;
+}
+function moodSeries(){
+  return loadHist().filter(x=>x.when).slice().sort((a,b)=>a.when-b.when)
+    .map(x=>({ when:x.when, score:moodOf(x), care:(x.care&&x.care.level)||"none" }));
+}
+function careDot(level){ return level==="crisis" ? "var(--c-rival)" : level==="struggling" ? "var(--c-mentor)" : "var(--c-future)"; }
+function renderMoodChart(series){
+  const n = series.length, W=300, H=96, padL=8, padR=8, padT=14;
+  const innerW = W-padL-padR, midY = H/2, amp = (H/2 - padT)*0.92;
+  const xOf = i => padL + (n===1 ? innerW/2 : (i/(n-1))*innerW);
+  const yOf = s => midY - Math.max(-1,Math.min(1,s))*amp;
+  const pts = series.map((d,i)=>`${xOf(i).toFixed(1)},${yOf(d.score).toFixed(1)}`).join(" ");
+  const dots = series.map((d,i)=>`<circle cx="${xOf(i).toFixed(1)}" cy="${yOf(d.score).toFixed(1)}" r="3.4" fill="${careDot(d.care)}"/>`).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Your reflective tone over time">
+    <defs><linearGradient id="moodGrad" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="var(--s4)"/><stop offset="1" stop-color="var(--s6)"/></linearGradient></defs>
+    <line x1="${padL}" y1="${midY}" x2="${W-padR}" y2="${midY}" stroke="var(--line-bright)" stroke-width="1" stroke-dasharray="3 4"/>
+    <polyline points="${pts}" fill="none" stroke="url(#moodGrad)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}
+  </svg>`;
+}
+
 function renderPatterns(){
   const box = $("patternsBox"); const p = analyzePatterns();
   if (!p.count){ box.innerHTML=""; return; }
@@ -1771,12 +1833,41 @@ function renderPatterns(){
     return;
   }
   const span = p.spanDays > 0 ? ` over ${p.spanDays} day${p.spanDays>1?"s":""}` : "";
-  const themeChips = p.themes.length
-    ? `<div class="pat-label">what keeps surfacing</div><div class="pat-themes">${p.themes.map(t=>`<span class="pat-theme">${esc(t.word)} <b>×${t.count}</b></span>`).join("")}</div>`
-    : "";
+
+  // mood over time — a picture of the "Prism remembers you" claim
+  const series = moodSeries();
+  let moodBlock = "";
+  if (series.length >= 2){
+    const delta = series[series.length-1].score - series[0].score;
+    const read = Math.abs(delta) < 0.2 ? `Across these, your tone has stayed fairly <b>steady</b>.`
+      : delta > 0 ? `Lately your reflections read a little <b>lighter</b> than when you started.`
+      : `Lately your reflections read a little <b>heavier</b> — worth being gentle with yourself.`;
+    const d0 = new Date(series[0].when).toLocaleDateString(undefined,{month:"short",day:"numeric"});
+    const d1 = new Date(series[series.length-1].when).toLocaleDateString(undefined,{month:"short",day:"numeric"});
+    moodBlock = `
+      <div class="pat-label">your reflective tone over time</div>
+      <div class="pat-mood">${renderMoodChart(series)}</div>
+      <div class="pat-mood-axis"><span>${d0}</span><span>lighter ↑ · heavier ↓</span><span>${d1}</span></div>
+      <div class="pat-mood-read">${read}</div>
+      <div class="pat-legend">
+        <span><i style="background:var(--c-future)"></i>an ordinary day</span>
+        <span><i style="background:var(--c-mentor)"></i>a heavy one</span>
+        <span><i style="background:var(--c-rival)"></i>a hard moment</span>
+      </div>`;
+  }
+
+  // what keeps surfacing — proportional bars
+  let themeBlock = "";
+  if (p.themes.length){
+    const max = p.themes[0].count || 1;
+    const bars = p.themes.map(t => `<div class="pat-bar"><span class="pat-bar-w">${esc(t.word)}</span><span class="pat-bar-track"><span class="pat-bar-fill" style="width:${Math.round(t.count/max*100)}%"></span></span><span class="pat-bar-n">${t.count}</span></div>`).join("");
+    themeBlock = `<div class="pat-label" style="margin-top:18px;">what keeps surfacing</div><div class="pat-bars">${bars}</div>`;
+  }
+
   box.innerHTML = `
     <div class="pat-stat">${p.count} reflections${span}.</div>
-    ${themeChips}
+    ${moodBlock}
+    ${themeBlock}
     <div class="pat-insight" id="patInsight">
       <button class="ghost-btn" id="revealPatterns">Reveal the thread →</button>
     </div>`;
