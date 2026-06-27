@@ -3,5 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Prism — a reflective conversation that reflects what's weighing on you back, remembers you over time, and asks rather than advises."
+  "description": "Prism — a reflective conversation that reflects what's weighing on you back, remembers you over time, and asks rather than advises.",
+  "scripts": {
+    "test": "node tests/smoke.mjs"
+  }
 }
