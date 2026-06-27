@@ -1970,6 +1970,7 @@ function cacheLocally(item){
   const h = loadHist().filter(x => x.id !== item.id && x.when !== item.when);   // de-dupe by id + timestamp
   h.unshift(item);
   localStorage.setItem(HIST_STORE, JSON.stringify(h.slice(0,60)));
+  cloudPush();   // if signed in, mirror privately to your account (no-op for guests)
 }
 async function saveCurrent(){
   if (!current) return;
@@ -2226,7 +2227,7 @@ const JR_CONSENT = "prism_journal_insights";
 let jrCurrentId = null;
 
 function loadJournal(){ try { const a=JSON.parse(localStorage.getItem(JR_STORE)||"[]"); return Array.isArray(a)?a:[]; } catch(_){ return []; } }
-function saveJournal(arr){ try { localStorage.setItem(JR_STORE, JSON.stringify(arr.slice(0,200))); } catch(_){} }
+function saveJournal(arr){ try { localStorage.setItem(JR_STORE, JSON.stringify(arr.slice(0,200))); } catch(_){} cloudPush(); }
 function jrConsentOn(){ return localStorage.getItem(JR_CONSENT) === "1"; }
 function renderJrConsent(){ const t=$("jrConsent"); const on=jrConsentOn(); t.classList.toggle("on",on); t.setAttribute("aria-checked", on?"true":"false"); }
 
@@ -2392,7 +2393,7 @@ const CI_MOODS = [
 ];
 let ciMood = null;
 function loadCheckins(){ try { const a=JSON.parse(localStorage.getItem(CI_STORE)||"[]"); return Array.isArray(a)?a:[]; } catch(_){ return []; } }
-function saveCheckins(a){ try { localStorage.setItem(CI_STORE, JSON.stringify(a.slice(0,180))); } catch(_){} }
+function saveCheckins(a){ try { localStorage.setItem(CI_STORE, JSON.stringify(a.slice(0,180))); } catch(_){} cloudPush(); }
 function checkinInit(){
   ciMood = null;
   document.querySelectorAll('#moodPicker .mood-opt').forEach(b => b.setAttribute("aria-checked","false"));
@@ -2463,6 +2464,54 @@ function identityFromUser(u){
   return { mode: u.is_anonymous ? "anon" : "google", name, email: u.email || "" };
 }
 
+/* ============================================================
+   CLOUD SYNC — what makes "Prism remembers you" true ACROSS devices.
+   Signed-in users (Google / anonymous) sync their private bundle
+   directly via the Supabase client; Row-Level Security guarantees a
+   user can only ever touch their own row. GUESTS never sync — their
+   data stays strictly on-device. Every call is defensive and no-ops
+   when sync isn't available, so the offline experience is untouched.
+   ============================================================ */
+function cloudEnabled(){ return !!sb && !!identity && identity.mode !== "guest"; }
+async function cloudUid(){ try { const { data } = await sb.auth.getUser(); return data && data.user ? data.user.id : null; } catch(_){ return null; } }
+function mergeStore(key, remoteArr, keyFn){
+  if (!Array.isArray(remoteArr) || !remoteArr.length) return;
+  let local; try { local = JSON.parse(localStorage.getItem(key) || "[]"); } catch(_){ local = []; }
+  if (!Array.isArray(local)) local = [];
+  const map = new Map();
+  [...local, ...remoteArr].forEach(item => {
+    if (!item) return;
+    const k = keyFn(item); if (k == null) return;
+    const prev = map.get(k);
+    if (!prev || (item.when || 0) >= (prev.when || 0)) map.set(k, item);   // newest wins
+  });
+  const merged = [...map.values()].sort((a,b)=>(b.when||0)-(a.when||0)).slice(0, 200);
+  try { localStorage.setItem(key, JSON.stringify(merged)); } catch(_){}
+}
+async function cloudPull(){
+  if (!cloudEnabled()) return;
+  const uid = await cloudUid(); if (!uid) return;
+  try {
+    const { data, error } = await sb.from("user_state").select("data").eq("user_id", uid).maybeSingle();
+    if (error || !data || !data.data) return;
+    const r = data.data;
+    mergeStore(HIST_STORE, r.history,  x => x.id || x.when);
+    mergeStore(JR_STORE,   r.journal,  x => x.id || x.when);
+    mergeStore(CI_STORE,   r.checkins, x => new Date(x.when).toDateString());   // one check-in per day
+    if (activeView === "checkin") renderCheckins();
+  } catch(_){}
+}
+let _cloudTimer = null;
+function cloudPush(){
+  if (!cloudEnabled()) return;
+  clearTimeout(_cloudTimer);
+  _cloudTimer = setTimeout(async () => {
+    const uid = await cloudUid(); if (!uid) return;
+    const bundle = { history: loadHist(), journal: loadJournal(), checkins: loadCheckins(), v: 1 };
+    try { await sb.from("user_state").upsert({ user_id: uid, data: bundle, updated_at: new Date().toISOString() }, { onConflict: "user_id" }); } catch(_){}
+  }, 1500);   // debounce: coalesce a burst of edits into one upsert
+}
+
 async function boot(){
   await initSupabase();
   if (sb){
@@ -2492,6 +2541,7 @@ function enterApp(rid){
   $("welcome").classList.remove("show");
   $("breatheFab").style.display = "flex";   // calm tool now reachable from any screen
   renderAccount();
+  cloudPull();   // signed in? pull your private bundle from your account (no-op for guests)
   if (rid){
     setLoading(true);
     loadReflectionById(rid).then(ok => {

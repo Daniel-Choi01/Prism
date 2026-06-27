@@ -46,6 +46,11 @@ built to do the opposite, and to do the one thing a stateless chat with any othe
   crisis resources (988, Crisis Text Line, findahelpline.com).
 - **Sign in your way** — Google, anonymous (one-tap, no details), or stay a guest. Auth is optional;
   with no keys configured, Prism still runs fully in guest mode.
+- **Syncs across devices (when signed in)** — your private bundle (reflections, journal, check-ins)
+  follows your account, so "Prism remembers you" is true on your phone *and* your laptop. It syncs
+  directly from the browser under Row-Level Security (you can only ever touch your own row), so
+  "remembers you" finally works everywhere. Guests stay strictly on-device — that's the whole point
+  of guest mode.
 - **Private by design** — opt-in only (nothing is used to improve Prism unless you say so), export
   or delete your data anytime, and no provider key ever touches the browser.
 - **Listens back** — a gentle end-of-session feedback prompt; the rating + optional note (never your

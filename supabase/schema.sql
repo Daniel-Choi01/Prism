@@ -95,3 +95,33 @@ alter table public.feedback enable row level security;
 -- create policy "feedback: insert own" on public.feedback for insert
 --   with check (auth.uid() = user_id or user_id is null);
 -- create policy "feedback: read own" on public.feedback for select using (auth.uid() = user_id);
+
+
+-- ============================================================
+-- CLOUD SYNC — per-user private bundle (run this once Auth is on)
+-- ============================================================
+-- This is what makes "Prism remembers you" true ACROSS devices, not just one
+-- browser. One row per signed-in user holds their private bundle (reflections,
+-- journal, check-ins) as JSON. The browser reads/writes it DIRECTLY with the
+-- public anon key — Row-Level Security guarantees a user can only ever touch
+-- their OWN row (auth.uid() = user_id). Guests never use this: their data stays
+-- on-device only. No service-role key, no server function involved.
+--
+-- This block is idempotent and safe to run on a fresh project with Auth enabled.
+
+create table if not exists public.user_state (
+  user_id    uuid primary key references auth.users(id) on delete cascade,
+  data       jsonb not null default '{}'::jsonb,   -- { history:[], journal:[], checkins:[] }
+  updated_at timestamptz not null default now()
+);
+alter table public.user_state enable row level security;
+
+drop policy if exists "user_state: own select" on public.user_state;
+drop policy if exists "user_state: own insert" on public.user_state;
+drop policy if exists "user_state: own update" on public.user_state;
+drop policy if exists "user_state: own delete" on public.user_state;
+
+create policy "user_state: own select" on public.user_state for select using (auth.uid() = user_id);
+create policy "user_state: own insert" on public.user_state for insert with check (auth.uid() = user_id);
+create policy "user_state: own update" on public.user_state for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "user_state: own delete" on public.user_state for delete using (auth.uid() = user_id);
