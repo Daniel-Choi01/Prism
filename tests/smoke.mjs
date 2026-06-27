@@ -210,6 +210,34 @@ try {
     await ctx.close();
   }
 
+  /* ===== 5b. Reflections search ===== */
+  {
+    const ctx = await browser.newContext();
+    const page = await ctx.newPage();
+    await page.goto(URL, { waitUntil: "domcontentloaded" });
+    await page.evaluate(() => {
+      const day = 86400000, now = Date.now();
+      localStorage.setItem("prism_identity", JSON.stringify({ mode: "guest", since: now }));
+      localStorage.setItem("prism_onboarded", "1");
+      const mk = (o, s) => ({ id: "local-" + o, when: now - o * day, situation: s, turns: [{ role: "you", text: s }], care: { level: "none" } });
+      localStorage.setItem("prism_history", JSON.stringify([
+        mk(1, "work deadline stress"), mk(2, "a fight with my brother"), mk(3, "work feels better"),
+        mk(4, "sleep has been rough"), mk(5, "thinking about work again"),
+      ]));
+    });
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(400);
+    await page.locator("#historyBtn").click();
+    await page.waitForTimeout(300);
+    const total = await page.locator("#histList .hist-item").count();
+    check("reflections search appears once there's history", await page.locator("#histSearch").isVisible());
+    await page.locator("#histSearch").fill("work");
+    await page.waitForTimeout(150);
+    const filtered = await page.locator("#histList .hist-item").count();
+    check("reflections search filters", total === 5 && filtered === 3, `total ${total}, filtered ${filtered}`);
+    await ctx.close();
+  }
+
   /* ===== 6. Settings persist across reload (no flash) ===== */
   {
     const { ctx, page } = await freshPage();
