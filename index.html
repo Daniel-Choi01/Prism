@@ -479,6 +479,34 @@
   .convo-reply textarea:focus { border-color:rgba(179,156,255,0.5); }
   .convo-reply .refract-btn { align-self:stretch; }
 
+  /* ---------- tab nav ---------- */
+  .tabs { display:flex; gap:3px; flex-wrap:wrap; justify-content:center; }
+  .tab { font-family:var(--sans); font-size:12.5px; letter-spacing:0.03em; color:var(--ink-faint);
+    background:transparent; border:0; padding:8px 13px; border-radius:999px; cursor:pointer; transition:.2s; position:relative; }
+  .tab:hover { color:var(--ink-dim); }
+  .tab[aria-selected="true"] { color:var(--ink); background:rgba(255,255,255,0.05); }
+  .tab[aria-selected="true"]::after { content:""; position:absolute; left:13px; right:13px; bottom:1px; height:2px; border-radius:2px;
+    background:linear-gradient(90deg,var(--s2),var(--s6)); }
+  .tab:focus-visible { outline:2px solid var(--line-bright); outline-offset:2px; }
+
+  /* ---------- encouragement + wisdom panes ---------- */
+  .pane { display:none; max-width:680px; margin:0 auto; padding:46px 0 90px; text-align:center; }
+  .pane.show { display:block; }
+  .pane .eyebrow { margin-bottom:18px; }
+  .pane-title { font-family:var(--serif); font-weight:300; font-size:clamp(28px,5vw,42px); line-height:1.08; margin-bottom:10px; }
+  .pane-title em { font-style:italic; background:linear-gradient(100deg,var(--s2),var(--s6)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .pane-sub { color:var(--ink-dim); font-family:var(--read); font-style:italic; font-size:16px; margin:0 auto 30px; max-width:460px; line-height:1.55; }
+  .card-soft { border:1px solid var(--line-bright); border-radius:20px; padding:34px 32px;
+    background:linear-gradient(180deg, rgba(179,156,255,0.05), rgba(255,255,255,0.012)); text-align:left;
+    opacity:0; transform:translateY(10px); transition:opacity .6s ease, transform .6s ease; }
+  .card-soft.in { opacity:1; transform:none; }
+  .enc-msg { font-family:var(--serif); font-weight:300; font-size:22px; line-height:1.55; color:var(--ink); }
+  .wis-source { font-size:10.5px; letter-spacing:0.26em; text-transform:uppercase; color:var(--c-mentor); margin-bottom:14px; }
+  .wis-idea { font-family:var(--serif); font-weight:300; font-size:21px; line-height:1.56; color:var(--ink); }
+  .wis-prompt { margin-top:18px; padding-top:16px; border-top:1px solid var(--line); font-family:var(--read); font-style:italic; font-size:17px; color:var(--ink); }
+  .pane-actions { margin-top:26px; display:flex; gap:11px; justify-content:center; flex-wrap:wrap; }
+  .pane-loading { color:var(--ink-faint); font-style:italic; font-family:var(--read); font-size:17px; padding:14px 0; }
+
   /* ---------- welcome / login gate ---------- */
   .welcome { position:fixed; inset:0; z-index:80; display:none; align-items:center; justify-content:center; padding:24px; overflow-y:auto;
     background: radial-gradient(900px 620px at 50% -5%, rgba(60,45,95,0.45), transparent 60%), var(--bg); }
@@ -568,8 +596,13 @@
       </svg>
       Prism
     </div>
+    <nav class="tabs" id="tabs" role="tablist" aria-label="Prism sections">
+      <button class="tab" role="tab" data-view="reflect" aria-selected="true">Talk</button>
+      <button class="tab" role="tab" data-view="journal" aria-selected="false">Journal</button>
+      <button class="tab" role="tab" data-view="encourage" aria-selected="false">Encouragement</button>
+      <button class="tab" role="tab" data-view="wisdom" aria-selected="false">Wisdom</button>
+    </nav>
     <div class="top-actions">
-      <button class="ghost-btn" id="journalBtn">Journal</button>
       <button class="ghost-btn" id="historyBtn">Reflections</button>
       <button class="ghost-btn" id="aboutBtn">About</button>
       <button class="ghost-btn account-chip" id="accountChip" style="display:none;"></button>
@@ -737,6 +770,34 @@
     <div class="jr-entries-wrap" id="jrEntriesWrap" style="display:none;">
       <div class="pat-entries-label">past entries</div>
       <div id="jrEntries"></div>
+    </div>
+  </section>
+
+  <!-- ============ ENCOURAGEMENT ============ -->
+  <section class="pane" id="encourage">
+    <div class="eyebrow">a word for you</div>
+    <h2 class="pane-title">Something <em>true</em>, not flattery</h2>
+    <p class="pane-sub">Not "you've got this" — just one honest thing, shaped by what you've actually been carrying.</p>
+    <div class="card-soft" id="encCard"><div class="enc-msg" id="encMsg"></div></div>
+    <div class="pane-actions">
+      <button class="refract-btn" id="encMore">Another</button>
+      <button class="ghost-btn" id="encToTalk">Talk it through →</button>
+    </div>
+  </section>
+
+  <!-- ============ WISDOM ============ -->
+  <section class="pane" id="wisdom">
+    <div class="eyebrow">something to sit with</div>
+    <h2 class="pane-title">A little <em>wisdom</em></h2>
+    <p class="pane-sub">A genuine idea from philosophy or psychology to hold for a moment — never a command, never a platitude.</p>
+    <div class="card-soft" id="wisCard">
+      <div class="wis-source" id="wisSource"></div>
+      <div class="wis-idea" id="wisIdea"></div>
+      <div class="wis-prompt" id="wisPrompt"></div>
+    </div>
+    <div class="pane-actions">
+      <button class="refract-btn" id="wisMore">Another</button>
+      <button class="ghost-btn" id="wisToTalk">Reflect on this →</button>
     </div>
   </section>
 
@@ -1215,13 +1276,96 @@ function renderConvo(convo){
 function esc(s){ const d=document.createElement("div"); d.textContent=s||""; return d.innerHTML; }
 
 function reset(){
-  $("result").classList.remove("show");
-  $("stage").style.display="flex";
-  $("situation").value=""; $("situation").focus();
-  current = null;
+  $("situation").value=""; current = null;
   try { history.replaceState(null, "", location.pathname); } catch(_){}
+  showView("reflect");
+}
+
+/* ---------- views / tabs ---------- */
+let activeView = "reflect";
+function showView(name){
+  activeView = name;
+  ["journal","encourage","wisdom"].forEach(id => $(id).classList.remove("show"));
+  $("loader").classList.remove("show");
+  document.querySelectorAll("#tabs .tab").forEach(t => t.setAttribute("aria-selected", t.dataset.view === name ? "true" : "false"));
+  if (name === "reflect"){
+    const hasConvo = current && current.turns;
+    $("stage").style.display = hasConvo ? "none" : "flex";
+    $("result").classList.toggle("show", !!hasConvo);
+    if (!hasConvo) setTimeout(()=>$("situation")?.focus(), 60);
+  } else {
+    $("stage").style.display = "none";
+    $("result").classList.remove("show");
+    if (name === "journal"){ $("journal").classList.add("show"); journalInit(); }
+    else if (name === "encourage"){ $("encourage").classList.add("show"); encourageInit(); }
+    else if (name === "wisdom"){ $("wisdom").classList.add("show"); wisdomInit(); }
+  }
   window.scrollTo({top:0, behavior:"smooth"});
 }
+document.querySelectorAll("#tabs .tab").forEach(t => t.addEventListener("click", () => showView(t.dataset.view)));
+
+/* ---------- encouragement (honest, never sycophantic) ---------- */
+let _encLoaded = false;
+function encourageInit(){ if (!_encLoaded) loadEncourage(); }
+$("encMore").addEventListener("click", loadEncourage);
+$("encToTalk").addEventListener("click", () => showView("reflect"));
+async function loadEncourage(){
+  _encLoaded = true;
+  const card = $("encCard"), msg = $("encMsg");
+  card.classList.remove("in"); msg.innerHTML = '<span class="pane-loading">finding something honest to say…</span>';
+  void card.offsetWidth; card.classList.add("in");
+  let text; try { text = await callEncourage(); } catch(_){ text = exampleEncourage(); }
+  msg.textContent = text;
+}
+async function callEncourage(){
+  const res = await fetch("/api/encourage", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ memory: memoryContext(-1) }) });
+  if (res.status===404||res.status===405||res.status===501) throw new Error("down");
+  const j = await res.json(); if (!res.ok || !j.message) throw new Error(j.error||"down");
+  return j.message;
+}
+const ENC_BANK = [
+  "Whatever you didn't get to today doesn't erase that you kept going. Some days, continuing is the whole achievement.",
+  "You're allowed to find this hard. It being hard doesn't mean you're doing it wrong — it usually means it matters.",
+  "You don't have to feel strong to be doing something brave. Showing up while unsure is its own kind of courage.",
+  "That you're trying to understand yourself, instead of just running from it, already says something good about you.",
+  "Rest isn't a reward you earn by finishing everything. You're allowed to set some of it down before it's done.",
+  "You can be a work in progress and still be worth caring about — exactly as you are right now, unfinished."
+];
+function exampleEncourage(){ return ENC_BANK[Math.floor(Date.now()/9000) % ENC_BANK.length]; }
+
+/* ---------- wisdom (grounded in real philosophy/psychology) ---------- */
+let _wisLoaded = false;
+function wisdomInit(){ if (!_wisLoaded) loadWisdom(); }
+$("wisMore").addEventListener("click", loadWisdom);
+$("wisToTalk").addEventListener("click", () => {
+  const p = $("wisPrompt").textContent.trim();
+  showView("reflect");
+  if (p){ $("situation").value = p; setTimeout(()=>$("situation").focus(), 90); }
+});
+async function loadWisdom(){
+  _wisLoaded = true;
+  const card = $("wisCard");
+  card.classList.remove("in"); $("wisSource").textContent=""; $("wisIdea").innerHTML='<span class="pane-loading">drawing something to sit with…</span>'; $("wisPrompt").textContent="";
+  void card.offsetWidth; card.classList.add("in");
+  let w; try { w = await callWisdom(); } catch(_){ w = exampleWisdom(); }
+  $("wisSource").textContent = w.source || "";
+  $("wisIdea").textContent = w.idea || "";
+  $("wisPrompt").textContent = w.prompt || "";
+}
+async function callWisdom(){
+  const res = await fetch("/api/wisdom", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ memory: memoryContext(-1) }) });
+  if (res.status===404||res.status===405||res.status===501) throw new Error("down");
+  const j = await res.json(); if (!res.ok || !j.idea) throw new Error(j.error||"down");
+  return j;
+}
+const WIS_BANK = [
+  { source:"Stoicism — Epictetus", idea:"Some things are up to us — our judgments, our effort, how we respond — and some simply aren't. Most of our suffering comes from gripping the second kind as if it were the first.", prompt:"What here is actually yours to carry, and what have you been holding that was never in your hands?" },
+  { source:"Viktor Frankl", idea:"When a situation can't be changed, what can still change is the stance you take toward it. Even in what you can't control, there is a sliver of freedom in how you meet it.", prompt:"If this can't be removed right now, what kind of person do you want to be while you're inside it?" },
+  { source:"Internal Family Systems", idea:"The parts of you that you like least are usually trying, clumsily, to protect you. Even the harsh inner critic tends to be a frightened guard, not an enemy.", prompt:"If the loudest part of you right now were trying to protect you, what might it be afraid of?" },
+  { source:"Mindfulness", idea:"Feelings aren't facts, and they aren't permanent — they move through, like weather. You can notice one without being swept up as if it were the whole sky.", prompt:"Can you name what you feel as a passing state, rather than a verdict about who you are?" },
+  { source:"Carl Rogers", idea:"The curious paradox is that when you accept yourself as you are, then you can change. Fighting what you feel tends to be what keeps it stuck.", prompt:"What would it be like to let what you feel simply be true for a moment, without arguing with it?" }
+];
+function exampleWisdom(){ return WIS_BANK[Math.floor(Date.now()/9000) % WIS_BANK.length]; }
 
 /* ---------- history (localStorage) ---------- */
 const HIST_STORE = "prism_history";
@@ -1430,21 +1574,14 @@ function upsertEntry(text, insight){
   jrCurrentId = e.id; arr.unshift(e); saveJournal(arr); return e;
 }
 
-function showJournal(){
-  $("stage").style.display="none"; $("result").classList.remove("show"); $("loader").classList.remove("show");
-  $("journal").classList.add("show");
+function journalInit(){
+  jrCurrentId=null; $("jrText").value=""; $("jrInsight").hidden=true; $("jrInsight").innerHTML="";
+  $("jrNotice").classList.remove("show");
   $("jrDate").textContent = new Date().toLocaleDateString(undefined,{weekday:"long", month:"long", day:"numeric"});
   renderJrConsent(); renderJournalEntries();
-  window.scrollTo({top:0, behavior:"smooth"});
   setTimeout(()=>$("jrText").focus(), 60);
 }
-function hideJournal(){ $("journal").classList.remove("show"); $("stage").style.display="flex"; window.scrollTo({top:0, behavior:"smooth"}); }
-
-$("journalBtn").addEventListener("click", () => {
-  jrCurrentId=null; $("jrText").value=""; $("jrInsight").hidden=true; $("jrInsight").innerHTML="";
-  $("jrNotice").classList.remove("show"); showJournal();
-});
-$("journalBack").addEventListener("click", hideJournal);
+$("journalBack").addEventListener("click", () => showView("reflect"));
 $("jrConsent").addEventListener("click", () => { localStorage.setItem(JR_CONSENT, jrConsentOn()?"0":"1"); renderJrConsent(); });
 $("jrConsent").addEventListener("keydown", e => { if (e.key===" "||e.key==="Enter"){ e.preventDefault(); $("jrConsent").click(); } });
 
@@ -1607,10 +1744,11 @@ function enterApp(rid){
     loadReflectionById(rid).then(ok => {
       setLoading(false);
       if (!ok){ showNotice("That reflection link couldn't be found — it may have been removed. Start a new one below.", true); try { history.replaceState(null, "", location.pathname); } catch(_){} }
+      showView("reflect");
     });
     return;
   }
-  setTimeout(()=>$("situation")?.focus(), 300);
+  showView("reflect");
 }
 
 /* welcome buttons */
