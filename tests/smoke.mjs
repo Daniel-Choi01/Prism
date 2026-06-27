@@ -271,6 +271,9 @@ try {
     await page.locator('#setTheme button[data-theme="ember"]').click();
     check("appearance theme applies live",
       (await page.evaluate(() => document.documentElement.getAttribute("data-theme"))) === "ember");
+    await page.locator("#setTexture").click();
+    check("background texture toggles off",
+      (await page.evaluate(() => document.documentElement.getAttribute("data-texture"))) === "off");
     await page.reload({ waitUntil: "domcontentloaded" });
     await page.waitForTimeout(400);
     check("text-size setting persists",

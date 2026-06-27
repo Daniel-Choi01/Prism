@@ -583,6 +583,7 @@
   /* text size: zoom scales the whole px-based UI uniformly (works where rem refactor wouldn't) */
   html[data-text="large"]   { zoom: 1.12; }
   html[data-text="largest"] { zoom: 1.25; }
+  html[data-texture="off"] body::after { display: none !important; }   /* drop the film grain for a flatter background */
 
   /* appearance: alternate "light through the prism" palettes (all dark, so the
      ivory ink + translucent overlays stay readable). Default = Ink (:root). */
@@ -1371,6 +1372,11 @@
     <p class="why-research">Prism's method follows established frameworks so its responses are sound, not generic advice:
       <b>Carl Rogers'</b> unconditional positive regard (accept, never judge); <b>Internal Family Systems</b> (the angles it weighs are <i>parts</i> of you with good intent — "no bad parts"); <b>Kross &amp; Grossmann's</b> self-distancing, the science that we reason more wisely about ourselves from the outside (literally what reflection does); <b>Motivational Interviewing</b> (evoke your wisdom, don't impose); <b>CBT</b> (name cognitive distortions kindly, reframe with a Socratic question); and <b>Stoicism &amp; Frankl</b>, applied lightly.</p>
 
+    <div class="why-section-label">What Prism is <em>not</em> — on purpose</div>
+    <div class="why-dim"><div class="why-no">—</div><div><div class="why-h">Not a therapist or a diagnosis</div><div class="why-b">It won't assess, label, or treat you, and it says so plainly. It's a thinking instrument, not clinical care — and on real distress it hands you to people who are.</div></div></div>
+    <div class="why-dim"><div class="why-no">—</div><div><div class="why-h">Not an advice machine</div><div class="why-b">It will not tell you what to do. If you want a verdict, that's the one thing Prism is deliberately built to withhold.</div></div></div>
+    <div class="why-dim"><div class="why-no">—</div><div><div class="why-h">Not a bot pretending to be your friend</div><div class="why-b">It's honest about being an AI. The value is the patient, private, judgment-free space — not a performance of caring it can't actually feel.</div></div></div>
+
     <div class="why-honest">
       <div class="why-b">None of this makes Prism a therapist, and it never claims to be one. It's a thinking instrument — a mirror that remembers. The decision always stays yours; Prism just helps you see it whole first.</div>
     </div>
@@ -1431,6 +1437,15 @@
         <button data-theme="ember" aria-pressed="false">Ember</button>
         <button data-theme="tide" aria-pressed="false">Tide</button>
         <button data-theme="moss" aria-pressed="false">Moss</button>
+      </div>
+    </div>
+
+    <div class="set-row">
+      <div class="set-t">Background texture</div>
+      <div class="set-d">A faint film grain sits over everything for warmth. Turn it off for a flatter, cleaner background.</div>
+      <div class="ptoggle" id="setTexture" role="switch" aria-checked="true" tabindex="0" style="padding:14px 0 0;">
+        <div class="sw"></div>
+        <div class="tx">Show the film grain</div>
       </div>
     </div>
 
@@ -1549,11 +1564,15 @@ function applySettings(s){
   if (s && s.motion === "reduce") root.setAttribute("data-motion","reduce"); else root.removeAttribute("data-motion");
   if (s && (s.text === "large" || s.text === "largest")) root.setAttribute("data-text", s.text); else root.removeAttribute("data-text");
   if (s && s.theme && s.theme !== "ink") root.setAttribute("data-theme", s.theme); else root.removeAttribute("data-theme");
+  if (s && s.texture === "off") root.setAttribute("data-texture", "off"); else root.removeAttribute("data-texture");
 }
 function renderSettingsUI(s){
   document.querySelectorAll('#setMotion button').forEach(b => b.setAttribute("aria-pressed", String((s.motion||"auto")===b.dataset.motion)));
   document.querySelectorAll('#setText button').forEach(b => b.setAttribute("aria-pressed", String((s.text||"normal")===b.dataset.text)));
   document.querySelectorAll('#setTheme button').forEach(b => b.setAttribute("aria-pressed", String((s.theme||"ink")===b.dataset.theme)));
+  const tx = (s.texture || "on") !== "off";
+  $("setTexture").classList.toggle("on", tx);
+  $("setTexture").setAttribute("aria-checked", tx ? "true" : "false");
 }
 function saveSettings(patch){
   const s = Object.assign(loadSettings(), patch);
@@ -1566,6 +1585,8 @@ $("closeSettings").addEventListener("click", () => closeModal("settingsModal"));
 document.querySelectorAll('#setMotion button').forEach(b => b.addEventListener("click", () => saveSettings({ motion:b.dataset.motion })));
 document.querySelectorAll('#setText button').forEach(b => b.addEventListener("click", () => saveSettings({ text:b.dataset.text })));
 document.querySelectorAll('#setTheme button').forEach(b => b.addEventListener("click", () => saveSettings({ theme:b.dataset.theme })));
+$("setTexture").addEventListener("click", () => saveSettings({ texture: (loadSettings().texture === "off") ? "on" : "off" }));
+$("setTexture").addEventListener("keydown", e => { if (e.key===" "||e.key==="Enter"){ e.preventDefault(); $("setTexture").click(); } });
 
 /* "Why Prism is different" — reviewer-facing case, in-product */
 $("whyBtn").addEventListener("click", () => openModal("whyModal"));
