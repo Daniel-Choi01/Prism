@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>PRISM — see what you can't</title>
-<meta name="description" content="Describe what's weighing on you. PRISM refracts it through other perspectives — your future self, a mentor, a skeptic, your values — so you can see the angles you're too close to see." />
+<meta name="description" content="Tell PRISM what's weighing on you. Instead of handing you an answer, it reflects what it hears, notices the thread underneath, and asks the one question that moves you — grounded in your own past reflections, and never judging." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz@1,6..72&display=swap" rel="stylesheet" />
@@ -574,6 +574,24 @@
   html[data-text="large"]   { zoom: 1.12; }
   html[data-text="largest"] { zoom: 1.25; }
 
+  /* appearance: alternate "light through the prism" palettes (all dark, so the
+     ivory ink + translucent overlays stay readable). Default = Ink (:root). */
+  html[data-theme="ember"] {
+    --bg:#0c0807; --bg-2:#150e0b;
+    --s1:#ff7a5c; --s2:#ffb066; --s3:#ffd27a; --s4:#f6a6c0; --s5:#c79cff; --s6:#ff9ec4;
+    --c-future:#caa6ff; --c-mentor:#ffce7a; --c-skeptic:#ffb38a; --c-values:#ff9ec4; --c-child:#ffd27a; --c-rival:#ff7a5c;
+  }
+  html[data-theme="tide"] {
+    --bg:#070b11; --bg-2:#0c1119;
+    --s1:#6fe0e6; --s2:#7fb8ff; --s3:#9bdef0; --s4:#8ea2ff; --s5:#b39cff; --s6:#6ad0c0;
+    --c-future:#8ea2ff; --c-mentor:#6fe0e6; --c-skeptic:#7fb8ff; --c-values:#9bdef0; --c-child:#6ad0c0; --c-rival:#7fb8ff;
+  }
+  html[data-theme="moss"] {
+    --bg:#080d0a; --bg-2:#0d130f;
+    --s1:#9bef9f; --s2:#cfe89a; --s3:#7fd0a0; --s4:#6fe0c0; --s5:#a6d6a0; --s6:#86d99a;
+    --c-future:#9bef9f; --c-mentor:#cfe89a; --c-skeptic:#6fe0c0; --c-values:#a6d6a0; --c-child:#86d99a; --c-rival:#e0a06b;
+  }
+
   /* segmented control (settings choices) */
   .seg { display:flex; gap:6px; margin-top:4px; }
   .seg button { flex:1; font-family:var(--sans); font-size:13px; cursor:pointer; padding:10px 8px; border-radius:11px;
@@ -1086,7 +1104,7 @@
     <h2>Why Prism exists</h2>
     <p class="m-sub">A reflection instrument for the moments you're too close to see clearly.</p>
     <p style="color:var(--ink-dim); font-size:14.5px; line-height:1.65; margin-bottom:14px;">
-      When something is weighing on you, you're trapped inside one point of view — your own, in the middle of the feeling. Advice from others collapses everything into <em>their</em> single answer. Prism does the opposite: it takes what you wrote and splits it, like white light through glass, into the distinct perspectives already inside you — your future self, a mentor, a skeptic, your own values.
+      When something is weighing on you, you're trapped inside one point of view — your own, in the middle of the feeling. Advice from others collapses everything into <em>their</em> single answer. Prism does the opposite: you say what's on your mind, and it reflects it back — the feeling, and the belief underneath — weighing the angles you're too close to see, like white light opening into a spectrum. And because it remembers what you've reflected on before, it can name the thread running across your weeks that a fresh chat never could.
     </p>
     <p style="color:var(--ink-dim); font-size:14.5px; line-height:1.65; margin-bottom:14px;">
       It never tells you what to do. It reflects, and it asks. The decision stays yours — you just get to see it whole first.
@@ -1323,6 +1341,17 @@
       </div>
     </div>
 
+    <div class="set-row">
+      <div class="set-t">Appearance</div>
+      <div class="set-d">The colour of the light through the prism. All stay easy on the eyes in a dark room.</div>
+      <div class="seg" id="setTheme" role="group" aria-label="Appearance">
+        <button data-theme="ink" aria-pressed="true">Ink</button>
+        <button data-theme="ember" aria-pressed="false">Ember</button>
+        <button data-theme="tide" aria-pressed="false">Tide</button>
+        <button data-theme="moss" aria-pressed="false">Moss</button>
+      </div>
+    </div>
+
     <div class="modal-actions">
       <button class="refract-btn" id="closeSettings">Done</button>
     </div>
@@ -1376,12 +1405,12 @@
 
 <script>
 /* ============================================================
-   PRISM — refract a situation through chosen perspectives.
-   Single-file app. Calls Claude (Opus 4.8) directly from the
-   browser when a key is present; otherwise runs example mode.
+   PRISM — a single-voice reflective conversation.
+   Single-file app. Talks to Claude (Opus 4.8) via /api/converse
+   when the backend is reachable; otherwise runs example mode.
    ============================================================ */
 
-/* ---- the lenses (perspectives the light splits into) ---- */
+/* ---- starter prompts for the intake textarea ---- */
 const EXAMPLES = [
   "I helped start a team I care about, but it's draining me and I think I want to leave. I feel like a traitor for even considering it.",
   "Everyone thinks I have it all together. I'm the one people come to. But lately I feel like I'm faking it and I don't know who I'd go to.",
@@ -1401,10 +1430,12 @@ function applySettings(s){
   const root = document.documentElement;
   if (s && s.motion === "reduce") root.setAttribute("data-motion","reduce"); else root.removeAttribute("data-motion");
   if (s && (s.text === "large" || s.text === "largest")) root.setAttribute("data-text", s.text); else root.removeAttribute("data-text");
+  if (s && s.theme && s.theme !== "ink") root.setAttribute("data-theme", s.theme); else root.removeAttribute("data-theme");
 }
 function renderSettingsUI(s){
   document.querySelectorAll('#setMotion button').forEach(b => b.setAttribute("aria-pressed", String((s.motion||"auto")===b.dataset.motion)));
   document.querySelectorAll('#setText button').forEach(b => b.setAttribute("aria-pressed", String((s.text||"normal")===b.dataset.text)));
+  document.querySelectorAll('#setTheme button').forEach(b => b.setAttribute("aria-pressed", String((s.theme||"ink")===b.dataset.theme)));
 }
 function saveSettings(patch){
   const s = Object.assign(loadSettings(), patch);
@@ -1416,6 +1447,7 @@ $("settingsBtn").addEventListener("click", () => { renderSettingsUI(loadSettings
 $("closeSettings").addEventListener("click", () => closeModal("settingsModal"));
 document.querySelectorAll('#setMotion button').forEach(b => b.addEventListener("click", () => saveSettings({ motion:b.dataset.motion })));
 document.querySelectorAll('#setText button').forEach(b => b.addEventListener("click", () => saveSettings({ text:b.dataset.text })));
+document.querySelectorAll('#setTheme button').forEach(b => b.addEventListener("click", () => saveSettings({ theme:b.dataset.theme })));
 
 /* "Why Prism is different" — reviewer-facing case, in-product */
 $("whyBtn").addEventListener("click", () => openModal("whyModal"));

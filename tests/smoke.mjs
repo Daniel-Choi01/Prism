@@ -188,12 +188,17 @@ try {
     await page.waitForTimeout(150);
     await page.locator('#setText button[data-text="large"]').click();
     await page.locator('#setMotion button[data-motion="reduce"]').click();
+    await page.locator('#setTheme button[data-theme="ember"]').click();
+    check("appearance theme applies live",
+      (await page.evaluate(() => document.documentElement.getAttribute("data-theme"))) === "ember");
     await page.reload({ waitUntil: "domcontentloaded" });
     await page.waitForTimeout(400);
     check("text-size setting persists",
       (await page.evaluate(() => document.documentElement.getAttribute("data-text"))) === "large");
     check("reduce-motion setting persists",
       (await page.evaluate(() => document.documentElement.getAttribute("data-motion"))) === "reduce");
+    check("appearance theme persists",
+      (await page.evaluate(() => document.documentElement.getAttribute("data-theme"))) === "ember");
     await ctx.close();
   }
 
