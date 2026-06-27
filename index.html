@@ -1220,6 +1220,30 @@
     </div>
 
     <div class="res-item">
+      <span class="res-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-4.5-9-9a5 5 0 019-3 5 5 0 019 3c-2 4.5-9 9-9 9z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span>
+      <div>
+        <div class="res-t">The Trevor Project <span style="color:var(--ink-faint);font-weight:400">· LGBTQ+ youth, US</span></div>
+        <div class="res-d">Call <b>1-866-488-7386</b>, text <b>START</b> to <b>678-678</b>, or chat at <a href="https://www.thetrevorproject.org/get-help/" target="_blank" rel="noopener">thetrevorproject.org</a>. Free and confidential, 24/7.</div>
+      </div>
+    </div>
+
+    <div class="res-item">
+      <span class="res-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span>
+      <div>
+        <div class="res-t">Veterans Crisis Line <span style="color:var(--ink-faint);font-weight:400">· US</span></div>
+        <div class="res-d">Dial <b>988</b> then press <b>1</b>, or text <b>838255</b>. For veterans, service members, and those who care about them.</div>
+      </div>
+    </div>
+
+    <div class="res-item">
+      <span class="res-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 4h4l2 5-3 2a12 12 0 006 6l2-3 5 2v4a2 2 0 01-2 2C10 22 2 14 2 6a2 2 0 012-2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span>
+      <div>
+        <div class="res-t">SAMHSA Helpline <span style="color:var(--ink-faint);font-weight:400">· US</span></div>
+        <div class="res-d">Call <b>1-800-662-4357</b> for free, confidential, 24/7 help with mental health or substance use — including referrals to local support.</div>
+      </div>
+    </div>
+
+    <div class="res-item">
       <span class="res-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3l9-16z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
       <div>
         <div class="res-t">In immediate danger?</div>
@@ -1943,28 +1967,33 @@ async function callConverse(turns, memory){
 /* ---------- example mode (no backend) ---------- *
    A single, warm fallback reply so the conversation works offline. Live mode
    (Claude) is where it becomes genuinely personal and varied.                 */
+// Offline reflections — varied so example mode doesn't feel canned. (Live mode,
+// where it's genuinely personal, is the real thing; this just keeps the demo alive.)
+const EX_FIRST = [
+  { r:(s)=>`There's something under “${s}” you haven't quite said yet — not the situation itself, but how it's actually sitting with you.`, q:`When you're honest with yourself, what are you most afraid is true here?` },
+  { r:(s)=>`“${s}” — you led with the facts and stepped right over how it feels. That step is usually where the real thing is hiding.`, q:`If the feeling under this had a name, what would you call it?` },
+  { r:(s)=>`It takes something to put “${s}” into words instead of just carrying it around all day. Let's not rush to fix it.`, q:`What would it mean if this turned out to be harder than you've let yourself admit?` },
+  { r:(s)=>`I hear “${s}.” There's a part of you offering the tidy version, and a part underneath that's less sure. I'd rather talk to the second one.`, q:`What's the piece of this you'd hesitate to say out loud to anyone?` }
+];
+const EX_NEXT = [
+  { r:(s)=>`Said plainly like that, “${s}” sounds less like a problem to be solved and more like something asking to be felt first.`, q:`If nothing about it had to change today, what would you most want someone to understand?` },
+  { r:(s)=>`You keep circling back to “${s}.” When something won't leave us alone, it's usually pointing at something we care about more than we let on.`, q:`What does this threaten, or protect, that matters so much to you?` },
+  { r:(s)=>`There's a quiet 'should' running under “${s}” — a rule about how this is supposed to go.`, q:`Whose voice is that 'should' in, when you really listen for it?` },
+  { r:()=>`I notice you're harder on yourself about this than you'd ever be on someone else in the same spot.`, q:`What would you say to a friend who told you exactly what you just told me?` }
+];
 async function exampleConverse(turns){
-  await wait(1200);
+  await wait(1100);
   const last = [...turns].reverse().find(t => t.role === "you");
   const text = last ? last.text : "";
   const lvl = detectDistress(text);
   if (lvl !== "none"){
-    return { reply:"What you've put into words sounds genuinely heavy — and it matters that you said it here, where there's nothing to perform and no one to judge you. You don't have to carry it alone.", question:null, care:{level:lvl, message:""} };
+    return { reply:"What you've put into words sounds genuinely heavy — and it matters that you said it here, where there's nothing to perform and no one to judge you. You don't have to carry this alone.", question:null, care:{level:lvl, message:""} };
   }
   const snip = firstClause(text);
-  const first = turns.filter(t => t.role === "you").length <= 1;
-  if (first){
-    return {
-      reply: `There's something under “${snip}” you haven't fully said yet — not the situation itself, but how it's actually landing on you. I'd rather sit with that for a moment than rush you toward an answer.`,
-      question: `When you're honest with yourself, what are you most afraid is true here?`,
-      care: { level:"none", message:"" }
-    };
-  }
-  return {
-    reply: `I hear you. Said plainly like that, “${snip}” sounds less like a problem to be solved and more like something asking to be felt first.`,
-    question: `If nothing about the situation had to change today, what would you most want someone to understand about it?`,
-    care: { level:"none", message:"" }
-  };
+  const youCount = turns.filter(t => t.role === "you").length;
+  const bank = youCount <= 1 ? EX_FIRST : EX_NEXT;
+  const pick = bank[Math.abs(text.length + youCount * 7) % bank.length];   // vary by input, no randomness needed
+  return { reply: pick.r(snip), question: pick.q, care: { level:"none", message:"" } };
 }
 function firstClause(s){ const c=String(s||"").replace(/\s+/g," ").trim().split(/[,.;:—]/)[0].trim(); return c.length>64?c.slice(0,64).trim()+"…":c; }
 
