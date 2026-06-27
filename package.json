@@ -3,8 +3,5 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Prism — a reflection instrument that refracts what's weighing on you through multiple perspectives.",
-  "engines": {
-    "node": ">=18"
-  }
+  "description": "Prism — a reflection instrument that refracts what's weighing on you through multiple perspectives."
 }
