@@ -39,8 +39,19 @@ built to do the opposite, and to do the one thing a stateless chat with any othe
   "you've got this," no toxic positivity. Quietly shaped by what you've actually been carrying.
 - **Wisdom** — one grounded idea to sit with, drawn from a real tradition (Stoicism, Frankl, IFS,
   Rogers, mindfulness), plus a reflective question. Never a fortune-cookie platitude.
-- **Patterns** — looks *across* your reflections and names what keeps surfacing over time (recurring
-  themes, plus an AI "what keeps surfacing" read). New reflections that echo an old one say so.
+- **Check-in** — a ten-second daily pulse: how today feels (five levels), one word, and one thing
+  you're grateful for. Builds a private two-week mood trend and a gentle streak — your own weather,
+  over time.
+- **Patterns** — looks *across* your reflections: a **mood-over-time chart** (care-coloured), the
+  themes that keep surfacing (proportional bars), an AI "what keeps surfacing" read, and **a letter
+  from Prism** reflecting back the threads it has noticed — something a stateless chat could never
+  write. New reflections that echo an old one say so. Search your whole history, too.
+- **Calm tools, anywhere** — a floating **Breathe** button on every screen opens guided breathing
+  (Box 4-4-4-4, 4-7-8, or 4-6) and a **5-4-3-2-1 grounding** exercise, for the moments before you can
+  even put it into words.
+- **Make it yours** — a Settings panel with **reduced motion**, **larger text**, and four calm
+  **appearance themes** (Ink, Ember, Tide, Moss) — layered on top of your OS preferences, remembered
+  on-device. Plus keyboard shortcuts (press <kbd>?</kbd>) and **download/print** any reflection.
 - **Cares when it counts** — both the AI and a client-side check watch for genuine distress. If
   someone's struggling, Prism drops all challenge, becomes purely validating, and surfaces real
   crisis resources (988, Crisis Text Line, findahelpline.com).
@@ -86,11 +97,15 @@ prism/
 │  ├─ patterns.js          ← "what keeps surfacing" across your reflections over time
 │  ├─ encourage.js         ← one piece of honest, non-sycophantic encouragement
 │  ├─ wisdom.js            ← one grounded idea from real philosophy/psychology
+│  ├─ letter.js            ← a warm letter reflecting on the threads across your reflections
 │  ├─ reflections.js       ← save / load reflections in Supabase (service-role)
 │  ├─ feedback.js          ← store voluntary feedback (no reflection content)
 │  ├─ config.js            ← serves the PUBLIC Supabase anon key for browser-side Auth
 │  └─ health.js            ← post-deploy connectivity check (exposes no secrets)
-├─ supabase/schema.sql     ← tables + Row-Level Security (Phase 1 now, Phase 2 auth ready)
+├─ tests/
+│  ├─ smoke.mjs            ← end-to-end smoke suite (44 checks, headless Playwright)
+│  └─ README.md            ← how to run the tests
+├─ supabase/schema.sql     ← tables + Row-Level Security (anon shares now; per-user cloud sync ready)
 ├─ vercel.json             ← security headers (CSP, HSTS, no-store on /api, …)
 ├─ .env.example            ← required environment variables
 ├─ SECURITY.md             ← the privacy & security model

@@ -91,12 +91,17 @@ Prism refracts it — separates what's really in there — so you can finally se
   and asking one real question. Keep replying; it's a genuine multi-turn **conversation** that
   builds, not a one-shot answer box.
 - **It remembers you.** Every reply is grounded in your own past reflections and recurring themes,
-  and a **Patterns** view names what keeps surfacing across them over time. This is the thing a
-  fresh chat with any other model structurally *cannot* do — and it's the heart of why Prism isn't
-  interchangeable with ChatGPT.
-- **More than one way in:** a private **Journal** (Mirror → Pattern → Shift on what you write),
-  **Encouragement** (honest, never hollow flattery), and **Wisdom** (one grounded idea from a real
-  tradition + a question to carry).
+  and a **Patterns** view names what keeps surfacing across them over time — a mood-over-time chart,
+  the recurring themes, and even **a letter from Prism** reflecting the threads it has noticed. This
+  is the thing a fresh chat with any other model structurally *cannot* do — and it's the heart of
+  why Prism isn't interchangeable with ChatGPT. When you sign in, all of it **syncs across your
+  devices** under Row-Level Security; guests stay strictly on-device.
+- **More than one way in:** a private **Journal** (Mirror → Pattern → Shift, with a curated prompt
+  library), a 10-second daily **Check-in** (mood + gratitude → a two-week trend), **Encouragement**
+  (honest, never hollow flattery), and **Wisdom** (one grounded idea + a question to carry).
+- **It meets you where you are:** when words won't come, **calm tools** on every screen — guided
+  breathing (three rhythms) and a 5-4-3-2-1 grounding exercise. And it adapts to *you*: reduced
+  motion, larger text, four calm themes, keyboard shortcuts, and download/print of any reflection.
 - **Real AI:** powered by **Claude Opus 4.8** through secure serverless functions (the API key lives
   on the server, never the browser), with structured output so every response is well-shaped.
 - **Real and usable:** deployed on Vercel; sign in with Google, anonymously, or stay a guest.
@@ -111,6 +116,9 @@ Prism refracts it — separates what's really in there — so you can finally se
   reflection content) that's how Prism keeps improving.
 - **Degrades gracefully:** open the file with no backend and it runs in example mode, so the
   experience is never broken.
+- **Tested, not hand-wavy:** a committed end-to-end suite (44 headless-browser checks) exercises
+  every surface — conversation, distress→crisis, all the tabs, calm tools, patterns, settings,
+  search, accessibility, the lot — and guards against regressions.
 
 **Demo path to show live (≈60s):**
 1. Open the site. Read the one-line promise; sign in (or "continue as guest").
