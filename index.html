@@ -704,6 +704,13 @@
   .link-btn:hover { color:var(--ink); text-decoration:underline; }
   .link-btn:focus-visible { outline:2px solid var(--line-bright); outline-offset:2px; }
 
+  /* onboarding micro-tour (first visit) */
+  .tour-dots { display:flex; gap:7px; margin-bottom:18px; }
+  .tour-dots i { width:7px; height:7px; border-radius:50%; background:var(--line-bright); transition:.25s; }
+  .tour-dots i.on { background:var(--c-future); box-shadow:0 0 8px var(--c-future); width:18px; border-radius:4px; }
+  #onboardModal .modal { width:min(460px,100%); }
+  #tourBody { font-size:15px; line-height:1.6; color:var(--ink-dim); }
+
   /* ============================================================
      RICHER PATTERNS — mood-over-time chart + theme bars.
      Computed entirely on-device from your own reflections; makes the
@@ -1271,6 +1278,22 @@
     <div class="modal-actions">
       <button class="ghost-btn" id="whyToTalk2">Try it →</button>
       <button class="refract-btn" id="closeWhy">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ONBOARDING MICRO-TOUR (first visit) ============ -->
+<div class="modal-bg" id="onboardModal">
+  <div class="modal">
+    <div class="tour-dots" id="tourDots" aria-hidden="true"></div>
+    <h2 id="tourTitle"></h2>
+    <p class="m-sub" id="tourBody" style="margin-bottom:26px;"></p>
+    <div class="modal-actions" style="justify-content:space-between; align-items:center;">
+      <button class="link-btn" id="tourSkip">Skip</button>
+      <div style="display:flex; gap:10px;">
+        <button class="ghost-btn" id="tourBack">Back</button>
+        <button class="refract-btn" id="tourNext">Next</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2467,7 +2490,39 @@ function enterApp(rid){
     return;
   }
   showView("reflect");
+  maybeOnboard();
 }
+
+/* ============================================================
+   ONBOARDING — a gentle first-visit tour. Shown once, then never
+   again (a flag on this device). Skippable at any point.
+   ============================================================ */
+const ONBOARD_KEY = "prism_onboarded";
+const TOUR = [
+  { t: "This place is yours alone", b: "Prism is somewhere to think out loud. Nothing here is watched, scored, or saved anywhere but your own device — unless you choose to." },
+  { t: "Just say it", b: "On the Talk tab, write whatever's on your mind. Prism won't tell you what to do — it reflects back what it hears, and asks the one question worth sitting with." },
+  { t: "It remembers you", b: "Come back and Prism starts to notice the threads that keep returning, and shows you your own patterns over time — the thing a fresh chat with any AI never could." },
+  { t: "And if it gets heavy", b: "When something's hard, Prism softens and points you toward real people who can help. There's a Breathe button in the corner too, any time you need it." }
+];
+let tourStep = 0;
+function renderTour(){
+  const s = TOUR[tourStep];
+  $("tourTitle").textContent = s.t;
+  $("tourBody").textContent = s.b;
+  $("tourDots").innerHTML = TOUR.map((_,i)=>`<i class="${i===tourStep?'on':''}"></i>`).join("");
+  $("tourBack").style.visibility = tourStep === 0 ? "hidden" : "";
+  $("tourNext").textContent = tourStep === TOUR.length-1 ? "Begin" : "Next";
+}
+function finishTour(){ try { localStorage.setItem(ONBOARD_KEY, "1"); } catch(_){} closeModal("onboardModal"); }
+function maybeOnboard(){
+  let seen = false; try { seen = localStorage.getItem(ONBOARD_KEY) === "1"; } catch(_){}
+  if (seen) return;
+  tourStep = 0; renderTour();
+  setTimeout(()=>openModal("onboardModal"), 450);
+}
+$("tourNext").addEventListener("click", () => { if (tourStep < TOUR.length-1){ tourStep++; renderTour(); } else finishTour(); });
+$("tourBack").addEventListener("click", () => { if (tourStep > 0){ tourStep--; renderTour(); } });
+$("tourSkip").addEventListener("click", finishTour);
 
 /* welcome buttons */
 $("wcGuest").addEventListener("click", () => {
