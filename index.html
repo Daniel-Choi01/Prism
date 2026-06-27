@@ -80,6 +80,14 @@
     text-transform: uppercase;
   }
   .ghost-btn:hover { color: var(--ink); border-color: var(--line-bright); background: rgba(255,255,255,0.03); }
+  /* responsive header: on narrow screens, stack brand / actions / tabs so the
+     controls never overflow and get clipped by body{overflow-x:hidden} */
+  @media (max-width: 720px){
+    header { flex-wrap: wrap; justify-content: center; gap: 12px 14px; padding-top: 18px; }
+    header .brand { order: 1; }
+    .top-actions { order: 2; flex-wrap: wrap; justify-content: center; }
+    #tabs { order: 3; width: 100%; margin-top: 2px; }
+  }
 
   /* ---------- hero / intake ---------- */
   .stage { min-height: calc(100vh - 90px); display: flex; flex-direction: column;
