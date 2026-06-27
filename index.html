@@ -460,13 +460,32 @@
     overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; }
   .jr-entry .je-tag { font-size:10px; color:var(--c-future); margin-top:7px; letter-spacing:0.08em; text-transform:uppercase; }
 
+  /* ---------- the reflective conversation ---------- */
+  .convo { max-width:720px; margin:0 auto; display:flex; flex-direction:column; gap:28px; }
+  .convo .turn { opacity:0; transform:translateY(10px); transition:opacity .6s ease, transform .6s ease; }
+  .convo .turn.in { opacity:1; transform:none; }
+  .convo .turn.you { color:var(--ink-dim); padding-left:16px; border-left:2px solid var(--line-bright);
+    font-family:var(--read); font-style:italic; font-size:16.5px; line-height:1.55; }
+  .convo .turn.you .who { display:block; font-family:var(--sans); font-style:normal; font-size:10px;
+    letter-spacing:.24em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:7px; }
+  .convo .turn.prism { font-family:var(--serif); font-weight:300; font-size:21px; line-height:1.56; color:var(--ink); }
+  .convo .turn.prism .q { display:block; margin-top:17px; padding-top:15px; border-top:1px solid var(--line);
+    font-family:var(--read); font-style:italic; font-size:18px; color:var(--ink); }
+  .convo .turn.thinking { font-family:var(--read); font-style:italic; color:var(--ink-faint); font-size:18px; }
+  .convo-reply { max-width:720px; margin:32px auto 0; display:flex; gap:11px; align-items:flex-end;
+    border-top:1px solid var(--line); padding-top:24px; }
+  .convo-reply textarea { flex:1; min-height:54px; resize:none; border:1px solid var(--line-bright); background:rgba(0,0,0,0.25);
+    color:var(--ink); border-radius:14px; padding:13px 15px; font-family:var(--read); font-style:italic; font-size:16px; outline:0; line-height:1.5; }
+  .convo-reply textarea:focus { border-color:rgba(179,156,255,0.5); }
+  .convo-reply .refract-btn { align-self:stretch; }
+
   /* ---------- respect reduced motion (calm + accessible) ---------- */
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior:auto; }
     *, *::before, *::after { animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
     .breath { animation:none !important; }
     .pm-in, .pm-mid, .pm-glass, .pm-edge, .pm-fan .pm-beam { animation:none !important; stroke-dashoffset:0 !important; opacity:1 !important; }
-    .lens-card, .synthesis, .care { opacity:1 !important; transform:none !important; }
+    .lens-card, .synthesis, .care, .convo .turn { opacity:1 !important; transform:none !important; }
   }
 
   .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
@@ -530,42 +549,28 @@
       </svg>
     </div>
 
-    <h1>See what <em>you can't</em>.</h1>
-    <p class="lede">When you're inside a problem, you can only see it from one angle. Describe what's weighing on you — Prism refracts it through other perspectives so the blind spots become visible.</p>
+    <h1>Say it <em>out loud</em>.</h1>
+    <p class="lede">Nothing to pick, no forms to fill — just tell Prism what's on your mind, the way you'd tell someone you trust. It listens, reflects it back from every angle at once, and stays as long as you need.</p>
 
     <div class="intake">
       <div class="field-shell">
-        <textarea id="situation" maxlength="800" placeholder="What's weighing on you? Be honest — it stays on your device."></textarea>
+        <textarea id="situation" maxlength="2000" placeholder="What's on your mind? Say anything — the messy, the unfinished, the thing you wouldn't say out loud. There's no one here to judge you, and it stays on your device."></textarea>
         <div class="field-foot">
-          <span class="hint" id="charhint">A decision, a worry, a stuck feeling…</span>
+          <span class="hint" id="charhint">However it comes out is fine.</span>
           <button class="refract-btn" id="refractBtn">
-            Refract
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 8h8M9 8l4-7M9 8l4 7" stroke="#14101f" stroke-width="1.6" stroke-linecap="round"/></svg>
+            Reflect
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 8h8M9 8l4-7M9 8l4 7" stroke="#181320" stroke-width="1.6" stroke-linecap="round"/></svg>
           </button>
         </div>
       </div>
 
-      <div class="stance">
-        <div class="label">What would help right now?</div>
-        <div class="stance-opts" id="stanceOpts" role="group" aria-label="What would help right now?">
-          <button class="stance-opt" data-stance="witness" aria-pressed="false">Just be heard</button>
-          <button class="stance-opt" data-stance="explore" aria-pressed="true">See it differently</button>
-          <button class="stance-opt" data-stance="decide" aria-pressed="false">Work toward a decision</button>
-        </div>
-      </div>
-
-      <div class="lenses-pick">
-        <div class="label">Refract through</div>
-        <div class="chips" id="chips"></div>
-      </div>
-
       <div class="examples">
-        Not sure what to write? Try
+        Not sure where to start? Try
         <a data-ex="0">“Should I drop the team I helped start?”</a> ·
         <a data-ex="1">“Everyone thinks I have it together.”</a>
       </div>
 
-      <p class="grounding">A space to think things through — not therapy, and never a replacement for a real person. If you're carrying something heavy, Prism will always point you toward someone who can help.</p>
+      <p class="grounding">Private to this device, patient, and judgment-free — somewhere to think out loud. Not therapy, and never a replacement for a real person; if you're carrying something heavy, Prism will always point you toward someone who can help.</p>
 
       <div class="notice" id="notice"></div>
     </div>
@@ -603,29 +608,14 @@
       </div>
     </div>
 
-    <div class="result-head">
-      <div class="your-words"><span class="quote-mark">“</span><span id="echo"></span><span class="quote-mark">”</span></div>
-      <div class="result-sub"><span class="rule"></span> refracted <span class="rule"></span></div>
-    </div>
     <div class="echo-note" id="echoNote" hidden></div>
-    <div class="beams-art" aria-hidden="true">
-      <svg width="320" height="60" viewBox="0 0 320 60">
-        <line x1="160" y1="6" x2="160" y2="20" stroke="white" stroke-width="2" opacity="0.7"/>
-        <polygon points="160,16 174,40 146,40" fill="rgba(255,255,255,0.05)" stroke="rgba(200,190,240,0.45)" stroke-width="1"/>
-        <line x1="158" y1="38" x2="30" y2="58" stroke="var(--c-future)" stroke-width="1.6"/>
-        <line x1="159" y1="38" x2="95" y2="58" stroke="var(--c-values)" stroke-width="1.6"/>
-        <line x1="160" y1="38" x2="160" y2="58" stroke="var(--c-skeptic)" stroke-width="1.6"/>
-        <line x1="161" y1="38" x2="225" y2="58" stroke="var(--c-child)" stroke-width="1.6"/>
-        <line x1="162" y1="38" x2="290" y2="58" stroke="var(--c-mentor)" stroke-width="1.6"/>
-      </svg>
-    </div>
 
-    <div class="lens-grid" id="lensGrid"></div>
-    <div id="deeperLive" class="sr" aria-live="polite"></div>
+    <div class="convo" id="convo"></div>
+    <div id="liveRegion" class="sr" aria-live="polite"></div>
 
-    <div class="synthesis" id="synthesis">
-      <div class="syn-label"><span class="spec"></span> what the light reveals</div>
-      <div class="syn-text" id="synText"></div>
+    <div class="convo-reply" id="convoReply">
+      <textarea id="replyText" maxlength="2000" placeholder="Say more, or follow wherever your mind goes next…" aria-label="Continue the conversation"></textarea>
+      <button class="refract-btn" id="replySend">Reply</button>
     </div>
 
     <div class="result-actions">
@@ -822,28 +812,6 @@
   </div>
 </div>
 
-<!-- ============ ADD/EDIT LENS MODAL ============ -->
-<div class="modal-bg" id="lensModal" role="dialog" aria-modal="true" aria-labelledby="lensModalTitle">
-  <div class="modal">
-    <h2 id="lensModalTitle">Add a lens</h2>
-    <p class="m-sub">A perspective already inside you — a person, a part, a future self. Prism voices every lens as a part of you that means well.</p>
-    <label for="lensName">Name</label>
-    <input type="text" id="lensName" maxlength="32" autocomplete="off" placeholder="e.g. My grandmother, Me at 80, The friend I lost" />
-    <label for="lensDesc" style="margin-top:16px;">How this part sees things</label>
-    <textarea id="lensDesc" maxlength="160" placeholder="What would this voice notice or care about?"></textarea>
-    <div style="display:flex; justify-content:flex-end;"><span id="lensDescCount" class="hint">0/160</span></div>
-    <label style="margin-top:14px;">Color</label>
-    <div id="lensColors" class="swatches" role="radiogroup" aria-label="Lens color"></div>
-    <div class="notice" id="lensErr" style="margin-top:14px;" aria-live="polite"></div>
-    <div class="modal-actions" style="justify-content:space-between;">
-      <button class="ghost-btn" id="lensDelete" hidden>Delete</button>
-      <div style="display:flex; gap:10px;">
-        <button class="ghost-btn" id="lensCancel">Cancel</button>
-        <button class="refract-btn" id="lensSave">Save lens</button>
-      </div>
-    </div>
-  </div>
-</div>
 
 <script>
 /* ============================================================
@@ -853,177 +821,13 @@
    ============================================================ */
 
 /* ---- the lenses (perspectives the light splits into) ---- */
-const LENSES = [
-  { id:"future",  name:"Future You",   color:"var(--c-future)",
-    desc:"You, ten years from now, looking back on this moment with everything you'll have learned by then.",
-    glyph:'<svg viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.4"/><path d="M11 6v5l3 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>' },
-  { id:"mentor",  name:"The Mentor",   color:"var(--c-mentor)",
-    desc:"Someone wiser who deeply believes in you — warm, but unwilling to let you off the hook.",
-    glyph:'<svg viewBox="0 0 22 22" fill="none"><path d="M11 3l2.2 5.2L19 9l-4 3.6L16.2 19 11 15.8 5.8 19 7 12.6 3 9l5.8-.8L11 3z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>' },
-  { id:"skeptic", name:"The Skeptic",  color:"var(--c-skeptic)",
-    desc:"A protective part that gently questions the story you may be telling yourself — not to attack you, but so you're not fooled by your own fear.",
-    glyph:'<svg viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.4"/><path d="M8 9.5c.5-1.2 2-1.7 3-1.2 1.2.5 1.4 2 .4 2.8-.7.6-1.4.8-1.4 1.9M11 16h.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>' },
-  { id:"values",  name:"Your Values",  color:"var(--c-values)",
-    desc:"What you've said matters most to you — measuring the situation against your own compass.",
-    glyph:'<svg viewBox="0 0 22 22" fill="none"><path d="M11 2v18M4 6l7-4 7 4-7 4-7-4z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>' },
-  { id:"child",   name:"Younger You",  color:"var(--c-child)",
-    desc:"The kid you used to be — before the fear and the noise. What would make them proud or sad?",
-    glyph:'<svg viewBox="0 0 22 22" fill="none"><circle cx="11" cy="8" r="4" stroke="currentColor" stroke-width="1.4"/><path d="M4 19c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>' },
-  { id:"rival",   name:"The Honest Friend", color:"var(--c-rival)",
-    desc:"The part of you that cares enough to say the hard thing kindly — never to wound, always because it wants more for you.",
-    glyph:'<svg viewBox="0 0 22 22" fill="none"><path d="M11 18S3 13 3 7.5C3 5 5 3.5 7 3.5c1.7 0 2.8 1 4 2.5 1.2-1.5 2.3-2.5 4-2.5 2 0 4 1.5 4 4C19 13 11 18 11 18z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>' },
-];
-const DEFAULT_SELECTED = ["future","mentor","skeptic","values"];
-
 const EXAMPLES = [
   "I helped start a team I care about, but it's draining me and I think I want to leave. I feel like a traitor for even considering it.",
   "Everyone thinks I have it all together. I'm the one people come to. But lately I feel like I'm faking it and I don't know who I'd go to.",
 ];
 
 /* ---------- state ---------- */
-let selected = new Set(DEFAULT_SELECTED);
 const $ = id => document.getElementById(id);
-
-/* ---------- lenses: built-in + custom ---------- */
-const BUILTIN_LENSES = LENSES;
-const CUSTOM_STORE = "prism_lenses";
-const MAX_CUSTOM = 8;
-const GENERIC_GLYPH = '<svg viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.4"/><path d="M11 3v16M3 11h16" stroke="currentColor" stroke-width="1" opacity=".5"/></svg>';
-const SPECTRUM = [
-  {v:"var(--c-future)",name:"Violet"},{v:"var(--c-mentor)",name:"Amber"},
-  {v:"var(--c-skeptic)",name:"Cyan"},{v:"var(--c-values)",name:"Rose"},
-  {v:"var(--c-child)",name:"Green"},{v:"var(--c-rival)",name:"Coral"},
-];
-function loadCustomLenses(){ try { const a=JSON.parse(localStorage.getItem(CUSTOM_STORE)||"[]"); return Array.isArray(a)?a.map(l=>({...l,custom:true})):[]; } catch(_){ return []; } }
-function saveCustomLenses(arr){ try { localStorage.setItem(CUSTOM_STORE, JSON.stringify(arr.slice(0,MAX_CUSTOM))); } catch(_){ showLensErr("Couldn't save on this device."); } }
-function allLenses(){ return BUILTIN_LENSES.concat(loadCustomLenses()); }
-function lensMeta(id){
-  return allLenses().find(l=>l.id===id)
-      || (current && current.customMeta && current.customMeta.find(c=>c.id===id))
-      || null;
-}
-
-/* ---------- build lens chips ---------- */
-const chips = $("chips");
-function buildChips(){
-  chips.innerHTML = "";
-  allLenses().forEach(makeChip);
-  chips.appendChild(addLensChip());
-}
-function makeChip(l){
-  const b = document.createElement("button");
-  b.className = "chip"; b.style.setProperty("--lc", l.color);
-  b.setAttribute("aria-pressed", selected.has(l.id)); b.dataset.id = l.id;
-  b.title = l.desc || l.name;
-  b.innerHTML = `<span class="dot"></span>${esc(l.name)}`;   // esc — custom names are user text
-  if (l.custom){
-    const e = document.createElement("span");
-    e.className="chip-edit"; e.tabIndex=0; e.setAttribute("role","button");
-    e.setAttribute("aria-label","Edit lens "+l.name); e.textContent="⋯";
-    e.addEventListener("click", ev=>{ ev.stopPropagation(); openLensModal(l); });
-    e.addEventListener("keydown", ev=>{ if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); ev.stopPropagation(); openLensModal(l); } });
-    b.appendChild(e);
-  }
-  b.addEventListener("click", () => toggleSelect(l.id, b));
-  chips.appendChild(b);
-}
-function toggleSelect(id, b){
-  if (selected.has(id)){
-    if (selected.size<=2){ flashHint("Keep at least two perspectives — refraction needs contrast."); return; }
-    selected.delete(id);
-  } else {
-    if (selected.size>=4){ flashHint("Four perspectives is the sweet spot. Deselect one first."); return; }
-    selected.add(id);
-  }
-  b.setAttribute("aria-pressed", selected.has(id));
-}
-function addLensChip(){
-  if (loadCustomLenses().length >= MAX_CUSTOM){
-    const span=document.createElement("span"); span.className="hint";
-    span.textContent="Up to eight lenses — edit or remove one to add another."; return span;
-  }
-  const b=document.createElement("button"); b.className="chip chip-add";
-  b.textContent="+ Add a lens"; b.addEventListener("click", ()=>openLensModal(null)); return b;
-}
-function flashHint(msg){ const h=$("charhint"); const old=h.textContent; h.textContent=msg; h.style.color="var(--c-mentor)"; setTimeout(()=>{h.textContent=old;h.style.color="";},2600); }
-buildChips();
-
-/* ---------- add / edit custom lens ---------- */
-let editingId = null, pickedColor = SPECTRUM[0].v, _reframeSeen = false;
-const SELF_ATTACK = /\b(worthless|hate myself|i'?m stupid|pathetic|kill (myself|me)|hurt myself|loser|nobody loves|i'?m nothing|disgusting)\b/i;
-function showLensErr(m){ const e=$("lensErr"); e.textContent=m; e.classList.add("show"); }
-function clearLensErr(){ const e=$("lensErr"); e.textContent=""; e.classList.remove("show"); }
-function defaultColor(){ const used=loadCustomLenses().map(l=>l.color); return (SPECTRUM.find(s=>!used.includes(s.v))||SPECTRUM[0]).v; }
-function renderSwatches(){
-  const box=$("lensColors"); box.innerHTML="";
-  SPECTRUM.forEach(s=>{
-    const b=document.createElement("button"); b.type="button"; b.className="swatch";
-    b.setAttribute("role","radio"); b.style.setProperty("--lc", s.v); b.dataset.color=s.v;
-    b.setAttribute("aria-label", s.name); b.setAttribute("aria-checked", s.v===pickedColor?"true":"false");
-    b.tabIndex = (s.v===pickedColor)?0:-1;
-    b.addEventListener("click", ()=>{ pickedColor=s.v; renderSwatches(); });
-    box.appendChild(b);
-  });
-}
-function openLensModal(lens){
-  clearLensErr(); _reframeSeen=false;
-  if (lens){
-    editingId=lens.id; $("lensModalTitle").textContent="Edit lens";
-    $("lensName").value=lens.name; $("lensDesc").value=lens.desc; pickedColor=lens.color; $("lensDelete").hidden=false;
-  } else {
-    editingId=null; $("lensModalTitle").textContent="Add a lens";
-    $("lensName").value=""; $("lensDesc").value=""; pickedColor=defaultColor(); $("lensDelete").hidden=true;
-  }
-  $("lensDescCount").textContent = $("lensDesc").value.length+"/160";
-  renderSwatches(); openModal("lensModal");
-}
-$("lensCancel").addEventListener("click", ()=>closeModal("lensModal"));
-$("lensDesc").addEventListener("input", e=>{
-  const n=e.target.value.length, c=$("lensDescCount");
-  c.textContent=n+"/160"; c.style.color = n>140 ? "var(--c-mentor)" : "";
-});
-function validateLens(name, desc){
-  if (!name || !desc) return "Give your lens a name and a short description.";
-  const dup = allLenses().some(l=>l.id!==editingId && (l.name||"").trim().toLowerCase()===name.trim().toLowerCase());
-  if (dup) return "You already have a lens by that name — pick another.";
-  return null;
-}
-$("lensSave").addEventListener("click", ()=>{
-  const name=$("lensName").value.trim(), desc=$("lensDesc").value.trim();
-  clearLensErr();
-  const err=validateLens(name,desc);
-  if (err){ showLensErr(err); $("lensName").focus(); return; }
-  if (SELF_ATTACK.test(name+" "+desc) && !_reframeSeen){
-    _reframeSeen=true;
-    showLensErr("Prism voices every part as one that means well — this will be heard with care, never cruelty. Save again to add it.");
-    return;
-  }
-  const list = loadCustomLenses();
-  if (editingId){
-    saveCustomLenses(list.map(l=>l.id===editingId ? {...l, name, desc, color:pickedColor} : l));
-  } else {
-    if (list.length>=MAX_CUSTOM){ showLensErr("You can keep up to eight lenses."); return; }
-    const obj = { id:"custom-"+Date.now().toString(36), name, desc, color:pickedColor, custom:true, created:Date.now() };
-    saveCustomLenses(list.concat(obj));
-    if (selected.size<4) selected.add(obj.id);
-  }
-  buildChips(); closeModal("lensModal");
-});
-$("lensDelete").addEventListener("click", ()=>{
-  if (!editingId) return;
-  if (!confirm("Delete this lens?")) return;
-  saveCustomLenses(loadCustomLenses().filter(l=>l.id!==editingId));
-  selected.delete(editingId);
-  buildChips(); closeModal("lensModal");
-});
-
-/* ---------- stance: what would help right now ---------- */
-let stance = "explore";
-const STANCE_LABEL = { witness:"just be heard, with no pushing", explore:"see it from new angles", decide:"get clearer about a decision (without being told what to do)" };
-document.querySelectorAll("#stanceOpts .stance-opt").forEach(btn => btn.addEventListener("click", () => {
-  stance = btn.dataset.stance;
-  document.querySelectorAll("#stanceOpts .stance-opt").forEach(b => b.setAttribute("aria-pressed", b===btn ? "true":"false"));
-}));
 
 /* ---------- about + share + resources modals ---------- */
 $("aboutBtn").addEventListener("click", () => openModal("aboutModal"));
@@ -1043,17 +847,15 @@ $("closePrivacy").addEventListener("click", () => closeModal("privacyModal"));
 $("consentToggle").addEventListener("click", () => setConsent(!getConsent()));
 $("consentToggle").addEventListener("keydown", e => { if (e.key===" "||e.key==="Enter"){ e.preventDefault(); setConsent(!getConsent()); } });
 $("exportData").addEventListener("click", () => {
-  const data = { product:"Prism", exportedAt:new Date().toISOString(), dataUsageConsent:getConsent(), reflections:loadHist(), customLenses:loadCustomLenses(), journal:loadJournal() };
+  const data = { product:"Prism", exportedAt:new Date().toISOString(), dataUsageConsent:getConsent(), reflections:loadHist(), journal:loadJournal() };
   const blob = new Blob([JSON.stringify(data,null,2)], { type:"application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob); a.download = "prism-my-data.json";
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
 });
 $("deleteData").addEventListener("click", () => {
-  if (!confirm("Delete every reflection, journal entry, and custom lens saved on this device, along with your settings? This can't be undone.")) return;
-  [HIST_STORE, CONSENT_STORE, CUSTOM_STORE, JR_STORE, JR_CONSENT, "prism_feedback_given"].forEach(k => localStorage.removeItem(k));
-  selected = new Set(DEFAULT_SELECTED);
-  buildChips();
+  if (!confirm("Delete every reflection and journal entry saved on this device, along with your settings? This can't be undone.")) return;
+  [HIST_STORE, CONSENT_STORE, JR_STORE, JR_CONSENT, "prism_feedback_given"].forEach(k => localStorage.removeItem(k));
   renderConsent();
   const b=$("deleteData"); b.textContent="Deleted ✓"; setTimeout(()=>b.textContent="Delete everything", 1900);
 });
@@ -1082,49 +884,82 @@ document.querySelectorAll(".examples a").forEach(a => a.addEventListener("click"
   $("situation").scrollIntoView({behavior:"smooth", block:"center"});
 }));
 
-/* ---------- the main action ---------- */
-$("refractBtn").addEventListener("click", refract);
-$("situation").addEventListener("keydown", e => { if ((e.metaKey||e.ctrlKey) && e.key === "Enter") refract(); });
+/* ---------- the main action: a reflective conversation ---------- */
+$("refractBtn").addEventListener("click", converse);
+$("situation").addEventListener("keydown", e => { if ((e.metaKey||e.ctrlKey) && e.key === "Enter") converse(); });
 $("againBtn").addEventListener("click", reset);
 $("deeperBtn").addEventListener("click", saveCurrent);
+$("replySend").addEventListener("click", sendReply);
+$("replyText").addEventListener("keydown", e => { if ((e.metaKey||e.ctrlKey) && e.key === "Enter") sendReply(); });
 
-let current = null; // {situation, lenses:[...], synthesis}
+let current = null; // conversation: { situation, turns:[{role:'you'|'prism', text, question?, care?}], care, when, id, serverId, _readonly }
 
-async function refract(){
+function rankCare(c){ return {none:0, struggling:1, crisis:2}[(c && c.level) || "none"]; }
+function liveSay(msg){ const l=$("liveRegion"); if(l){ l.textContent=""; setTimeout(()=>l.textContent=msg, 30); } }
+
+/* Prism's quiet superpower: it answers grounded in everything you've told it before.
+   A fresh ChatGPT query has none of this — it's what makes the same question get a
+   different, more personal answer here. (Your own data, used for you, never stored server-side.) */
+function memoryContext(excludeWhen){
+  const refs = loadHist().filter(x => x.when !== excludeWhen)
+    .map(x => ({ when:x.when, text:String(x.situation||"").slice(0,300) }));
+  const jrnl = loadJournal().map(x => ({ when:x.when, text:String(x.text||"").slice(0,300) }));
+  const past = refs.concat(jrnl).sort((a,b)=>b.when-a.when).slice(0,10);
+  const themes = (analyzePatterns().themes || []).map(t => t.word);
+  return { past, themes };
+}
+
+async function converse(){
   const text = $("situation").value.trim();
   hideNotice();
-  if (text.length < 12) { showNotice("Give it a little more — a sentence or two about what's actually going on.", false); $("situation").focus(); return; }
-
-  const chosen = allLenses().filter(l => selected.has(l.id));
-  if (chosen.length < 2) { showNotice("Pick at least two perspectives to refract through.", false); return; }
+  if (text.length < 4) { showNotice("Tell me a little about what's on your mind.", false); $("situation").focus(); return; }
   setLoading(true);
   current = null;
+  const when = Date.now();
+  const convo = { situation: text, turns: [{ role:"you", text }], when, id:"local-"+when };
 
   let data;
-  try {
-    data = await callRefract(text, chosen, stance);  // live: Claude via /api/refract
-  } catch (err) {
-    console.warn("Live refraction unavailable, using example mode:", err.message);
-    data = await exampleReflect(text, chosen, stance); // graceful fallback
-    if (err.code === "BACKEND_DOWN") {
-      flashAfterRender("Showing example mode — the live AI backend isn't reachable from here. It runs once deployed.");
-    } else {
-      flashAfterRender(err.message || "Couldn't reach the AI; showing example mode.");
-    }
+  try { data = await callConverse(convo.turns, memoryContext(when)); }
+  catch (err) {
+    data = exampleConverse(convo.turns);
+    flashAfterRender(err.code === "BACKEND_DOWN"
+      ? "Showing example mode — the live AI isn't reachable from here. It runs once deployed."
+      : (err.message || "Couldn't reach the AI; showing example mode."));
   }
-  // Safety: combine the model's read with a client-side scan (belt and suspenders).
   data.care = mergeCare(detectDistress(text), data.care);
-
-  // cosmetic meta so custom lens names/colors survive a local re-open
-  const customMeta = chosen.filter(l => l.custom).map(({id,name,color}) => ({id,name,color}));
-
-  const when = Date.now();
-  current = { situation: text, lenses: data.lenses, synthesis: data.synthesis,
-              care: data.care, stance, when, id: "local-" + when, lensIds: chosen.map(l=>l.id),
-              customMeta };
-  renderResult(text, chosen, data);
+  convo.turns.push({ role:"prism", text:data.reply, question:data.question||null, care:data.care });
+  convo.care = data.care;
+  current = convo;
+  renderConvo(convo);
   cacheLocally(current);          // auto-journal — private, on-device; this is what makes memory possible
-  maybeShowEcho(current);         // gently surface if this echoes a past reflection
+  maybeShowEcho({ situation:text, when });
+}
+
+async function sendReply(){
+  if (!current || current._readonly) return;
+  const ta = $("replyText"); const text = ta.value.trim();
+  if (text.length < 2){ ta.focus(); return; }
+  current.turns.push({ role:"you", text });
+  ta.value = "";
+  renderConvo(current);
+  const convoEl = $("convo");
+  const thinking = document.createElement("div"); thinking.className="turn prism thinking in"; thinking.textContent="…";
+  convoEl.appendChild(thinking);
+  liveSay("Prism is reflecting…");
+
+  let data;
+  try { data = await callConverse(current.turns, memoryContext(current.when)); }
+  catch(_){ data = exampleConverse(current.turns); }
+
+  const merged = mergeCare(detectDistress(text), data.care);
+  const prior = current.turns.reduce((m,t)=>Math.max(m, rankCare(t.care)), rankCare(current.care));
+  const finalCare = rankCare(merged) >= prior ? merged : { level:["none","struggling","crisis"][prior], message: merged.message };
+  current.turns.push({ role:"prism", text:data.reply, question:(finalCare.level==="crisis" ? (data.question||null) : (data.question||null)), care:finalCare });
+  current.care = rankCare(finalCare) >= rankCare(current.care) ? finalCare : current.care;
+  renderConvo(current);
+  renderCare(current.care);
+  cacheLocally(current);
+  liveSay("Prism replied.");
 }
 let _afterRenderNotice = null;
 function flashAfterRender(msg){ _afterRenderNotice = msg; }
@@ -1197,119 +1032,60 @@ async function sendFeedback(){
   $("fbThanks").textContent = "Thank you — your honesty is exactly how Prism gets better. 🤍";
 }
 
-/* ---------- live refraction via our serverless proxy ---------- */
-async function callRefract(situation, chosen, stance){
+/* ---------- the reflective conversation via our serverless proxy ---------- */
+async function callConverse(turns, memory){
   let res;
   try {
-    res = await fetch("/api/refract", {
+    res = await fetch("/api/converse", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        situation,
-        stance: stance || "explore",
-        lenses: chosen.map(l => ({ id: l.id, name: l.name, desc: l.desc }))
-      })
+      body: JSON.stringify({ messages: turns.map(t => ({ role:t.role, text:t.text })), memory })
     });
   } catch (_) {
     const e = new Error("Backend unreachable."); e.code = "BACKEND_DOWN"; throw e;
   }
-  // No backend deployed (e.g. opened as a file / GitHub Pages): fall back quietly.
   if (res.status === 404 || res.status === 405) { const e=new Error("No backend."); e.code="BACKEND_DOWN"; throw e; }
-
   let json;
   try { json = await res.json(); }
   catch (_) { const e=new Error("Backend unreachable."); e.code="BACKEND_DOWN"; throw e; }
-
   if (!res.ok) {
     if (res.status === 501) { const e=new Error("AI not configured on the server."); e.code="BACKEND_DOWN"; throw e; }
-    throw new Error(json.error || `Refraction failed (${res.status}).`);
+    throw new Error(json.error || `Reflection failed (${res.status}).`);
   }
-  // align order to the chosen lenses
-  json.lenses = chosen.map(l => (json.lenses||[]).find(x => x.id === l.id)).filter(Boolean);
-  if (!json.lenses.length || !json.synthesis) throw new Error("The AI returned an unexpected shape.");
-  return json;
+  return {
+    reply: String(json.reply || ""),
+    question: json.question || null,
+    care: (json.care && ["none","struggling","crisis"].includes(json.care.level)) ? json.care : { level:"none", message:"" }
+  };
 }
 
-/* ---------- example mode (no key) ---------- *
-   Hand-written, perspective-true reflections so the experience is real
-   to demo offline. Live mode (Claude) tailors to any input.            */
-async function exampleReflect(situation, chosen, stance){
-  await wait(1400);
-  const lvl = detectDistress(situation);
-  if (lvl !== "none") {
-    // When someone's struggling, the voices soften to validation only — no challenging.
-    const soft = {
-      future: { reflection:"From further down the road, this weight won't have been the whole story of you — even if right now it fills the whole sky.", question:"What would help you get through just the next hour?" },
-      mentor: { reflection:"I'm not going to push you right now. What you're feeling makes sense, and you don't have to earn the right to set it down for a moment.", question:"Who in your life would want to know you're hurting like this?" },
-      skeptic:{ reflection:"I'll stay quiet for now. This isn't a moment to argue with you — it's a moment to stay beside you.", question:"What's one small, gentle thing you could do for yourself today?" },
-      values: { reflection:"You matter — not for what you decide or produce, but simply because you're here. That was never something you had to earn.", question:"What has helped you hold on before?" },
-      child:  { reflection:"The younger you wouldn't want you fixed right now. They'd just want you safe, and held.", question:"What did feeling comforted used to feel like?" },
-      rival:  { reflection:"As the friend who tells you the truth: the truth is you deserve care, and reaching out is brave, not weak.", question:"Would you let one person in today?" }
-    };
-    return {
-      lenses: chosen.map(l => ({ id:l.id, ...(soft[l.id] || soft.mentor) })),
-      synthesis: "Right now the most important thing isn't solving anything — it's that you're not alone with this. Please consider reaching out to someone below. You deserve support, and this will not always feel the way it does right now.",
-      care: { level: lvl, message: "" }
-    };
+/* ---------- example mode (no backend) ---------- *
+   A single, warm fallback reply so the conversation works offline. Live mode
+   (Claude) is where it becomes genuinely personal and varied.                 */
+async function exampleConverse(turns){
+  await wait(1200);
+  const last = [...turns].reverse().find(t => t.role === "you");
+  const text = last ? last.text : "";
+  const lvl = detectDistress(text);
+  if (lvl !== "none"){
+    return { reply:"What you've put into words sounds genuinely heavy — and it matters that you said it here, where there's nothing to perform and no one to judge you. You don't have to carry it alone.", question:null, care:{level:lvl, message:""} };
   }
-  const snippet = firstClause(situation);
-  const generic = (l) => ({
-    reflection: `Seen through ${l.name}, "${snippet}" looks less like a verdict and more like something still in motion — and the part of you that named this lens is trying to look out for you.`,
-    question: `If ${l.name} could say one true, kind thing about this, what would it be?`
-  });
-
-  if (stance === "witness") {
-    // "Just be heard" — witnessing, no challenge, questions optional/gentle.
-    const heard = {
-      future: { reflection:`I'm just here with this for now. "${snippet}" — that's a lot to be carrying.`, question:null },
-      mentor: { reflection:`You don't have to make this make sense yet. I hear you, and what you feel is allowed.`, question:null },
-      skeptic:{ reflection:`No challenge from me right now — I'm just listening to what you said.`, question:null },
-      values: { reflection:`Whatever you decide, it doesn't change that this matters to you — and so do you.`, question:null },
-      child:  { reflection:`The younger you would just want to sit close while you feel this.`, question:null },
-      rival:  { reflection:`I'm not going to push. I'm just glad you said it out loud.`, question:null }
-    };
+  const snip = firstClause(text);
+  const first = turns.filter(t => t.role === "you").length <= 1;
+  if (first){
     return {
-      lenses: chosen.map(l => ({ id:l.id, ...(heard[l.id] || { reflection:`I hear you. "${snippet}" — thank you for putting it into words.`, question:null }) })),
-      synthesis: `You said it, and it was heard. Nothing here needs solving right now — sometimes being witnessed is the whole thing. Stay with it as long as you need.`,
+      reply: `There's something under “${snip}” you haven't fully said yet — not the situation itself, but how it's actually landing on you. I'd rather sit with that for a moment than rush you toward an answer.`,
+      question: `When you're honest with yourself, what are you most afraid is true here?`,
       care: { level:"none", message:"" }
     };
   }
-
-  const bank = {
-    future: {
-      reflection: `Looking back, this won't be the chapter that defined you — but how you treated yourself while deciding it might be.`,
-      question: `A year from now, which version of this will you be prouder you chose?`
-    },
-    mentor: {
-      reflection: `I hear how much "${snippet}" costs you. The weight you're carrying is real — and you don't have to earn the right to put some of it down.`,
-      question: `What would you tell someone you love if they described this exact situation to you?`
-    },
-    skeptic: {
-      reflection: `Notice the story underneath: "${snippet}". Is that the truth, or the version that keeps you safe from having to act?`,
-      question: `Which part of this are you calling a fact when it's actually a fear?`
-    },
-    values: {
-      reflection: `Held up against what you say matters most, "${snippet}" isn't really about the decision — it's about which of two things you're unwilling to betray.`,
-      question: `If you can't honor both, which one could you not live with abandoning?`
-    },
-    child: {
-      reflection: `The younger you didn't weigh every angle — they just knew what felt true. "${snippet}" would have looked simpler, and maybe clearer, to them.`,
-      question: `What did you want, before you learned to want what's reasonable?`
-    },
-    rival: {
-      reflection: `Real talk: "${snippet}" — you already know the answer, you're just looking for permission. I'm not going to give it. I'm going to make you say it.`,
-      question: `What are you hoping someone else will decide so you don't have to?`
-    }
-  };
-  const synth = stance === "decide"
-    ? `Underneath every angle is one real fork: two things you care about that can't both win here. Naming that trade honestly — not picking it for you — is what makes the choice yours.`
-    : `Every angle keeps circling the same knot: you're treating a feeling as a problem to be solved, when it might be information to be heard. The question isn't only what to do — it's what this is trying to tell you about what you need.`;
   return {
-    lenses: chosen.map(l => ({ id:l.id, ...(bank[l.id] || generic(l)) })),
-    synthesis: synth
+    reply: `I hear you. Said plainly like that, “${snip}” sounds less like a problem to be solved and more like something asking to be felt first.`,
+    question: `If nothing about the situation had to change today, what would you most want someone to understand about it?`,
+    care: { level:"none", message:"" }
   };
 }
-function firstClause(s){ const c=s.replace(/\s+/g," ").trim().split(/[,.;:—]/)[0].trim(); return c.length>64?c.slice(0,64).trim()+"…":c; }
+function firstClause(s){ const c=String(s||"").replace(/\s+/g," ").trim().split(/[,.;:—]/)[0].trim(); return c.length>64?c.slice(0,64).trim()+"…":c; }
 
 /* ---------- render ---------- */
 const LOAD_LINES = ["Take a breath…","Letting the light in…","Finding the angles…","Listening for what's underneath…"];
@@ -1325,37 +1101,28 @@ function setLoading(on){
   }
 }
 
-function renderResult(text, chosen, data){
+function renderConvo(convo){
   setLoading(false);
-  renderCare(data.care);
+  if (!convo.turns) convo.turns = [{ role:"you", text: convo.situation || "" }];  // legacy/safety
+  renderCare(convo.care);
   resetFeedback();
   const en = $("echoNote"); if (en){ en.hidden = true; en.innerHTML = ""; }
-  $("echo").textContent = text;
-  const grid = $("lensGrid"); grid.innerHTML="";
-  bindDeeper(grid);
-  data.lenses.forEach((entry, i) => {
-    const meta = lensMeta(entry.id) || { name: entry.id };
-    const color = meta.color || "var(--c-future)";
-    const nm = esc(meta.name || entry.id);
-    const card = document.createElement("div");
-    card.className = "lens-card"; card.style.setProperty("--lc", color);
-    const qHtml = entry.question
-      ? `<div class="lens-question"><span class="ask">asks</span><span>${esc(entry.question)}</span></div>` : "";
-    card.innerHTML = `
-      <div class="lens-name">
-        <span class="glyph" style="color:${cssVar(color)}">${meta.glyph || GENERIC_GLYPH}</span>
-        <span class="nm">${nm}</span>
-      </div>
-      <div class="lens-reflection">${esc(entry.reflection)}</div>
-      ${qHtml}
-      <button class="deeper-toggle" data-id="${esc(entry.id)}" aria-expanded="false" aria-controls="thread-${esc(entry.id)}">Go deeper with ${nm}</button>
-      <div class="lens-thread" id="thread-${esc(entry.id)}" hidden></div>`;
-    grid.appendChild(card);
-    setTimeout(()=>card.classList.add("in"), 120 + i*150);
+  const wrap = $("convo"); wrap.innerHTML = "";
+  convo.turns.forEach((t, i) => {
+    const d = document.createElement("div");
+    if (t.role === "you"){
+      d.className = "turn you"; d.innerHTML = `<span class="who">You</span>${esc(t.text)}`;
+    } else {
+      d.className = "turn prism";
+      let h = esc(t.text);
+      if (t.question) h += `<span class="q">${esc(t.question)}</span>`;
+      d.innerHTML = h;
+    }
+    wrap.appendChild(d);
+    setTimeout(()=>d.classList.add("in"), 40 + Math.min(i,8)*70);
   });
-  $("synText").textContent = data.synthesis;
-  const syn = $("synthesis"); syn.classList.remove("in"); void syn.offsetWidth;
-  setTimeout(()=>syn.classList.add("in"), 120 + data.lenses.length*150 + 100);
+  $("convoReply").style.display = convo._readonly ? "none" : "";
+  $("replyText").value = "";
 
   const rn = $("resultNotice");
   if (_afterRenderNotice){ rn.textContent = _afterRenderNotice; rn.classList.add("show"); _afterRenderNotice = null; }
@@ -1364,141 +1131,7 @@ function renderResult(text, chosen, data){
   $("result").classList.add("show");
   window.scrollTo({top:0, behavior:"smooth"});
 }
-function cssVar(v){ if(!v) return "#aaa"; const m=v.match(/var\((--[\w-]+)\)/); return m?getComputedStyle(document.documentElement).getPropertyValue(m[1]).trim():v; }
 function esc(s){ const d=document.createElement("div"); d.textContent=s||""; return d.innerHTML; }
-
-/* ---------- go deeper: a short, single-voice dialogue with one part ---------- */
-const MAX_DEEPER_TURNS = 3;
-function bindDeeper(grid){
-  if (grid._deeperBound) return;
-  grid.addEventListener("click", e => {
-    const t = e.target.closest(".deeper-toggle"); if (t){ toggleDeeper(t.dataset.id); return; }
-    const s = e.target.closest(".deeper-send");   if (s){ sendDeeper(s.dataset.id); }
-  });
-  grid.addEventListener("keydown", e => {
-    const ta = e.target.closest(".deeper-reply textarea");
-    if (ta && (e.metaKey||e.ctrlKey) && e.key === "Enter"){ e.preventDefault(); sendDeeper(ta.dataset.id); }
-  });
-  grid._deeperBound = true;
-}
-function lensEntry(id){ return current && current.lenses && current.lenses.find(e => e.id === id); }
-function partTurns(thread){ return thread.filter(t => t.role === "part").length; }
-function rankCare(c){ return {none:0, struggling:1, crisis:2}[(c && c.level) || "none"]; }
-function announce(msg){ const l=$("deeperLive"); if(l){ l.textContent=""; setTimeout(()=>l.textContent=msg, 30); } }
-
-function toggleDeeper(id){
-  const entry = lensEntry(id); if(!entry) return;
-  const box = $("thread-"+id); if(!box) return;
-  const btn = box.previousElementSibling;
-  const opening = box.hidden;
-  box.hidden = !opening; if(btn) btn.setAttribute("aria-expanded", opening ? "true" : "false");
-  if (opening){
-    if (!entry.thread) entry.thread = [{ role:"part", text:entry.reflection, question:entry.question || null }];
-    renderThread(id);
-    const ta = box.querySelector(".deeper-reply textarea"); if(ta) ta.focus();
-  }
-}
-
-function renderThread(id){
-  const entry = lensEntry(id); const box = $("thread-"+id); if(!entry || !box) return;
-  const meta = lensMeta(id) || {}; const nm = esc(meta.name || id);
-  const crisis = entry.thread.some(t => t.care && t.care.level === "crisis");
-  let html = "";
-  entry.thread.forEach(t => {
-    if (t.role === "part"){
-      html += `<div class="turn part">${esc(t.text)}`;
-      if (t.question) html += `<span style="display:block;margin-top:8px;color:var(--lc)"><span class="ask">asks</span> ${esc(t.question)}</span>`;
-      html += `</div>`;
-    } else {
-      html += `<div class="turn you"><span class="who">You</span>${esc(t.text)}</div>`;
-    }
-  });
-  const capped = partTurns(entry.thread) >= MAX_DEEPER_TURNS;
-  const readonly = current && current._readonly;
-  if (capped || crisis){
-    html += `<div class="turn closer">This feels like a good place to sit with it for a while.</div>`;
-  } else if (!readonly){
-    html += `<div class="deeper-reply">
-      <textarea data-id="${esc(id)}" placeholder="Say more to ${nm}…" maxlength="1000" aria-label="Your reply to ${nm}"></textarea>
-      <button class="deeper-send" data-id="${esc(id)}">Reply</button></div>`;
-  }
-  box.innerHTML = html;
-}
-
-async function sendDeeper(id){
-  const entry = lensEntry(id); const box = $("thread-"+id); if(!entry || !box) return;
-  const ta = box.querySelector(".deeper-reply textarea"); if(!ta) return;
-  const text = ta.value.trim();
-  if (text.length < 2){ ta.focus(); return; }
-  entry.thread.push({ role:"you", text });
-  renderThread(id);
-  const rb = box.querySelector(".deeper-reply"); if(rb) rb.remove();
-  const thinking = document.createElement("div"); thinking.className="turn part thinking"; thinking.textContent="…";
-  box.appendChild(thinking);
-  announce(((lensMeta(id)||{}).name || "This part") + " is reflecting…");
-
-  let reply;
-  try { reply = await callDeepen(id); }
-  catch(_){ reply = await exampleDeepen(id); }
-
-  // SAFETY per turn: re-scan the user reply, merge with model care, never de-escalate
-  const merged = mergeCare(detectDistress(text), reply.care);
-  const prior = entry.thread.reduce((m,t)=>Math.max(m, rankCare(t.care)), rankCare(current.care));
-  const finalCare = rankCare(merged) >= prior ? merged : { level:["none","struggling","crisis"][prior], message: merged.message };
-  entry.thread.push({ role:"part", text:reply.reply, question:(finalCare.level==="crisis" ? null : reply.question), care:finalCare });
-
-  if (rankCare(finalCare) >= rankCare(current.care)) { current.care = finalCare; renderCare(current.care); }
-  renderThread(id);
-  announce(((lensMeta(id)||{}).name || "This part") + " replied.");
-  const nta = box.querySelector(".deeper-reply textarea"); if(nta) nta.focus();
-}
-
-async function callDeepen(id){
-  const entry = lensEntry(id); const meta = lensMeta(id) || {};
-  const messages = entry.thread.map(t => ({
-    role: t.role === "part" ? "assistant" : "user",
-    text: (t.role === "part" && t.question) ? `${t.text}\n\n${t.question}` : t.text
-  }));
-  let res;
-  try {
-    res = await fetch("/api/deepen", {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ situation: current.situation, lens:{ id: meta.id||id, name: meta.name||id, desc: meta.desc||"" }, messages })
-    });
-  } catch(_){ const e=new Error("Backend unreachable."); e.code="BACKEND_DOWN"; throw e; }
-  if (res.status===404 || res.status===405){ const e=new Error("No backend."); e.code="BACKEND_DOWN"; throw e; }
-  let json; try { json = await res.json(); } catch(_){ const e=new Error("Backend unreachable."); e.code="BACKEND_DOWN"; throw e; }
-  if (!res.ok){
-    if (res.status===501){ const e=new Error("AI not configured."); e.code="BACKEND_DOWN"; throw e; }
-    throw new Error(json.error || `Deepen failed (${res.status}).`);
-  }
-  return {
-    reply: String(json.reply||""),
-    question: json.question || null,
-    care: (json.care && ["none","struggling","crisis"].includes(json.care.level)) ? json.care : {level:"none",message:""}
-  };
-}
-
-async function exampleDeepen(id){
-  await wait(1100);
-  const entry = lensEntry(id); const meta = lensMeta(id) || {};
-  const last = [...entry.thread].reverse().find(t => t.role === "you");
-  const lvl = detectDistress(last ? last.text : "");
-  if (lvl !== "none"){
-    return { reply:"Thank you for trusting me with that. You don't have to hold it alone, and nothing you've said changes that you deserve care.", question:null, care:{level:lvl, message:""} };
-  }
-  const snip = firstClause(last ? last.text : "");
-  const bank = {
-    future:{ r:`From further on, "${snip}" reads less like a wall and more like a turn.`, q:`What would the version of you who came through this want you to remember?` },
-    mentor:{ r:`I hear "${snip}". That's honest, and it matters that you said it.`, q:`What's the smallest true next step you'd respect yourself for?` },
-    skeptic:{ r:`So when you say "${snip}" — is that the whole of it, or the safest version?`, q:`What would you have to admit if that weren't quite true?` },
-    values:{ r:`"${snip}" keeps pointing back to something you care about underneath.`, q:`Which value is quietly asking to be honored here?` },
-    child:{ r:`The younger you would hear "${snip}" simply.`, q:`What did you want, before you learned to want what's reasonable?` },
-    rival:{ r:`Real talk: "${snip}" — you're circling something you already half-know.`, q:`What are you hoping won't turn out to be true?` }
-  };
-  const b = bank[id] || { r:`Sitting with "${snip}", the part of you that named ${meta.name||"this lens"} is still listening.`, q:`What feels most true about it right now?` };
-  return { reply:b.r, question:b.q, care:{level:"none", message:""} };
-}
 
 function reset(){
   $("result").classList.remove("show");
@@ -1529,8 +1162,7 @@ async function saveCurrent(){
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          situation: current.situation, lenses: current.lenses,
-          synthesis: current.synthesis, lensIds: current.lensIds || [],
+          situation: current.situation, turns: current.turns,
           careLevel: (current.care && current.care.level) || "none",
           allowImprovement: getConsent()
         })
@@ -1540,7 +1172,7 @@ async function saveCurrent(){
   }
 
   btn.disabled = false;
-  cacheLocally(current);   // persist latest (serverId, any go-deeper threads)
+  cacheLocally(current);   // persist latest (serverId, full conversation)
 
   if (current.serverId){
     const link = location.origin + location.pathname + "?r=" + encodeURIComponent(current.serverId);
@@ -1570,9 +1202,8 @@ async function loadReflectionById(id){
 }
 function renderShared(item){
   current = item;
-  const chosen = item.lenses.map(e => lensMeta(e.id) || {id:e.id, name:e.id}).filter(Boolean);
   _afterRenderNotice = null;
-  renderResult(item.situation, chosen, item);
+  renderConvo(item);
 }
 $("historyBtn").addEventListener("click", () => { renderPatterns(); renderHist(); openModal("historyModal"); });
 function renderHist(){
@@ -1583,12 +1214,12 @@ function renderHist(){
   h.forEach((item) => {
     const d=document.createElement("div"); d.className="hist-item";
     const date=new Date(item.when).toLocaleDateString(undefined,{month:"short",day:"numeric"});
-    d.innerHTML=`<div class="ht">${esc(item.situation)}</div><div class="hm">${date} · ${(item.lenses||[]).length} perspectives</div>`;
+    const exchanges = (item.turns||[]).filter(t=>t.role==="prism").length;
+    d.innerHTML=`<div class="ht">${esc(item.situation)}</div><div class="hm">${date}${exchanges?` · ${exchanges} exchange${exchanges>1?"s":""}`:""}</div>`;
     d.addEventListener("click", () => {
       closeModal("historyModal");
       current=item;                    // own-device item stays continuable (no _readonly)
-      const chosen=(item.lenses||[]).map(e=>lensMeta(e.id) || {id:e.id, name:e.id}).filter(Boolean);
-      renderResult(item.situation, chosen, item);
+      renderConvo(item);
     });
     list.appendChild(d);
   });
@@ -1615,10 +1246,7 @@ function analyzePatterns(){
   const freq = {};
   h.forEach(item => entryThemes(item).forEach(w => { freq[w]=(freq[w]||0)+1; }));
   const themes = Object.entries(freq).filter(([,c])=>c>=2).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([word,count])=>({word,count}));
-  const lf = {};
-  h.forEach(item => (item.lensIds || (item.lenses||[]).map(l=>l.id)).forEach(id => { lf[id]=(lf[id]||0)+1; }));
-  const topLenses = Object.entries(lf).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([id,count])=>({id,count,name:(lensMeta(id)||{}).name||id}));
-  return { count:h.length, spanDays, themes, topLenses };
+  return { count:h.length, spanDays, themes };
 }
 
 function renderPatterns(){
@@ -1632,12 +1260,9 @@ function renderPatterns(){
   const themeChips = p.themes.length
     ? `<div class="pat-label">what keeps surfacing</div><div class="pat-themes">${p.themes.map(t=>`<span class="pat-theme">${esc(t.word)} <b>×${t.count}</b></span>`).join("")}</div>`
     : "";
-  const lensLine = p.topLenses.length
-    ? `<div class="pat-sub">You reach most for <b>${p.topLenses.map(l=>esc(l.name)).join("</b>, <b>")}</b>.</div>` : "";
   box.innerHTML = `
     <div class="pat-stat">${p.count} reflections${span}.</div>
     ${themeChips}
-    ${lensLine}
     <div class="pat-insight" id="patInsight">
       <button class="ghost-btn" id="revealPatterns">Reveal the thread →</button>
     </div>`;

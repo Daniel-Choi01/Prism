@@ -42,39 +42,27 @@ export default async function handler(req, res) {
   if (req.method === "POST") {
     const body = typeof req.body === "string" ? safeParse(req.body) : (req.body || {});
     const situation = (body.situation || "").toString().trim();
-    const lenses = Array.isArray(body.lenses) ? body.lenses : null;
-    const synthesis = (body.synthesis || "").toString().trim();
-    const lensIds = Array.isArray(body.lensIds) ? body.lensIds.map(String) : [];
+    const turns = Array.isArray(body.turns) ? body.turns : null;
     const careLevel = ["none","struggling","crisis"].includes(body.careLevel) ? body.careLevel : "none";
     const allowImprovement = body.allowImprovement === true;   // opt-in only
 
-    if (!situation || !lenses || !synthesis) {
-      return res.status(400).json({ error: "Missing situation, lenses, or synthesis." });
+    if (!situation || !turns || !turns.length) {
+      return res.status(400).json({ error: "Missing situation or conversation." });
     }
-    if (situation.length > 2000 || synthesis.length > 2000 || lenses.length > 6) {
+    if (situation.length > 2000 || turns.length > 40) {
       return res.status(400).json({ error: "Payload too large." });
     }
-    // sanitize lens entries (incl. an optional capped go-deeper thread)
-    const cleanLenses = lenses.slice(0, 6).map(l => {
-      const out = {
-        id: String(l.id || ""),
-        reflection: String(l.reflection || "").slice(0, 800),
-        question: String(l.question || "").slice(0, 800)
+    // sanitize the conversation turns (stored in the flexible jsonb column)
+    const cleanTurns = turns.slice(0, 40).map(t => {
+      const turn = {
+        role: t.role === "prism" ? "prism" : "you",
+        text: String(t.text || "").slice(0, 4000)
       };
-      if (Array.isArray(l.thread)) {
-        out.thread = l.thread.slice(0, 8).map(t => {
-          const turn = {
-            role: t.role === "you" ? "you" : "part",
-            text: String(t.text || "").slice(0, 1000)
-          };
-          if (t.question) turn.question = String(t.question).slice(0, 800);
-          if (t.care && ["none", "struggling", "crisis"].includes(t.care.level)) {
-            turn.care = { level: t.care.level, message: String(t.care.message || "").slice(0, 400) };
-          }
-          return turn;
-        });
+      if (t.question) turn.question = String(t.question).slice(0, 2000);
+      if (t.care && ["none", "struggling", "crisis"].includes(t.care.level)) {
+        turn.care = { level: t.care.level, message: String(t.care.message || "").slice(0, 400) };
       }
-      return out;
+      return turn;
     });
 
     try {
@@ -83,9 +71,9 @@ export default async function handler(req, res) {
         headers: { ...sbHeaders, "prefer": "return=representation" },
         body: JSON.stringify({
           situation,
-          lenses: cleanLenses,
-          synthesis,
-          lens_ids: lensIds.slice(0, 6),
+          lenses: cleanTurns,        // the jsonb column holds the full conversation now
+          synthesis: "",
+          lens_ids: [],
           care_level: careLevel,
           allow_improvement: allowImprovement
         })
@@ -109,9 +97,8 @@ function toClient(row) {
   return {
     id: row.id,
     situation: row.situation,
-    lenses: row.lenses,
-    synthesis: row.synthesis,
-    lensIds: row.lens_ids || [],
+    turns: Array.isArray(row.lenses) ? row.lenses : [],   // conversation lives in the jsonb column
+    care: { level: row.care_level || "none", message: "" },
     when: row.created_at ? Date.parse(row.created_at) : Date.now()
   };
 }
