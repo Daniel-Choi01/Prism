@@ -757,6 +757,11 @@
   .pat-bar-track { flex:1; height:9px; border-radius:999px; background:rgba(255,255,255,0.05); overflow:hidden; }
   .pat-bar-fill { display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,var(--s4),var(--s6)); }
   .pat-bar-n { flex:0 0 auto; font-size:12px; color:var(--ink-faint); min-width:16px; text-align:left; }
+  /* a letter from Prism (reflecting on your patterns) */
+  .letter-card { margin-top:16px; border:1px solid var(--line-bright); border-radius:16px; padding:22px 24px;
+    background:linear-gradient(180deg, rgba(179,156,255,0.06), rgba(255,255,255,0.012)); }
+  .letter-body { font-family:var(--read); font-size:16px; line-height:1.7; color:var(--ink); }
+  .letter-sign { margin-top:14px; font-family:var(--serif); font-style:italic; color:var(--c-future); font-size:15px; }
 
   /* ============================================================
      VOICE INPUT — dictate instead of type (Web Speech API).
@@ -2291,8 +2296,32 @@ function renderPatterns(){
     ${themeBlock}
     <div class="pat-insight" id="patInsight">
       <button class="ghost-btn" id="revealPatterns">Reveal the thread →</button>
-    </div>`;
+      <button class="ghost-btn" id="writeLetter">Write me a letter ✦</button>
+    </div>
+    <div id="letterBox"></div>`;
   const rb = $("revealPatterns"); if (rb) rb.addEventListener("click", revealPatterns);
+  const lb = $("writeLetter"); if (lb) lb.addEventListener("click", writeLetterNow);
+}
+
+/* A letter from Prism reflecting on your patterns over time — the memory
+   differentiator made personal. Grounded; example fallback when offline. */
+async function writeLetterNow(){
+  const box = $("letterBox"); if (!box) return;
+  box.innerHTML = `<div class="letter-card"><div class="pat-thinking">Reading back over what you've shared…</div></div>`;
+  let letter;
+  try { letter = await callLetter(); } catch(_){ letter = exampleLetter(); }
+  box.innerHTML = `<div class="letter-card"><div class="letter-body">${esc(letter).replace(/\n/g,"<br>")}</div><div class="letter-sign">— Prism</div></div>`;
+}
+async function callLetter(){
+  const res = await fetch("/api/letter", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ memory: memoryContext(-1) }) });
+  if (res.status===404 || res.status===405 || res.status===501) throw new Error("down");
+  const j = await res.json(); if (!res.ok || !j.letter) throw new Error(j.error || "down");
+  return j.letter;
+}
+function exampleLetter(){
+  const p = analyzePatterns();
+  const top = (p.themes && p.themes.length) ? p.themes.slice(0,2).map(t=>t.word) : null;
+  return `I've been sitting with everything you've brought here${top?`, and a few things keep finding their way back in — ${top.join(" and ")}`:""}. I don't experience any of it the way you do; what I can do is pay attention, without flinching and without an agenda, to what you keep returning to.\n\nWhat stands out isn't any single hard day. It's that you keep showing up to look at things honestly, even when it would be easier not to. That's quietly a lot.\n\nWhat would it mean to be a little gentler with the part of you that's been carrying all of this?`;
 }
 
 async function revealPatterns(){

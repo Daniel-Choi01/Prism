@@ -204,6 +204,9 @@ try {
     check("patterns: one dot per reflection", (await page.locator("#patternsBox .pat-mood circle").count()) === 4);
     check("patterns: theme bars render", (await page.locator("#patternsBox .pat-bar").count()) >= 1);
     check("patterns: trend read present", (await page.locator("#patternsBox .pat-mood-read").textContent()).length > 10);
+    await page.locator("#writeLetter").click();
+    await page.waitForTimeout(1500);   // example fallback when offline
+    check("patterns: a letter renders", (await page.locator("#letterBox .letter-body").count()) > 0);
     await ctx.close();
   }
 
