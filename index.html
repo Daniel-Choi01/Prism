@@ -1750,15 +1750,20 @@ $("closePrivacy").addEventListener("click", () => closeModal("privacyModal"));
 $("consentToggle").addEventListener("click", () => setConsent(!getConsent()));
 $("consentToggle").addEventListener("keydown", e => { if (e.key===" "||e.key==="Enter"){ e.preventDefault(); setConsent(!getConsent()); } });
 $("exportData").addEventListener("click", () => {
-  const data = { product:"Prism", exportedAt:new Date().toISOString(), dataUsageConsent:getConsent(), reflections:loadHist(), journal:loadJournal() };
+  // everything stored for you on this device — nothing held back
+  const data = { product:"Prism", exportedAt:new Date().toISOString(), dataUsageConsent:getConsent(),
+    reflections:loadHist(), journal:loadJournal(), checkins:loadCheckins(), keptWords:loadKept() };
   const blob = new Blob([JSON.stringify(data,null,2)], { type:"application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob); a.download = "prism-my-data.json";
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
 });
 $("deleteData").addEventListener("click", () => {
-  if (!confirm("Delete every reflection and journal entry saved on this device, along with your settings? This can't be undone.")) return;
-  [HIST_STORE, CONSENT_STORE, JR_STORE, JR_CONSENT, "prism_feedback_given"].forEach(k => localStorage.removeItem(k));
+  if (!confirm("Delete everything saved on this device — reflections, journal, check-ins, kept words, and settings? This can't be undone.")) return;
+  // wipe ALL on-device data + preferences (identity/sign-in is handled separately)
+  [HIST_STORE, CONSENT_STORE, JR_STORE, JR_CONSENT, CI_STORE, KEPT_STORE, SETTINGS_STORE, ONBOARD_KEY, "prism_feedback_given"]
+    .forEach(k => localStorage.removeItem(k));
+  applySettings({});   // back to defaults immediately
   renderConsent();
   const b=$("deleteData"); b.textContent="Deleted ✓"; setTimeout(()=>b.textContent="Delete everything", 1900);
 });

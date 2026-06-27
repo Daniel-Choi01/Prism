@@ -400,6 +400,24 @@ try {
     check("onboarding does not repeat", await page.locator("#onboardModal").evaluate((el) => !el.classList.contains("show")));
     await ctx.close();
   }
+
+  /* ===== 12. "Delete everything" truly wipes all on-device data ===== */
+  {
+    const { ctx, page } = await freshPage();
+    await page.evaluate(() => {
+      localStorage.setItem("prism_history", JSON.stringify([{ id: "l1", when: Date.now(), situation: "x", turns: [], care: { level: "none" } }]));
+      localStorage.setItem("prism_checkins", JSON.stringify([{ when: Date.now(), mood: 2, word: "", grateful: "" }]));
+      localStorage.setItem("prism_kept", JSON.stringify([{ kind: "wisdom", text: "keep me", when: Date.now() }]));
+    });
+    page.on("dialog", (d) => d.accept());
+    await page.locator("#footPrivacy").click();
+    await page.waitForTimeout(200);
+    await page.locator("#deleteData").click();
+    await page.waitForTimeout(300);
+    const remaining = await page.evaluate(() => ["prism_history", "prism_checkins", "prism_kept"].filter((k) => localStorage.getItem(k)));
+    check("delete everything wipes reflections + check-ins + kept words", remaining.length === 0, "left: " + remaining.join(","));
+    await ctx.close();
+  }
 } catch (err) {
   check("suite ran to completion", false, err.message);
 } finally {

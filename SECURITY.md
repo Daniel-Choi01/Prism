@@ -19,8 +19,10 @@ layer by layer.
 - Turning it on only flags *future* saves; it is never retroactive and can be turned back off anytime.
 
 ## 3. You can take it or wipe it
-- **Export my data** downloads everything stored for you as a JSON file.
-- **Delete everything** clears your on-device reflections and settings immediately.
+- **Export my data** downloads *everything* stored for you as a JSON file — reflections, journal,
+  check-ins, and kept words. Nothing is held back.
+- **Delete everything** clears all of that, plus your settings, from this device immediately — and
+  truly everything, not just reflections.
 - (Phase 2, with accounts) account deletion cascades to every row you own via
   `on delete cascade`.
 
@@ -33,6 +35,16 @@ layer by layer.
 - In **Phase 2** (Supabase Auth — Google + anonymous), policies restrict every row to its owner via
   `auth.uid() = user_id`, so a signed-in user can *only ever* read their own reflections, with a
   single narrow exception for explicitly-shared links.
+
+## 4a. Cloud sync is opt-in and owner-locked
+- **Guests never sync** — everything stays in their browser, full stop. Cloud sync only runs once
+  someone chooses to sign in (Google or anonymous).
+- When signed in, the private bundle (reflections, journal, check-ins) lives in a `user_state` row
+  keyed to `auth.uid()`. **Row-Level Security** allows select/insert/update/delete **only** where
+  `auth.uid() = user_id`, so one account can never read or touch another's — enforced by the
+  database, not just the client.
+- The browser talks to that table with the **public anon key** under RLS; no service-role key and no
+  server function is involved in sync. Deleting the account cascades the row away (`on delete cascade`).
 
 ## 5. Minimal collection
 - Feedback stores only a thumbs up/down, an optional 1–5 rating, and an optional note — **never the
