@@ -62,8 +62,11 @@ built to do the opposite, and to do the one thing a stateless chat with any othe
   directly from the browser under Row-Level Security (you can only ever touch your own row), so
   "remembers you" finally works everywhere. Guests stay strictly on-device — that's the whole point
   of guest mode.
-- **Private by design** — opt-in only (nothing is used to improve Prism unless you say so), export
-  or delete your data anytime, and no provider key ever touches the browser.
+- **Private by design** — opt-in only (nothing is used to improve Prism unless you say so); take
+  everything with you as **JSON or a readable Markdown journal**, or wipe it all (truly all) anytime;
+  and no provider key ever touches the browser.
+- **Built for comfort & access** — reduced motion, larger text, calm themes, a film-grain toggle,
+  keyboard shortcuts, and a print-clean stylesheet — so it bends to how *you* need to use it.
 - **Listens back** — a gentle end-of-session feedback prompt; the rating + optional note (never your
   reflection content) help Prism improve.
 
@@ -123,6 +126,9 @@ prism/
    public **`anon`** key.
 4. *(For sign-in)* In **Authentication → Providers**, turn **Anonymous** on; for Google, add an
    OAuth client and your Vercel URL as a redirect.
+5. *(For cross-device sync)* The schema's **CLOUD SYNC** block creates the `user_state` table with
+   Row-Level Security, so signed-in users sync their private bundle across devices (guests stay
+   on-device). It's included in `schema.sql` and safe to run as-is.
 
 ### 2. Deploy to Vercel
 1. Push this `prism/` folder to a GitHub repo (or run `vercel` from the CLI).
@@ -147,6 +153,15 @@ vercel dev          # serves index.html + /api with your .env values
 ```
 Or just **open `index.html` directly** in a browser — with no backend reachable, Prism runs in
 **example mode** (hand-written sample responses) so you can see the full experience offline.
+
+### Tests
+An end-to-end smoke suite ([`tests/smoke.mjs`](tests/smoke.mjs)) opens the real `index.html` headless
+and exercises every surface (49 checks) in example mode — no keys or server needed:
+```bash
+npm i -D playwright && npx playwright install chromium
+npm test
+```
+See [`tests/README.md`](tests/README.md). It exits non-zero on any failure, so it drops into CI.
 
 ---
 

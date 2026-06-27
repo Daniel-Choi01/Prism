@@ -186,7 +186,19 @@ Prism refracts it — separates what's really in there — so you can finally se
 >>  • Security: moved the API key off the browser into serverless functions, added consent that's
 >>    opt-in and absolute, and Row-Level Security — so it's actually deployable and private, not
 >>    just a demo.
->>  • [add ONE real thing: a bug you hit, a dead-end you backed out of, or what you'd build next.]
+>>  • A privacy audit caught that "Delete everything" had quietly stopped covering newer data
+>>    (check-ins, kept words) — fixed so it truly wipes everything. Built a 52-check end-to-end test
+>>    suite partly so regressions like that can't sneak back in.
+
+**What I'd build next (be honest about the horizon):**
+> - **Gentle, opt-in reminders** — a once-a-day nudge to check in, never nagging, fully off by default.
+> - **Shared reflection with a trusted person** — hand a single reflection to a friend or therapist,
+>   with consent on both sides, without making anything public.
+> - **Longer-arc letters** — the "letter from Prism" expanded into a monthly read of how a season went.
+> - **On-device models** for the most sensitive entries, so even the server never sees them.
+
+**Why these and not "more features":** every one deepens the two things Prism is actually about —
+being *known over time* and staying *private and safe*. That's the line I'd hold against scope creep.
 
 ---
 

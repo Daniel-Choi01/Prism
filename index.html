@@ -945,7 +945,9 @@
       <div class="examples">
         Not sure where to start? Try
         <a data-ex="0">“Should I drop the team I helped start?”</a> ·
-        <a data-ex="1">“Everyone thinks I have it together.”</a>
+        <a data-ex="1">“Everyone thinks I have it together.”</a> ·
+        <a data-ex="2">“I got what I wanted and feel flat.”</a> ·
+        <a data-ex="3">“I can't stop replaying a conversation.”</a>
       </div>
 
       <div class="resume-hint" id="resumeHint" hidden></div>
@@ -1302,8 +1304,9 @@
 
     <p class="fineprint" style="margin-top:14px;">You can take everything with you or wipe it at any time:</p>
     <div class="modal-actions" style="justify-content:space-between;">
-      <div style="display:flex; gap:10px;">
-        <button class="ghost-btn" id="exportData">Export my data</button>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="ghost-btn" id="exportData">Export (JSON)</button>
+        <button class="ghost-btn" id="exportMd">Export (Markdown)</button>
         <button class="ghost-btn" id="deleteData">Delete everything</button>
       </div>
       <button class="refract-btn" id="closePrivacy">Done</button>
@@ -1547,6 +1550,8 @@
 const EXAMPLES = [
   "I helped start a team I care about, but it's draining me and I think I want to leave. I feel like a traitor for even considering it.",
   "Everyone thinks I have it all together. I'm the one people come to. But lately I feel like I'm faking it and I don't know who I'd go to.",
+  "I finally got the thing I wanted, and I just feel... flat. I don't understand what's wrong with me.",
+  "I keep replaying a conversation from days ago. I know it's over, but I can't seem to put it down.",
 ];
 
 /* ---------- state ---------- */
@@ -1777,6 +1782,38 @@ $("exportData").addEventListener("click", () => {
   const blob = new Blob([JSON.stringify(data,null,2)], { type:"application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob); a.download = "prism-my-data.json";
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+});
+/* a human-readable Markdown export of everything — your whole journal, to keep */
+function buildMarkdownExport(){
+  const refs = loadHist(), jr = loadJournal(), ci = loadCheckins(), kept = loadKept();
+  let md = `# My Prism — exported ${new Date().toLocaleString()}\n\nPrivate to you: reflections, journal, check-ins, and kept words.\n`;
+  if (refs.length){
+    md += `\n## Reflections (${refs.length})\n`;
+    refs.forEach(r => {
+      md += `\n### ${new Date(r.when).toLocaleString()}\n`;
+      (r.turns||[]).forEach(t => { md += t.role === "you" ? `\n**You:** ${t.text}\n` : `\n**Prism:** ${t.text}\n${t.question?`\n> ${t.question}\n`:""}`; });
+    });
+  }
+  if (jr.length){
+    md += `\n## Journal (${jr.length})\n`;
+    jr.forEach(e => { md += `\n### ${new Date(e.when).toLocaleString()}\n\n${e.text}\n`; if (e.insight && e.insight.mirror) md += `\n_Prism reflected:_ ${e.insight.mirror}\n`; });
+  }
+  if (ci.length){
+    md += `\n## Check-ins (${ci.length})\n\n`;
+    ci.forEach(c => { const lvl = ["Rough","Low","Okay","Good","Bright"][c.mood] || "—"; md += `- ${new Date(c.when).toLocaleDateString()}: **${lvl}**${c.word?` · ${c.word}`:""}${c.grateful?` · grateful for ${c.grateful}`:""}\n`; });
+  }
+  if (kept.length){
+    md += `\n## Kept words (${kept.length})\n`;
+    kept.forEach(k => { md += `\n> ${k.text}${k.source?`\n> — ${k.source}`:""}\n`; });
+  }
+  md += `\n---\n_Exported from Prism. This stays yours._\n`;
+  return md;
+}
+$("exportMd").addEventListener("click", () => {
+  const blob = new Blob([buildMarkdownExport()], { type:"text/markdown" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "prism-my-journal.md";
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
 });
 $("deleteData").addEventListener("click", () => {
@@ -2180,7 +2217,11 @@ const ENC_BANK = [
   "However slowly you're moving, you're still facing forward. That counts more than the pace does.",
   "You don't have to earn the right to feel okay. It's allowed to be a baseline, not a prize.",
   "That it still hurts means you haven't gone numb — and staying tender in a hard world is its own quiet strength.",
-  "You can start over at any hour. The day isn't a test you've already failed by noon."
+  "You can start over at any hour. The day isn't a test you've already failed by noon.",
+  "You're not too much. You've just sometimes been around people who wanted less than you are.",
+  "Slow healing is still healing. Roots grow for a long time where no one can see them.",
+  "You don't have to be okay to deserve gentleness — least of all your own.",
+  "Some days the bravest thing is simply not giving up on yourself. You managed that today."
 ];
 function exampleEncourage(){ return ENC_BANK[Math.floor(Date.now()/9000) % ENC_BANK.length]; }
 
@@ -2229,7 +2270,10 @@ const WIS_BANK = [
   { source:"Stoicism — Marcus Aurelius", idea:"The obstacle in the path becomes the path. What stands in your way is often the very material the next step is made from.", prompt:"If this difficulty were the way forward rather than the blockage, what would it be asking of you?" },
   { source:"Rumi", idea:"The wound is the place where the light enters you. What broke open is often also where something new becomes possible.", prompt:"Where has a crack in your life quietly let something in that you actually needed?" },
   { source:"Thich Nhat Hanh", idea:"Feelings come and go like clouds in a windy sky. Your breath is the anchor — you can be with a feeling without being carried off by it.", prompt:"Could you stay with what you feel for three slow breaths, without trying to fix it or flee it?" },
-  { source:"Stoicism — Epictetus", idea:"It isn't events that disturb us, but our judgments about them. Two people meet the same moment and live in different worlds because of the story each tells about it.", prompt:"What judgment have you layered onto this — and is it the only one available to you?" }
+  { source:"Stoicism — Epictetus", idea:"It isn't events that disturb us, but our judgments about them. Two people meet the same moment and live in different worlds because of the story each tells about it.", prompt:"What judgment have you layered onto this — and is it the only one available to you?" },
+  { source:"Viktor Frankl", idea:"Between what happens to us and how we respond, there's a space — and in that space is our freedom. Even a single breath of pause is part of it.", prompt:"Where could you set one breath of space between what happens and how you answer it?" },
+  { source:"Mary Oliver", idea:"You do not have to be good. You only have to let the soft animal of your body love what it loves. Belonging isn't something you earn by performing.", prompt:"What does the truest, least-performing part of you actually want right now?" },
+  { source:"Carl Rogers", idea:"What is most personal is most universal. The very thing you're afraid is uniquely wrong with you is often the most human thing about you.", prompt:"What are you sure no one else would understand — and what if that's exactly what they'd recognize?" }
 ];
 function exampleWisdom(){ return WIS_BANK[Math.floor(Date.now()/9000) % WIS_BANK.length]; }
 
@@ -2715,7 +2759,13 @@ const JR_PROMPTS = [
   "What's true about me today that wasn't true a year ago?",
   "What am I holding my breath waiting to be over?",
   "If today were enough exactly as it was, what would I stop chasing?",
-  "Who do I become around the person I think about most — and do I actually like them?"
+  "Who do I become around the person I think about most — and do I actually like them?",
+  "What would I do this week if I fully believed I deserved good things?",
+  "What's the kindest fair interpretation of why I did that?",
+  "What am I making mean something about me that might honestly just be a hard Tuesday?",
+  "Where am I waiting to feel ready instead of simply beginning?",
+  "What's one thing I know in my body that I keep arguing with in my head?",
+  "What would actual rest look like this week, if I let myself have it?"
 ];
 let _jrPromptIdx = -1;
 function jrRenderPrompt(){ $("jrPromptText").textContent = JR_PROMPTS[_jrPromptIdx]; $("jrPromptCard").hidden = false; }
@@ -2924,7 +2974,8 @@ const TOUR = [
   { t: "This place is yours alone", b: "Prism is somewhere to think out loud. Nothing here is watched, scored, or saved anywhere but your own device — unless you choose to." },
   { t: "Just say it", b: "On the Talk tab, write whatever's on your mind. Prism won't tell you what to do — it reflects back what it hears, and asks the one question worth sitting with." },
   { t: "It remembers you", b: "Come back and Prism starts to notice the threads that keep returning, and shows you your own patterns over time — the thing a fresh chat with any AI never could." },
-  { t: "And if it gets heavy", b: "When something's hard, Prism softens and points you toward real people who can help. There's a Breathe button in the corner too, any time you need it." }
+  { t: "And if it gets heavy", b: "When something's hard, Prism softens and points you toward real people who can help. There's a Breathe button in the corner too, any time you need it." },
+  { t: "Make it yours", b: "In Settings (the gear up top) you can calm the motion, grow the text, or pick a theme. Press ? for shortcuts. However you reflect best — that's the right way to use this." }
 ];
 let tourStep = 0;
 function renderTour(){

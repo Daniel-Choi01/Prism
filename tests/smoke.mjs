@@ -156,6 +156,10 @@ try {
     await page.locator("#jrReflect").click();
     await page.waitForTimeout(1500);
     check("journal reflection renders the mirror", (await page.locator("#jrInsight .jr-mirror").count()) > 0);
+    await page.locator("#jrSave").click();
+    await page.waitForTimeout(150);
+    check("journal entry persists on-device", (await page.evaluate(() => JSON.parse(localStorage.getItem("prism_journal") || "[]").length)) >= 1);
+    check("journal entries list renders", (await page.locator("#jrEntries .jr-entry").count()) >= 1);
 
     // journal prompt library
     await page.locator("#jrPromptBtn").click();
@@ -344,9 +348,17 @@ try {
     await page.waitForTimeout(1500);   // example encouragement loads
     await page.locator("#encKeep").click();
     await page.waitForTimeout(150);
+    await page.locator('#tabs .tab[data-view="wisdom"]').click();
+    await page.waitForTimeout(1500);   // example wisdom loads
+    await page.locator("#wisKeep").click();
+    await page.waitForTimeout(150);
     await page.locator("#footKept").click();
     await page.waitForTimeout(200);
-    check("kept words saves + lists", (await page.locator("#keptList .kept-item").count()) >= 1);
+    check("kept words saves both sources + lists", (await page.locator("#keptList .kept-item").count()) >= 2);
+    // remove one and confirm it drops
+    await page.locator("#keptList .kept-rm").first().click();
+    await page.waitForTimeout(150);
+    check("kept words can be removed", (await page.locator("#keptList .kept-item").count()) === 1);
     await ctx.close();
   }
 
@@ -415,10 +427,59 @@ try {
     page.on("dialog", (d) => d.accept());
     await page.locator("#footPrivacy").click();
     await page.waitForTimeout(200);
+    const [dl] = await Promise.all([ page.waitForEvent("download"), page.locator("#exportMd").click() ]);
+    check("markdown export downloads a .md file", /\.md$/.test(dl.suggestedFilename()), dl.suggestedFilename());
     await page.locator("#deleteData").click();
     await page.waitForTimeout(300);
     const remaining = await page.evaluate(() => ["prism_history", "prism_checkins", "prism_kept"].filter((k) => localStorage.getItem(k)));
     check("delete everything wipes reflections + check-ins + kept words", remaining.length === 0, "left: " + remaining.join(","));
+    await ctx.close();
+  }
+
+  /* ===== 13. Core modals & chrome ===== */
+  {
+    const { ctx, page, errors } = await freshPage();
+    await page.locator("#aboutBtn").click();
+    await page.waitForTimeout(120);
+    check("about modal opens", await page.locator("#aboutModal").evaluate((el) => el.classList.contains("show")));
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(80);
+    await page.locator("#footPrivacy").click();
+    await page.waitForTimeout(120);
+    check("privacy modal opens", await page.locator("#privacyModal").evaluate((el) => el.classList.contains("show")));
+    await page.locator("#consentToggle").click();
+    check("consent toggle flips on (opt-in)", await page.locator("#consentToggle").evaluate((el) => el.classList.contains("on")));
+    await page.locator("#consentToggle").click();
+    check("consent toggle flips back off", !(await page.locator("#consentToggle").evaluate((el) => el.classList.contains("on"))));
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(80);
+    check("guest account chip is shown", await page.locator("#accountChip").isVisible());
+    await page.locator("#accountChip").click();
+    await page.waitForTimeout(120);
+    check("account modal opens", await page.locator("#accountModal").evaluate((el) => el.classList.contains("show")));
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(80);
+    await page.locator("#footSupport").click();
+    await page.waitForTimeout(120);
+    check("crisis resources modal opens", await page.locator("#resourcesModal").evaluate((el) => el.classList.contains("show")));
+    check("resources list real lines (>=4)", (await page.locator("#resourcesModal .res-item").count()) >= 4);
+    await page.keyboard.press("Escape");
+    check("core modals & chrome: no errors", errors.length === 0, errors.join("; "));
+    await ctx.close();
+  }
+
+  /* ===== 14. Reset returns to a fresh intake ===== */
+  {
+    const { ctx, page } = await freshPage();
+    await page.locator("#situation").fill("a quick test thought to reflect on");
+    await page.locator("#refractBtn").click();
+    await page.waitForSelector("#result.show", { timeout: 8000 });
+    await page.waitForTimeout(200);
+    await page.locator("#againBtn").click();
+    await page.waitForTimeout(200);
+    check("'reflect on something else' returns to the intake",
+      await page.locator("#stage").evaluate((el) => getComputedStyle(el).display !== "none"));
+    check("intake is cleared on reset", (await page.locator("#situation").inputValue()) === "");
     await ctx.close();
   }
 } catch (err) {

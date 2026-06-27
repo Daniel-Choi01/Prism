@@ -58,11 +58,25 @@ layer by layer.
 - **Strict-Transport-Security** (HSTS) — forces HTTPS.
 - **X-Frame-Options: DENY** + `frame-ancestors 'none'` — prevents clickjacking.
 - **X-Content-Type-Options: nosniff**, strict **Referrer-Policy**, and a tight **Permissions-Policy**
-  (geolocation/camera off; microphone limited to self for the future voice feature).
+  (geolocation/camera off; microphone limited to `self` for voice dictation only).
+
+## 6a. Safe rendering & no tracking
+- **Every piece of user (and model) text is rendered through an HTML-escaping helper** before it
+  touches the DOM — there is no `innerHTML` of raw user input — so a reflection can't inject script
+  (stored-XSS) even if it contains `<` or `>`.
+- **No third-party analytics, trackers, ad pixels, or fonts-with-tracking.** The only external calls
+  are to your own `/api/*`, Supabase (your project), and Google Fonts for typography.
+- Voice dictation runs through the browser's own Speech API; Prism never uploads raw audio anywhere.
 
 ## 7. Honest limits
 - Prism is a student project and a thinking tool — **not** a medical device or a crisis service. It
   surfaces real resources but cannot contact anyone on your behalf, and it says so plainly.
+- On-device data (reflections, journal, check-ins, kept words) is stored in `localStorage`. That
+  keeps it off any server by default, but it also means **anyone with access to an unlocked device
+  and this browser profile can read it** — use the lock screen you'd use for your notes app, and
+  "Delete everything" on a shared computer.
 - Best-effort input validation and length limits are in place. A production deployment should add
   durable rate-limiting (e.g. Upstash) in front of `/api/*`; the current functions are
   single-instance and not a substitute for that at scale.
+- The AI can still be wrong, miss nuance, or surface an unhelpful reframe. It's a mirror to think
+  with, not an authority — the judgment always stays yours.
