@@ -668,6 +668,32 @@
   .gr-dots i.done { background:var(--c-skeptic); }
 
   /* ============================================================
+     DAILY CHECK-IN — a 10-second mood + gratitude pulse, on-device.
+     Builds a quiet two-week picture of how you've actually been.
+     ============================================================ */
+  .checkin { display:none; max-width:680px; margin:0 auto; padding:34px 0 90px; }
+  .checkin.show { display:block; }
+  .ci-card { border:1px solid var(--line-bright); border-radius:20px; padding:30px;
+    background:linear-gradient(180deg, rgba(179,156,255,0.05), rgba(255,255,255,0.012)); }
+  .ci-q { font-family:var(--serif); font-weight:300; font-size:22px; color:var(--ink); margin-bottom:18px; }
+  .mood-picker { display:flex; gap:10px; flex-wrap:wrap; }
+  .mood-opt { flex:1 1 88px; display:flex; flex-direction:column; align-items:center; gap:10px; cursor:pointer;
+    padding:16px 10px; border-radius:14px; border:1px solid var(--line); background:rgba(255,255,255,0.015);
+    color:var(--ink-dim); transition:.2s; font-family:var(--sans); }
+  .mood-opt:hover { border-color:var(--line-bright); color:var(--ink); }
+  .mood-opt[aria-checked="true"] { border-color:rgba(179,156,255,0.55); background:rgba(179,156,255,0.10); color:var(--ink); }
+  .mood-opt:focus-visible { outline:2px solid var(--line-bright); outline-offset:2px; }
+  .mo-dot { width:22px; height:22px; border-radius:50%; box-shadow:0 0 13px -2px currentColor; }
+  .mo-l { font-size:12.5px; letter-spacing:0.02em; }
+  .ci-fields { margin-top:26px; }
+  .ci-entries { display:flex; flex-direction:column; gap:8px; }
+  .ci-entry { display:flex; align-items:center; gap:12px; border:1px solid var(--line); border-radius:12px; padding:11px 14px; }
+  .ci-entry .ce-dot { width:11px; height:11px; border-radius:50%; flex:0 0 auto; }
+  .ci-entry .ce-d { font-size:11px; color:var(--ink-faint); width:52px; flex:0 0 auto; letter-spacing:0.03em; }
+  .ci-entry .ce-t { font-size:13.5px; color:var(--ink-dim); line-height:1.45; }
+  .ci-entry .ce-t b { color:var(--ink); font-weight:600; }
+
+  /* ============================================================
      RICHER PATTERNS — mood-over-time chart + theme bars.
      Computed entirely on-device from your own reflections; makes the
      "Prism remembers you" claim something you can actually SEE.
@@ -754,6 +780,7 @@
     </div>
     <nav class="tabs" id="tabs" role="tablist" aria-label="Prism sections">
       <button class="tab" role="tab" data-view="reflect" aria-selected="true">Talk</button>
+      <button class="tab" role="tab" data-view="checkin" aria-selected="false">Check-in</button>
       <button class="tab" role="tab" data-view="journal" aria-selected="false">Journal</button>
       <button class="tab" role="tab" data-view="encourage" aria-selected="false">Encouragement</button>
       <button class="tab" role="tab" data-view="wisdom" aria-selected="false">Wisdom</button>
@@ -941,6 +968,46 @@
     <div class="jr-entries-wrap" id="jrEntriesWrap" style="display:none;">
       <div class="pat-entries-label">past entries</div>
       <div id="jrEntries"></div>
+    </div>
+  </section>
+
+  <!-- ============ DAILY CHECK-IN ============ -->
+  <section class="checkin" id="checkin">
+    <div class="jr-head">
+      <div>
+        <div class="eyebrow">a daily check-in · just for you</div>
+        <h2 class="jr-title">How are you <em>today</em>?</h2>
+      </div>
+      <button class="ghost-btn" id="checkinBack">← Reflect</button>
+    </div>
+    <p class="jr-sub">A ten-second pulse. Over time it becomes a quiet picture of how you've really been — private to this device, never judged.</p>
+
+    <div class="ci-card">
+      <div class="ci-q">Right now, today feels…</div>
+      <div class="mood-picker" id="moodPicker" role="radiogroup" aria-label="How today feels">
+        <button class="mood-opt" data-mood="0" role="radio" aria-checked="false"><span class="mo-dot" style="background:var(--c-rival);color:var(--c-rival)"></span><span class="mo-l">Rough</span></button>
+        <button class="mood-opt" data-mood="1" role="radio" aria-checked="false"><span class="mo-dot" style="background:var(--c-mentor);color:var(--c-mentor)"></span><span class="mo-l">Low</span></button>
+        <button class="mood-opt" data-mood="2" role="radio" aria-checked="false"><span class="mo-dot" style="background:var(--ink-dim);color:var(--ink-dim)"></span><span class="mo-l">Okay</span></button>
+        <button class="mood-opt" data-mood="3" role="radio" aria-checked="false"><span class="mo-dot" style="background:var(--c-skeptic);color:var(--c-skeptic)"></span><span class="mo-l">Good</span></button>
+        <button class="mood-opt" data-mood="4" role="radio" aria-checked="false"><span class="mo-dot" style="background:var(--c-child);color:var(--c-child)"></span><span class="mo-l">Bright</span></button>
+      </div>
+      <div class="ci-fields">
+        <label class="wc-name-label" for="ciWord">One word for it <span>(optional)</span></label>
+        <input type="text" id="ciWord" maxlength="40" placeholder="e.g. tender, hopeful, frayed, steady" />
+        <label class="wc-name-label" for="ciGrateful" style="margin-top:16px;">One thing you're grateful for <span>(optional)</span></label>
+        <input type="text" id="ciGrateful" maxlength="120" placeholder="however small — a coffee, a text back, the quiet" />
+      </div>
+      <div class="pane-actions" style="justify-content:flex-start; margin-top:24px;">
+        <button class="refract-btn" id="ciSave">Save today's check-in</button>
+      </div>
+      <div class="notice" id="ciNotice" style="margin-top:14px;"></div>
+    </div>
+
+    <div id="ciTrendWrap" style="display:none; margin-top:32px;">
+      <div class="pat-label">your last two weeks</div>
+      <div class="pat-mood" id="ciTrend"></div>
+      <div class="pat-entries-label" style="margin-top:18px;">recent check-ins</div>
+      <div class="ci-entries" id="ciEntries"></div>
     </div>
   </section>
 
@@ -1755,7 +1822,7 @@ function reset(){
 let activeView = "reflect";
 function showView(name){
   activeView = name;
-  ["journal","encourage","wisdom"].forEach(id => $(id).classList.remove("show"));
+  ["journal","encourage","wisdom","checkin"].forEach(id => $(id).classList.remove("show"));
   $("loader").classList.remove("show");
   document.querySelectorAll("#tabs .tab").forEach(t => t.setAttribute("aria-selected", t.dataset.view === name ? "true" : "false"));
   if (name === "reflect"){
@@ -1767,6 +1834,7 @@ function showView(name){
     $("stage").style.display = "none";
     $("result").classList.remove("show");
     if (name === "journal"){ $("journal").classList.add("show"); journalInit(); }
+    else if (name === "checkin"){ $("checkin").classList.add("show"); checkinInit(); }
     else if (name === "encourage"){ $("encourage").classList.add("show"); encourageInit(); }
     else if (name === "wisdom"){ $("wisdom").classList.add("show"); wisdomInit(); }
   }
@@ -2218,6 +2286,58 @@ function renderJournalEntries(){
   });
 }
 function showJrNotice(m){ const n=$("jrNotice"); n.textContent=m; n.className="notice show info"; n.style.marginTop="16px"; }
+
+/* ============================================================
+   DAILY CHECK-IN — mood + optional word + gratitude, on-device.
+   One entry per day (re-checking the same day updates it).
+   Builds a private two-week mood trend via the shared chart.
+   ============================================================ */
+const CI_STORE = "prism_checkins";
+const CI_MOODS = [
+  { l:"Rough",  c:"var(--c-rival)",   s:-0.85 },
+  { l:"Low",    c:"var(--c-mentor)",  s:-0.40 },
+  { l:"Okay",   c:"var(--ink-dim)",   s: 0.00 },
+  { l:"Good",   c:"var(--c-skeptic)", s: 0.45 },
+  { l:"Bright", c:"var(--c-child)",   s: 0.90 }
+];
+let ciMood = null;
+function loadCheckins(){ try { const a=JSON.parse(localStorage.getItem(CI_STORE)||"[]"); return Array.isArray(a)?a:[]; } catch(_){ return []; } }
+function saveCheckins(a){ try { localStorage.setItem(CI_STORE, JSON.stringify(a.slice(0,180))); } catch(_){} }
+function checkinInit(){
+  ciMood = null;
+  document.querySelectorAll('#moodPicker .mood-opt').forEach(b => b.setAttribute("aria-checked","false"));
+  $("ciWord").value = ""; $("ciGrateful").value = ""; $("ciNotice").classList.remove("show");
+  renderCheckins();
+}
+document.querySelectorAll('#moodPicker .mood-opt').forEach(b => b.addEventListener("click", () => {
+  ciMood = +b.dataset.mood;
+  document.querySelectorAll('#moodPicker .mood-opt').forEach(x => x.setAttribute("aria-checked", x===b ? "true" : "false"));
+}));
+$("ciSave").addEventListener("click", () => {
+  if (ciMood === null){ const n=$("ciNotice"); n.textContent="Pick how today feels first — even a rough day counts."; n.className="notice show info"; return; }
+  const arr = loadCheckins(), today = new Date().toDateString();
+  const entry = { when:Date.now(), mood:ciMood, word:$("ciWord").value.trim().slice(0,40), grateful:$("ciGrateful").value.trim().slice(0,120) };
+  const i = arr.findIndex(e => new Date(e.when).toDateString() === today);   // one per day
+  if (i >= 0) arr[i] = entry; else arr.unshift(entry);
+  saveCheckins(arr);
+  const b = $("ciSave"); b.textContent = "Saved ✓"; b.disabled = true;
+  setTimeout(()=>{ b.textContent = "Save today's check-in"; b.disabled = false; }, 1600);
+  renderCheckins();
+});
+$("checkinBack").addEventListener("click", () => showView("reflect"));
+function renderCheckins(){
+  const all = loadCheckins(), wrap = $("ciTrendWrap");
+  if (all.length < 2){ wrap.style.display = "none"; return; }
+  wrap.style.display = "";
+  const series = all.slice().sort((a,b)=>a.when-b.when).slice(-14).map(e => ({ when:e.when, score:(CI_MOODS[e.mood]||CI_MOODS[2]).s, care:"none" }));
+  $("ciTrend").innerHTML = renderMoodChart(series);
+  $("ciEntries").innerHTML = all.slice(0,7).map(e => {
+    const m = CI_MOODS[e.mood] || CI_MOODS[2];
+    const d = new Date(e.when).toLocaleDateString(undefined,{month:"short",day:"numeric"});
+    const bits = []; if (e.word) bits.push(`<b>${esc(e.word)}</b>`); if (e.grateful) bits.push(`grateful for ${esc(e.grateful)}`);
+    return `<div class="ci-entry"><span class="ce-dot" style="background:${m.c}"></span><span class="ce-d">${d}</span><span class="ce-t">${esc(m.l)}${bits.length?" · "+bits.join(" · "):""}</span></div>`;
+  }).join("");
+}
 
 /* ============================================================
    IDENTITY & LOGIN
