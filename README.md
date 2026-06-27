@@ -88,6 +88,10 @@ prism/
    - `ANTHROPIC_API_KEY` — from [console.anthropic.com](https://console.anthropic.com)
    - `SUPABASE_URL`
    - `SUPABASE_SERVICE_ROLE_KEY`
+   - `SUPABASE_ANON_KEY` — *(optional, for login)* the **public** anon key. Without it, the
+     app runs guest-only. To enable Google/anonymous sign-in, also turn on those providers in
+     Supabase → Authentication → Providers (Anonymous on; Google needs an OAuth client + your
+     Vercel URL as a redirect).
 4. Deploy. Done.
 
 **Verify the wiring:** open `https://YOUR-SITE.vercel.app/api/health` — it reports (without exposing any secret) whether the Anthropic key and Supabase vars are present. `"ready": true` means you're fully connected.

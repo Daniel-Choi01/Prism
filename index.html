@@ -249,7 +249,7 @@
 
   /* ---------- modal (settings / history) ---------- */
   .modal-bg { position: fixed; inset: 0; background: rgba(4,4,9,0.72); backdrop-filter: blur(6px);
-    display: none; align-items: center; justify-content: center; z-index: 50; padding: 24px; }
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 24px; }
   .modal-bg.show { display: flex; }
   .modal { width: min(540px, 100%); border: 1px solid var(--line-bright); border-radius: 22px;
     background: linear-gradient(180deg, #14141f, #0c0c15); padding: 30px;
@@ -479,6 +479,35 @@
   .convo-reply textarea:focus { border-color:rgba(179,156,255,0.5); }
   .convo-reply .refract-btn { align-self:stretch; }
 
+  /* ---------- welcome / login gate ---------- */
+  .welcome { position:fixed; inset:0; z-index:80; display:none; align-items:center; justify-content:center; padding:24px; overflow-y:auto;
+    background: radial-gradient(900px 620px at 50% -5%, rgba(60,45,95,0.45), transparent 60%), var(--bg); }
+  .welcome.show { display:flex; }
+  .wc-card { width:min(444px,100%); text-align:center; padding:18px 0; }
+  .wc-mark { width:52px; height:38px; margin:0 auto 22px; display:block; overflow:visible; }
+  .wc-title { font-family:var(--serif); font-weight:300; font-size:clamp(34px,6vw,48px); line-height:1.04; }
+  .wc-title em { font-style:italic; background:linear-gradient(100deg,var(--s2),var(--s6)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .wc-sub { color:var(--ink-dim); font-family:var(--read); font-style:italic; font-size:17px; margin:16px auto 24px; max-width:380px; line-height:1.56; }
+  .wc-name-label { display:block; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:9px; text-align:left; }
+  .wc-name-label span { text-transform:none; letter-spacing:0; color:var(--ink-faint); }
+  .welcome input[type="text"]{ width:100%; padding:13px 15px; border-radius:12px; border:1px solid var(--line-bright);
+    background:rgba(0,0,0,0.35); color:var(--ink); font-family:var(--read); font-style:italic; font-size:15px; outline:0; }
+  .welcome input[type="text"]:focus{ border-color:rgba(179,156,255,0.5); }
+  .wc-actions { margin-top:22px; display:flex; flex-direction:column; gap:11px; }
+  .wc-primary { width:100%; justify-content:center; padding:14px 22px; }
+  .wc-opt { width:100%; justify-content:center; padding:12px; text-transform:none; letter-spacing:0.01em; font-size:13.5px; gap:9px; }
+  .wc-opt svg { width:16px; height:16px; }
+  .wc-or { display:flex; align-items:center; gap:12px; color:var(--ink-faint); font-size:11.5px; letter-spacing:0.04em; margin:8px 0 4px; }
+  .wc-or::before, .wc-or::after { content:""; height:1px; flex:1; background:var(--line); }
+  .wc-note { color:var(--ink-faint); font-size:12.5px; line-height:1.55; margin-top:8px; }
+  .wc-fine { color:var(--ink-faint); font-size:11.5px; line-height:1.55; margin-top:22px; }
+  .wc-fine a { color:var(--ink-dim); cursor:pointer; border-bottom:1px dotted var(--line-bright); text-decoration:none; }
+  .wc-fine a:hover { color:var(--ink); }
+  .account-chip { text-transform:none; letter-spacing:0.02em; max-width:170px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    display:inline-flex; align-items:center; gap:7px; }
+  .account-chip::before { content:""; width:7px; height:7px; border-radius:50%; flex:0 0 auto;
+    background:var(--s5); box-shadow:0 0 8px var(--s5); }
+
   /* ---------- respect reduced motion (calm + accessible) ---------- */
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior:auto; }
@@ -492,6 +521,41 @@
 </style>
 </head>
 <body>
+
+<!-- ============ WELCOME / LOGIN GATE ============ -->
+<div class="welcome show" id="welcome">
+  <div class="wc-card">
+    <svg class="wc-mark" viewBox="0 0 30 22" aria-hidden="true">
+      <polygon points="15,3 25,18 5,18" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round" opacity="0.6"/>
+      <line x1="0" y1="12" x2="8.5" y2="12" stroke="currentColor" stroke-width="1.1" opacity="0.4"/>
+      <line x1="18" y1="13" x2="30" y2="8"  stroke="var(--s1)" stroke-width="1.4"/>
+      <line x1="18" y1="13" x2="30" y2="12" stroke="var(--s3)" stroke-width="1.4"/>
+      <line x1="18" y1="13" x2="30" y2="16" stroke="var(--s5)" stroke-width="1.4"/>
+    </svg>
+    <h1 class="wc-title">Welcome to <em>Prism</em></h1>
+    <p class="wc-sub">A private place to think out loud. No one is watching, and there's nothing here to judge you.</p>
+
+    <label class="wc-name-label" for="wcName">What should Prism call you? <span>(optional)</span></label>
+    <input type="text" id="wcName" maxlength="40" placeholder="A name, or leave it blank" autocomplete="given-name" />
+
+    <div class="wc-actions">
+      <button class="refract-btn wc-primary" id="wcGuest">Begin — stays on this device</button>
+      <div id="wcCloud" style="display:none;">
+        <div class="wc-or">or, to keep your reflections across devices</div>
+        <button class="ghost-btn wc-opt" id="wcGoogle">
+          <svg viewBox="0 0 18 18" aria-hidden="true"><path fill="#EA4335" d="M9 7.5v3.2h4.5c-.2 1.1-1.4 3.3-4.5 3.3A5 5 0 1 1 9 4a4.5 4.5 0 0 1 3.2 1.2l2.2-2.1A8 8 0 1 0 9 17c4.6 0 7.6-3.2 7.6-7.7 0-.5 0-.9-.1-1.3H9z"/></svg>
+          Continue with Google
+        </button>
+        <button class="ghost-btn wc-opt" id="wcAnon">Continue anonymously — no email</button>
+      </div>
+      <div id="wcNoCloud" class="wc-note">Accounts (Google or anonymous sync) switch on once the server is connected. For now, everything stays privately on this device.</div>
+    </div>
+
+    <div class="notice" id="wcErr" style="margin-top:14px;"></div>
+    <p class="wc-fine">Guest keeps everything in this browser only. Anonymous gives you a private account with no email attached. Nothing is ever sold or shared. <a id="wcPrivacy">How your data is handled →</a></p>
+  </div>
+</div>
+
 <div class="wrap">
   <header>
     <div class="brand">
@@ -508,6 +572,7 @@
       <button class="ghost-btn" id="journalBtn">Journal</button>
       <button class="ghost-btn" id="historyBtn">Reflections</button>
       <button class="ghost-btn" id="aboutBtn">About</button>
+      <button class="ghost-btn account-chip" id="accountChip" style="display:none;"></button>
     </div>
   </header>
 
@@ -812,6 +877,22 @@
   </div>
 </div>
 
+
+<!-- ============ ACCOUNT MODAL ============ -->
+<div class="modal-bg" id="accountModal">
+  <div class="modal">
+    <h2>You</h2>
+    <p class="m-sub" id="accountSub"></p>
+    <div class="privacy-row">
+      <span class="pr-ic" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none"><rect x="4" y="9" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M7 9V6a3 3 0 016 0v3" stroke="currentColor" stroke-width="1.4"/></svg></span>
+      <div><div class="pr-t">Your reflections stay private</div><div class="pr-d">Whichever way you signed in, only you can see your reflections — there's no public profile or feed. Manage or delete everything from <a id="accountPrivacy" style="color:var(--c-skeptic);cursor:pointer;text-decoration:none;border-bottom:1px dotted var(--line-bright)">Privacy &amp; your data</a>.</div></div>
+    </div>
+    <div class="modal-actions" style="justify-content:space-between;">
+      <button class="ghost-btn" id="signOutBtn">Sign out / start over</button>
+      <button class="refract-btn" id="closeAccount">Done</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ============================================================
@@ -1460,20 +1541,129 @@ function renderJournalEntries(){
 }
 function showJrNotice(m){ const n=$("jrNotice"); n.textContent=m; n.className="notice show info"; n.style.marginTop="16px"; }
 
-/* greet + deep link */
-window.addEventListener("DOMContentLoaded", async () => {
-  const params = new URLSearchParams(location.search);
-  const rid = params.get("r");
+/* ============================================================
+   IDENTITY & LOGIN
+   Guest = on-device only (always works). Anonymous / Google use
+   Supabase Auth, initialised from the public /api/config. Everything
+   degrades gracefully: if Supabase isn't configured, guest is offered.
+   ============================================================ */
+const IDENTITY_STORE = "prism_identity";
+let sb = null;          // Supabase client (only if configured)
+let identity = null;    // { mode:'guest'|'anon'|'google', name?, email? }
+
+function loadIdentity(){ try { return JSON.parse(localStorage.getItem(IDENTITY_STORE) || "null"); } catch(_){ return null; } }
+function saveIdentity(obj){ try { localStorage.setItem(IDENTITY_STORE, JSON.stringify(obj)); } catch(_){} }
+function setIdentity(obj){ identity = obj; saveIdentity(obj); renderAccount(); }
+function showWcErr(m){ const n=$("wcErr"); n.textContent=m; n.className="notice show"; }
+
+async function initSupabase(){
+  try {
+    const res = await fetch("/api/config");
+    if (!res.ok) return null;
+    const cfg = await res.json();
+    if (!cfg.supabaseUrl || !cfg.supabaseAnonKey) return null;
+    const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
+    sb = createClient(cfg.supabaseUrl, cfg.supabaseAnonKey, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    });
+    return sb;
+  } catch(_){ return null; }
+}
+
+function identityFromUser(u){
+  const name = (u.user_metadata && (u.user_metadata.name || u.user_metadata.full_name)) || "";
+  return { mode: u.is_anonymous ? "anon" : "google", name, email: u.email || "" };
+}
+
+async function boot(){
+  await initSupabase();
+  if (sb){
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session && session.user) identity = identityFromUser(session.user);
+    } catch(_){}
+  }
+  if (!identity){ const stored = loadIdentity(); if (stored) identity = stored; }
+
+  // Shared links bypass the gate — a recipient shouldn't have to "log in" to read one.
+  const rid = new URLSearchParams(location.search).get("r");
+  if (identity || rid){ enterApp(rid); }
+  else { showWelcome(); }
+  renderAccount();
+}
+
+function showWelcome(){
+  $("welcome").classList.add("show");
+  const cloud = !!sb;
+  $("wcCloud").style.display   = cloud ? "" : "none";
+  $("wcNoCloud").style.display = cloud ? "none" : "";
+  setTimeout(()=>$("wcName")?.focus(), 80);
+}
+function enterApp(rid){
+  $("welcome").classList.remove("show");
+  renderAccount();
   if (rid){
     setLoading(true);
-    const ok = await loadReflectionById(rid);
-    setLoading(false);
-    if (ok) return;                    // showed the shared reflection
-    showNotice("That reflection link couldn't be found — it may have been removed. Start a new one below.", true);
-    try { history.replaceState(null, "", location.pathname); } catch(_){}
+    loadReflectionById(rid).then(ok => {
+      setLoading(false);
+      if (!ok){ showNotice("That reflection link couldn't be found — it may have been removed. Start a new one below.", true); try { history.replaceState(null, "", location.pathname); } catch(_){} }
+    });
+    return;
   }
-  setTimeout(()=>$("situation")?.focus(), 400);
+  setTimeout(()=>$("situation")?.focus(), 300);
+}
+
+/* welcome buttons */
+$("wcGuest").addEventListener("click", () => {
+  setIdentity({ mode:"guest", name:$("wcName").value.trim().slice(0,40), since:Date.now() });
+  enterApp(null);
 });
+$("wcGoogle").addEventListener("click", async () => {
+  if (!sb) return;
+  try { await sb.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: location.origin + location.pathname } }); }
+  catch(_){ showWcErr("Couldn't start Google sign-in. You can continue as a guest for now."); }
+});
+$("wcAnon").addEventListener("click", async () => {
+  if (!sb) return;
+  $("wcAnon").disabled = true;
+  try {
+    const { data, error } = await sb.auth.signInAnonymously();
+    if (error) throw error;
+    setIdentity({ mode:"anon", name:$("wcName").value.trim().slice(0,40), since:Date.now() });
+    enterApp(null);
+  } catch(_){ showWcErr("Couldn't continue anonymously — you can still use guest mode."); }
+  finally { $("wcAnon").disabled = false; }
+});
+$("wcPrivacy").addEventListener("click", () => { renderConsent(); openModal("privacyModal"); });
+
+/* account chip + modal */
+function renderAccount(){
+  const el = $("accountChip"); if (!el) return;
+  if (!identity){ el.style.display="none"; return; }
+  el.style.display = "";
+  el.textContent = identity.mode==="google" ? (identity.name || identity.email || "Account")
+                 : identity.mode==="anon"   ? (identity.name || "Anonymous")
+                 : (identity.name || "Guest");
+}
+$("accountChip").addEventListener("click", () => {
+  const sub = identity ? (
+    identity.mode==="google" ? `Signed in${identity.email?` as ${identity.email}`:""} with Google — your reflections sync privately to your account.`
+    : identity.mode==="anon" ? "You're using a private anonymous account — no email, and your reflections sync to it across this browser."
+    : "You're on this device only. Reflections stay in this browser; sign in anytime to keep them across devices."
+  ) : "";
+  $("accountSub").textContent = sub;
+  openModal("accountModal");
+});
+$("closeAccount").addEventListener("click", () => closeModal("accountModal"));
+$("accountPrivacy").addEventListener("click", () => { closeModal("accountModal"); renderConsent(); openModal("privacyModal"); });
+$("signOutBtn").addEventListener("click", async () => {
+  try { if (sb) await sb.auth.signOut(); } catch(_){}
+  localStorage.removeItem(IDENTITY_STORE); identity = null;
+  renderAccount(); closeModal("accountModal");
+  reset(); showWelcome();
+});
+
+window.addEventListener("DOMContentLoaded", boot);
 </script>
 </body>
 </html>
