@@ -311,6 +311,19 @@ try {
     await ctx.close();
   }
 
+  /* ===== 8c. Kept words ===== */
+  {
+    const { ctx, page } = await freshPage();
+    await page.locator('#tabs .tab[data-view="encourage"]').click();
+    await page.waitForTimeout(1500);   // example encouragement loads
+    await page.locator("#encKeep").click();
+    await page.waitForTimeout(150);
+    await page.locator("#footKept").click();
+    await page.waitForTimeout(200);
+    check("kept words saves + lists", (await page.locator("#keptList .kept-item").count()) >= 1);
+    await ctx.close();
+  }
+
   /* ===== 9. Voice input (graceful both ways) ===== */
   {
     // unsupported: API removed before load -> buttons hidden

@@ -766,6 +766,11 @@
     background:linear-gradient(180deg, rgba(179,156,255,0.06), rgba(255,255,255,0.012)); }
   .letter-body { font-family:var(--read); font-size:16px; line-height:1.7; color:var(--ink); }
   .letter-sign { margin-top:14px; font-family:var(--serif); font-style:italic; color:var(--c-future); font-size:15px; }
+  /* kept words */
+  .kept-item { border:1px solid var(--line); border-radius:13px; padding:15px 16px; margin-bottom:10px; }
+  .kept-text { font-family:var(--read); font-style:italic; font-size:15.5px; color:var(--ink); line-height:1.55; }
+  .kept-src { font-size:10.5px; letter-spacing:0.22em; text-transform:uppercase; color:var(--c-mentor); margin-top:9px; }
+  .kept-rm { margin-top:10px; }
 
   /* ============================================================
      VOICE INPUT — dictate instead of type (Web Speech API).
@@ -1108,6 +1113,7 @@
     <div class="card-soft" id="encCard"><div class="enc-msg" id="encMsg"></div></div>
     <div class="pane-actions">
       <button class="refract-btn" id="encMore">Another</button>
+      <button class="ghost-btn" id="encKeep">Keep ♥</button>
       <button class="ghost-btn" id="encToTalk">Talk it through →</button>
     </div>
   </section>
@@ -1124,6 +1130,7 @@
     </div>
     <div class="pane-actions">
       <button class="refract-btn" id="wisMore">Another</button>
+      <button class="ghost-btn" id="wisKeep">Keep ♥</button>
       <button class="ghost-btn" id="wisToTalk">Reflect on this →</button>
     </div>
   </section>
@@ -1131,7 +1138,7 @@
   <footer>
     Prism reflects; it doesn't decide. <span class="spec-mini"></span> Built for the SMG Bubble Cohort 001 “Reflection” Hackathon.
     <div class="support-foot">Going through something heavy? <a id="footSupport">You don't have to face it alone →</a></div>
-    <div class="support-foot"><a id="footPrivacy">Privacy &amp; your data</a></div>
+    <div class="support-foot"><a id="footKept">Your kept words</a> · <a id="footPrivacy">Privacy &amp; your data</a></div>
   </footer>
 </div>
 
@@ -1421,6 +1428,18 @@
 
     <div class="modal-actions">
       <button class="refract-btn" id="closeSettings">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ KEPT WORDS MODAL ============ -->
+<div class="modal-bg" id="keptModal">
+  <div class="modal">
+    <h2>Words you've kept</h2>
+    <p class="m-sub">The wisdom and encouragement that landed — saved on this device, here whenever you need them again.</p>
+    <div id="keptList"></div>
+    <div class="modal-actions">
+      <button class="refract-btn" id="closeKept">Done</button>
     </div>
   </div>
 </div>
@@ -2156,6 +2175,27 @@ const WIS_BANK = [
   { source:"Brené Brown", idea:"Vulnerability isn't weakness — it's the truest measure of courage. Letting yourself be seen without knowing how it'll land is where real connection starts.", prompt:"Where might letting yourself be seen, just a little, change something for you?" }
 ];
 function exampleWisdom(){ return WIS_BANK[Math.floor(Date.now()/9000) % WIS_BANK.length]; }
+
+/* ---------- kept words — save the wisdom/encouragement that lands ---------- */
+const KEPT_STORE = "prism_kept";
+function loadKept(){ try { const a=JSON.parse(localStorage.getItem(KEPT_STORE)||"[]"); return Array.isArray(a)?a:[]; } catch(_){ return []; } }
+function saveKept(a){ try { localStorage.setItem(KEPT_STORE, JSON.stringify(a.slice(0,100))); } catch(_){} }
+function keep(item){
+  const a = loadKept();
+  if (a.some(x => x.text === item.text)) return false;   // already kept — don't duplicate
+  a.unshift(Object.assign({ when: Date.now() }, item)); saveKept(a); return true;
+}
+function flashKeep(btn){ const o = btn.textContent; btn.textContent = "Kept ✓"; btn.disabled = true; setTimeout(()=>{ btn.textContent = o; btn.disabled = false; }, 1500); }
+$("encKeep").addEventListener("click", () => { const t = $("encMsg").textContent.trim(); if (!t) return; keep({ kind:"encouragement", text:t }); flashKeep($("encKeep")); });
+$("wisKeep").addEventListener("click", () => { const idea = $("wisIdea").textContent.trim(); if (!idea) return; keep({ kind:"wisdom", text:idea, source:$("wisSource").textContent.trim() }); flashKeep($("wisKeep")); });
+$("footKept").addEventListener("click", () => { renderKept(); openModal("keptModal"); });
+$("closeKept").addEventListener("click", () => closeModal("keptModal"));
+function renderKept(){
+  const box = $("keptList"); const a = loadKept();
+  if (!a.length){ box.innerHTML = `<div class="hist-empty">Nothing kept yet. When a piece of wisdom or encouragement lands, press <b>Keep ♥</b> and it'll wait for you here.</div>`; return; }
+  box.innerHTML = a.map((x,i) => `<div class="kept-item"><div class="kept-text">${esc(x.text)}</div>${x.source?`<div class="kept-src">${esc(x.source)}</div>`:""}<button class="link-btn kept-rm" data-i="${i}">Remove</button></div>`).join("");
+  box.querySelectorAll(".kept-rm").forEach(b => b.addEventListener("click", () => { const a2 = loadKept(); a2.splice(+b.dataset.i, 1); saveKept(a2); renderKept(); }));
+}
 
 /* ---------- history (localStorage) ---------- */
 const HIST_STORE = "prism_history";
