@@ -729,6 +729,15 @@
   #onboardModal .modal { width:min(460px,100%); }
   #tourBody { font-size:15px; line-height:1.6; color:var(--ink-dim); }
 
+  /* keyboard shortcuts help */
+  .kbd-list { display:flex; flex-direction:column; gap:0; }
+  .kbd-row { display:flex; justify-content:space-between; align-items:center; gap:18px; padding:12px 0; border-top:1px solid var(--line); }
+  .kbd-row:first-child { border-top:0; }
+  .kbd-row .kbd-what { color:var(--ink-dim); font-size:13.5px; }
+  .kbd-keys { display:flex; gap:6px; flex:0 0 auto; }
+  kbd { font-family:var(--sans); font-size:12px; color:var(--ink); background:rgba(255,255,255,0.05);
+    border:1px solid var(--line-bright); border-bottom-width:2px; border-radius:7px; padding:3px 9px; min-width:22px; text-align:center; line-height:1.4; }
+
   /* ============================================================
      RICHER PATTERNS — mood-over-time chart + theme bars.
      Computed entirely on-device from your own reflections; makes the
@@ -1358,6 +1367,25 @@
   </div>
 </div>
 
+<!-- ============ KEYBOARD SHORTCUTS MODAL ============ -->
+<div class="modal-bg" id="shortcutsModal">
+  <div class="modal">
+    <h2>Keyboard shortcuts</h2>
+    <p class="m-sub">Quick ways around Prism — active when you're not typing in a field.</p>
+    <div class="kbd-list">
+      <div class="kbd-row"><span class="kbd-keys"><kbd>/</kbd></span><span class="kbd-what">Jump to the writing box</span></div>
+      <div class="kbd-row"><span class="kbd-keys"><kbd>n</kbd></span><span class="kbd-what">Start a new reflection</span></div>
+      <div class="kbd-row"><span class="kbd-keys"><kbd>t</kbd><kbd>c</kbd><kbd>j</kbd></span><span class="kbd-what">Talk · Check-in · Journal</span></div>
+      <div class="kbd-row"><span class="kbd-keys"><kbd>b</kbd></span><span class="kbd-what">Take a breath</span></div>
+      <div class="kbd-row"><span class="kbd-keys"><kbd>?</kbd></span><span class="kbd-what">Show this list</span></div>
+      <div class="kbd-row"><span class="kbd-keys"><kbd>Esc</kbd></span><span class="kbd-what">Close any panel</span></div>
+    </div>
+    <div class="modal-actions">
+      <button class="refract-btn" id="closeShortcuts">Done</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============ BREATHE MODAL ============ -->
 <div class="modal-bg" id="breatheModal">
   <div class="modal breathe-modal">
@@ -1453,6 +1481,34 @@ document.querySelectorAll('#setTheme button').forEach(b => b.addEventListener("c
 $("whyBtn").addEventListener("click", () => openModal("whyModal"));
 $("closeWhy").addEventListener("click", () => closeModal("whyModal"));
 $("whyToTalk2").addEventListener("click", () => { closeModal("whyModal"); showView("reflect"); });
+
+/* ============================================================
+   KEYBOARD SHORTCUTS — quick navigation when not typing in a field.
+   ============================================================ */
+$("closeShortcuts").addEventListener("click", () => closeModal("shortcutsModal"));
+function focusWriting(){
+  if (activeView === "reflect"){
+    if (getComputedStyle($("stage")).display !== "none"){ $("situation").focus(); return; }
+    if ($("result").classList.contains("show") && !(current && current._readonly)) $("replyText").focus();
+  } else if (activeView === "journal"){ $("jrText").focus(); }
+}
+document.addEventListener("keydown", (e) => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if ($("welcome").classList.contains("show")) return;        // not on the login gate
+  const t = e.target;
+  if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;  // not while typing
+  const modalOpen = !!document.querySelector(".modal-bg.show");
+  if (e.key === "?"){ if (!modalOpen) openModal("shortcutsModal"); return; }
+  if (modalOpen) return;                                       // Esc (handled separately) still closes panels
+  switch (e.key){
+    case "n": e.preventDefault(); reset(); break;
+    case "t": showView("reflect"); break;
+    case "c": showView("checkin"); break;
+    case "j": showView("journal"); break;
+    case "b": openBreathe(); break;
+    case "/": e.preventDefault(); focusWriting(); break;
+  }
+});
 
 /* ============================================================
    BREATHE — guided box breathing (4-4-4-4), rAF-driven so it's

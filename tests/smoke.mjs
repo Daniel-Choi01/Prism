@@ -232,6 +232,24 @@ try {
     await ctx.close();
   }
 
+  /* ===== 8b. Keyboard shortcuts ===== */
+  {
+    const { ctx, page } = await freshPage();
+    await page.evaluate(() => document.activeElement && document.activeElement.blur());
+    await page.keyboard.press("?");
+    await page.waitForTimeout(150);
+    check("'?' opens the shortcuts help", await page.locator("#shortcutsModal").evaluate((el) => el.classList.contains("show")));
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(120);
+    await page.keyboard.press("c");
+    await page.waitForTimeout(150);
+    check("'c' jumps to Check-in", await page.locator("#checkin").evaluate((el) => el.classList.contains("show")));
+    await page.keyboard.press("b");
+    await page.waitForTimeout(150);
+    check("'b' opens breathe", await page.locator("#breatheModal").evaluate((el) => el.classList.contains("show")));
+    await ctx.close();
+  }
+
   /* ===== 9. Voice input (graceful both ways) ===== */
   {
     // unsupported: API removed before load -> buttons hidden
