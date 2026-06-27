@@ -7,8 +7,10 @@ layer by layer.
 ## 1. Secrets never reach the browser
 - `ANTHROPIC_API_KEY`, `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY` live only in Vercel
   environment variables and are read only inside the `/api/*` serverless functions.
-- The browser calls *our* endpoints (`/api/refract`, `/api/reflections`, `/api/feedback`); it never
-  sees a provider key and never calls Anthropic or the database directly with a privileged key.
+- The browser calls *our* endpoints (`/api/converse`, `/api/journal-insight`, `/api/reflections`,
+  `/api/feedback`, …); it never sees a provider key and never calls Anthropic or the database
+  directly with a privileged key. The only key sent to the browser is Supabase's **public** anon
+  key (RLS-protected), served by `/api/config` purely so the client can run Auth.
 
 ## 2. Consent is opt-in, and opt-out is absolute
 - The "Help improve Prism with my reflections" toggle is **off by default**.

@@ -1,7 +1,7 @@
 // POST /api/patterns
 // Looks ACROSS a person's past reflections and names the throughline — what keeps
 // surfacing over time. This is the thing a stateless one-off LLM query cannot do.
-// Same grounding + safety posture as /api/refract. Returns { observation, question }.
+// Same grounding + safety posture as /api/converse. Returns { observation, question }.
 
 const MODEL = "claude-opus-4-8";
 

@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>PRISM — see what you can't</title>
-<meta name="description" content="Describe what's weighing on you. PRISM refracts it through other perspectives — your future self, a mentor, a skeptic, your values — so you can see the angles you're too close to see." />
+<meta name="description" content="Tell PRISM what's weighing on you. Instead of handing you an answer, it reflects what it hears, notices the thread underneath, and asks the one question that moves you — grounded in your own past reflections, and never judging." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz@1,6..72&display=swap" rel="stylesheet" />
@@ -814,7 +814,7 @@
     <h2>Why Prism exists</h2>
     <p class="m-sub">A reflection instrument for the moments you're too close to see clearly.</p>
     <p style="color:var(--ink-dim); font-size:14.5px; line-height:1.65; margin-bottom:14px;">
-      When something is weighing on you, you're trapped inside one point of view — your own, in the middle of the feeling. Advice from others collapses everything into <em>their</em> single answer. Prism does the opposite: it takes what you wrote and splits it, like white light through glass, into the distinct perspectives already inside you — your future self, a mentor, a skeptic, your own values.
+      When something is weighing on you, you're trapped inside one point of view — your own, in the middle of the feeling. Advice from others collapses everything into <em>their</em> single answer. Prism does the opposite: you say what's on your mind, and it reflects it back — the feeling, and the belief underneath — weighing the angles you're too close to see, like white light opening into a spectrum. And because it remembers what you've reflected on before, it can name the thread running across your weeks that a fresh chat never could.
     </p>
     <p style="color:var(--ink-dim); font-size:14.5px; line-height:1.65; margin-bottom:14px;">
       It never tells you what to do. It reflects, and it asks. The decision stays yours — you just get to see it whole first.
@@ -957,12 +957,12 @@
 
 <script>
 /* ============================================================
-   PRISM — refract a situation through chosen perspectives.
-   Single-file app. Calls Claude (Opus 4.8) directly from the
-   browser when a key is present; otherwise runs example mode.
+   PRISM — a single-voice reflective conversation.
+   Single-file app. Talks to Claude (Opus 4.8) via /api/converse
+   when the backend is reachable; otherwise runs example mode.
    ============================================================ */
 
-/* ---- the lenses (perspectives the light splits into) ---- */
+/* ---- starter prompts for the intake textarea ---- */
 const EXAMPLES = [
   "I helped start a team I care about, but it's draining me and I think I want to leave. I feel like a traitor for even considering it.",
   "Everyone thinks I have it all together. I'm the one people come to. But lately I feel like I'm faking it and I don't know who I'd go to.",

@@ -1,74 +1,94 @@
 # PRISM — see what you can't
 
-> A reflection instrument. Describe what's weighing on you, and Prism refracts it — like white
-> light through glass — into distinct perspectives (your future self, a mentor, a skeptic, your
-> values) so you can see the angles you're too close to notice. It never tells you what to do.
-> It reflects, and it asks.
+> A reflection instrument. Tell Prism what's weighing on you, the way you'd tell a person who
+> actually listens. It doesn't hand you an answer — it reflects what it hears, notices the thread
+> underneath, and asks the one question that moves you. Like white light through glass, it takes
+> the single viewpoint you're stuck inside and refracts it into something you can finally see whole.
 
 Built for the **SMG Bubble Cohort 001 “Reflection” Hackathon.**
 
 ---
 
 ## Why it's different
-Most "AI advice" tools collapse your situation into a single answer — *their* answer. Prism does
-the opposite: it **splits** your situation into several honest voices that genuinely disagree, then
-names the tension underneath all of them. The decision stays yours; you just get to see it whole
-first. Reflection, not resolution.
+Most "AI advice" tools collapse your situation into a single verdict — *their* verdict. Prism is
+built to do the opposite, and to do the one thing a stateless chat with any other model **cannot**:
+
+- **It remembers you.** Every reply is grounded in your own earlier reflections and the themes that
+  keep recurring for you. A fresh ChatGPT window answers the question; Prism answers *you* — and can
+  name the thread running across weeks. That continuity is the core, structural difference.
+- **It refuses to decide for you.** No "you should." It reflects the feeling, names the belief
+  underneath, gently flags the distortion if there is one, and ends with a real question — the way
+  reflection actually works, not the way an advice machine works.
+- **It's honest about what it is.** Prism never pretends to be human or to "know how you feel." What
+  it genuinely offers instead is a private, patient, judgment-free space with no social risk and no
+  clock — and it says so. (Documented AI failure modes — hollow flattery, false empathy, unsafe
+  crisis responses — are exactly what Prism is prompted *against*.)
+- **It's a conversation, not a transaction.** You type freely; it replies in one warm voice that has
+  privately weighed several angles, and it builds on what came before instead of resetting each turn.
 
 ## What it does
-- **Refract** — write what's on your mind, pick the perspectives, and get one tight reflection +
-  one sharp question from each, plus a synthesis of the tension they share.
-- **Six lenses** — Future You, The Mentor, The Skeptic, Your Values, Younger You, The Honest Friend
-  (choose 2–4). Treated as *parts of you* with good intent (IFS) — even the challenging ones are
-  never cruel.
-- **Cares when it counts** — both the AI and a client-side check watch for genuine distress. If
-  someone's struggling, the voices soften to pure validation and a warm panel surfaces real crisis
-  resources (988, Crisis Text Line, findahelpline.com).
-- **Save & revisit** — every reflection can be saved to a private link you can open on any device.
-- **Private by design** — opt-in only (nothing is used to improve Prism unless you say so), export
-  or delete your data anytime, and the AI key never touches the browser.
+- **Talk** — the heart of Prism. Say what's on your mind in your own words; get back one grounded,
+  personal reflection and one sharp question. Keep going — it's a real multi-turn conversation. Save
+  any reflection to a **private link** you can reopen on any device.
 - **Journal** — a private daily writing space (on-device, confidential). Opt in and Prism reflects
   back with a therapist-grade method: **The Mirror** (names the emotion + the belief underneath),
   **Pattern Recognition** (gently flags CBT cognitive distortions — catastrophizing, all-or-nothing,
-  mind-reading…), and **The Shift** (one Socratic reframing question). Validates the *feeling*, never
-  a distorted belief; softens entirely on distress.
-- **Remembers you** — reflections are journaled privately on your device, and a **Patterns** view
-  surfaces what keeps surfacing across them (recurring themes, the lenses you reach for, an AI
-  "what keeps surfacing" read). New reflections that echo an old one say so. This is the core
-  difference from a one-off chat: a stateless LLM can answer once, but it can't see *you over time*.
+  mind-reading…), and **The Shift** (one Socratic reframing question). It validates the *feeling*,
+  never a distorted belief — and softens entirely on signs of distress.
+- **Encouragement** — one piece of *honest* encouragement, the opposite of AI sycophancy: no
+  "you've got this," no toxic positivity. Quietly shaped by what you've actually been carrying.
+- **Wisdom** — one grounded idea to sit with, drawn from a real tradition (Stoicism, Frankl, IFS,
+  Rogers, mindfulness), plus a reflective question. Never a fortune-cookie platitude.
+- **Patterns** — looks *across* your reflections and names what keeps surfacing over time (recurring
+  themes, plus an AI "what keeps surfacing" read). New reflections that echo an old one say so.
+- **Cares when it counts** — both the AI and a client-side check watch for genuine distress. If
+  someone's struggling, Prism drops all challenge, becomes purely validating, and surfaces real
+  crisis resources (988, Crisis Text Line, findahelpline.com).
+- **Sign in your way** — Google, anonymous (one-tap, no details), or stay a guest. Auth is optional;
+  with no keys configured, Prism still runs fully in guest mode.
+- **Private by design** — opt-in only (nothing is used to improve Prism unless you say so), export
+  or delete your data anytime, and no provider key ever touches the browser.
 - **Listens back** — a gentle end-of-session feedback prompt; the rating + optional note (never your
   reflection content) help Prism improve.
 
 ## Grounded in real psychology
-Prism's method isn't improvised — the AI prompt is built on established frameworks so the responses
-are sound, not generic advice:
+Prism's method isn't improvised — the AI prompts are built on established frameworks so the
+responses are sound, not generic advice:
 - **Unconditional positive regard** (Carl Rogers) — accept the person; never judge or shame.
-- **Internal Family Systems** (R. Schwartz) — perspectives are *parts* with good intent; "no bad parts."
-- **Self-distancing / Solomon's Paradox** (Kross & Grossmann) — we reason more wisely about our
-  situation from the outside. This is literally what refraction does.
+- **Internal Family Systems** (R. Schwartz) — the angles Prism weighs are *parts* of you with good
+  intent; "no bad parts," so even the honest one is never cruel.
+- **Self-distancing / Solomon's Paradox** (Kross & Grossmann) — we reason more wisely about our own
+  situation from the outside. This is literally what reflection does.
 - **Motivational Interviewing** — evoke the person's own wisdom; resist the urge to fix.
-- **Stoicism** (dichotomy of control) & **Frankl** (meaning) — applied lightly in the synthesis.
+- **CBT** — name cognitive distortions kindly; reframe with Socratic questions, never lectures.
+- **Stoicism** (dichotomy of control) & **Frankl** (meaning) — applied lightly, never preached.
 
 ## Tech
 - **Frontend** — a single self-contained `index.html` (HTML/CSS + vanilla JS). No build step.
-- **AI** — [Claude **Opus 4.8**](https://www.anthropic.com) via a Vercel serverless function
-  (`/api/refract`), using **structured JSON output** so the refraction animation is fully driven
-  by the model's response.
-- **Storage** — [Supabase](https://supabase.com) (Postgres) via `/api/reflections`, accessed with
-  the service-role key **server-side only**.
+- **AI** — [Claude **Opus 4.8**](https://www.anthropic.com) via Vercel serverless functions, using
+  **structured JSON output** so every response is well-shaped and safe to render.
+- **Auth & storage** — [Supabase](https://supabase.com) (Postgres + Auth). The service-role key is
+  used **server-side only**; the browser gets just the public anon key (RLS-protected) via
+  `/api/config`.
 - **Hosting** — [Vercel](https://vercel.com) (static frontend + serverless API).
 
 ```
 prism/
-├─ index.html            ← the whole app (UI + client logic)
+├─ index.html              ← the whole app (UI + client logic)
 ├─ api/
-│  ├─ refract.js         ← Claude Opus 4.8 proxy + safety/care assessment (holds ANTHROPIC_API_KEY)
-│  ├─ reflections.js     ← save / load reflections in Supabase
-│  └─ feedback.js        ← store voluntary feedback (no reflection content)
-├─ supabase/schema.sql   ← tables + Row-Level Security (Phase 1 now, Phase 2 auth ready)
-├─ vercel.json           ← security headers (CSP, HSTS, no-store on /api, …)
-├─ .env.example          ← required environment variables
-├─ SECURITY.md           ← the privacy & security model
+│  ├─ converse.js          ← Claude Opus 4.8 — the single-voice reflective conversation + safety
+│  ├─ journal-insight.js   ← Mirror / Pattern / Shift response to a journal entry
+│  ├─ patterns.js          ← "what keeps surfacing" across your reflections over time
+│  ├─ encourage.js         ← one piece of honest, non-sycophantic encouragement
+│  ├─ wisdom.js            ← one grounded idea from real philosophy/psychology
+│  ├─ reflections.js       ← save / load reflections in Supabase (service-role)
+│  ├─ feedback.js          ← store voluntary feedback (no reflection content)
+│  ├─ config.js            ← serves the PUBLIC Supabase anon key for browser-side Auth
+│  └─ health.js            ← post-deploy connectivity check (exposes no secrets)
+├─ supabase/schema.sql     ← tables + Row-Level Security (Phase 1 now, Phase 2 auth ready)
+├─ vercel.json             ← security headers (CSP, HSTS, no-store on /api, …)
+├─ .env.example            ← required environment variables
+├─ SECURITY.md             ← the privacy & security model
 └─ package.json
 ```
 
@@ -76,25 +96,29 @@ prism/
 
 ## Run / deploy
 
-### 1. Set up Supabase (saves & share links)
+### 1. Set up Supabase (saves, share links & sign-in)
 1. Create a project at [supabase.com](https://supabase.com).
 2. Open **SQL Editor**, paste [`supabase/schema.sql`](supabase/schema.sql), and run it.
-3. In **Project Settings → API**, copy your **Project URL** and the **`service_role`** key.
+3. In **Project Settings → API**, copy your **Project URL**, the **`service_role`** key, and the
+   public **`anon`** key.
+4. *(For sign-in)* In **Authentication → Providers**, turn **Anonymous** on; for Google, add an
+   OAuth client and your Vercel URL as a redirect.
 
 ### 2. Deploy to Vercel
 1. Push this `prism/` folder to a GitHub repo (or run `vercel` from the CLI).
 2. Import it at [vercel.com](https://vercel.com) — it's zero-config (static site + `/api` functions).
+   Framework preset **Other**, root directory `./`.
 3. Add **Environment Variables** (Settings → Environment Variables), per [`.env.example`](.env.example):
    - `ANTHROPIC_API_KEY` — from [console.anthropic.com](https://console.anthropic.com)
    - `SUPABASE_URL`
    - `SUPABASE_SERVICE_ROLE_KEY`
-   - `SUPABASE_ANON_KEY` — *(optional, for login)* the **public** anon key. Without it, the
-     app runs guest-only. To enable Google/anonymous sign-in, also turn on those providers in
-     Supabase → Authentication → Providers (Anonymous on; Google needs an OAuth client + your
-     Vercel URL as a redirect).
+   - `SUPABASE_ANON_KEY` — the **public** anon key (enables Google/anonymous sign-in). Without it,
+     the app runs guest-only.
 4. Deploy. Done.
 
-**Verify the wiring:** open `https://YOUR-SITE.vercel.app/api/health` — it reports (without exposing any secret) whether the Anthropic key and Supabase vars are present. `"ready": true` means you're fully connected.
+**Verify the wiring:** open `https://YOUR-SITE.vercel.app/api/health` — it reports (without exposing
+any secret) whether the Anthropic key and Supabase vars are present. `"ready": true` means you're
+fully connected.
 
 ### Local development
 ```bash
@@ -102,7 +126,7 @@ npm i -g vercel
 vercel dev          # serves index.html + /api with your .env values
 ```
 Or just **open `index.html` directly** in a browser — with no backend reachable, Prism runs in
-**example mode** (hand-written sample reflections) so you can see the full experience offline.
+**example mode** (hand-written sample responses) so you can see the full experience offline.
 
 ---
 
@@ -113,8 +137,8 @@ Full detail in [SECURITY.md](SECURITY.md). In short:
 - **Opt-in only.** Nothing you write is used to improve Prism unless you explicitly turn it on in
   **Privacy & your data**. Off by default — and off means off.
 - **You own your data.** Export everything as JSON or delete it, any time, from the privacy panel.
-- **Secrets stay server-side.** The Anthropic and Supabase keys live only in Vercel env vars and
-  are read only inside `/api/*`. The browser never holds a secret.
+- **Secrets stay server-side.** The Anthropic and Supabase service keys live only in Vercel env vars
+  and are read only inside `/api/*`. The browser never holds a privileged secret.
 - **No leaking between people.** Reflections have no public list or feed; a saved one is reachable
   only by its random link. Row-Level Security is enabled, and Phase 2 (accounts) isolates every
   user's rows to `auth.uid()`.
