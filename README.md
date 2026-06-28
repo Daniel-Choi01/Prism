@@ -55,8 +55,8 @@ built to do the opposite, and to do the one thing a stateless chat with any othe
 - **Cares when it counts** — both the AI and a client-side check watch for genuine distress. If
   someone's struggling, Prism drops all challenge, becomes purely validating, and surfaces real
   crisis resources (988, Crisis Text Line, findahelpline.com).
-- **Sign in your way** — Google, anonymous (one-tap, no details), or stay a guest. Auth is optional;
-  with no keys configured, Prism still runs fully in guest mode.
+- **Sign in your way** — a simple **username + password** (no email needed), one-tap **anonymous**,
+  or stay a **guest**. Auth is optional; with no keys configured, Prism still runs fully in guest mode.
 - **Syncs across devices (when signed in)** — your private bundle (reflections, journal, check-ins)
   follows your account, so "Prism remembers you" is true on your phone *and* your laptop. It syncs
   directly from the browser under Row-Level Security (you can only ever touch your own row), so
@@ -124,8 +124,9 @@ prism/
 2. Open **SQL Editor**, paste [`supabase/schema.sql`](supabase/schema.sql), and run it.
 3. In **Project Settings → API**, copy your **Project URL**, the **`service_role`** key, and the
    public **`anon`** key.
-4. *(For sign-in)* In **Authentication → Providers**, turn **Anonymous** on; for Google, add an
-   OAuth client and your Vercel URL as a redirect.
+4. *(For sign-in)* In **Authentication → Providers**: turn **Email** on and switch **OFF "Confirm
+   email"** (usernames map to synthetic emails, so there's nothing to confirm), and turn
+   **Anonymous** on. No Google/OAuth setup needed.
 5. *(For cross-device sync)* The schema's **CLOUD SYNC** block creates the `user_state` table with
    Row-Level Security, so signed-in users sync their private bundle across devices (guests stay
    on-device). It's included in `schema.sql` and safe to run as-is.

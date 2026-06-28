@@ -573,9 +573,12 @@
   .wc-sub { color:var(--ink-dim); font-family:var(--read); font-style:italic; font-size:17px; margin:16px auto 24px; max-width:380px; line-height:1.56; }
   .wc-name-label { display:block; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:9px; text-align:left; }
   .wc-name-label span { text-transform:none; letter-spacing:0; color:var(--ink-faint); }
-  .welcome input[type="text"]{ width:100%; padding:13px 15px; border-radius:12px; border:1px solid var(--line-bright);
+  .welcome input[type="text"], .welcome input[type="password"]{ width:100%; padding:13px 15px; border-radius:12px; border:1px solid var(--line-bright);
     background:rgba(0,0,0,0.35); color:var(--ink); font-family:var(--read); font-style:italic; font-size:15px; outline:0; }
-  .welcome input[type="text"]:focus{ border-color:rgba(179,156,255,0.5); }
+  .welcome input[type="text"]:focus, .welcome input[type="password"]:focus{ border-color:rgba(179,156,255,0.5); }
+  #wcCloud input { margin-bottom:10px; }
+  .wc-row { display:flex; gap:10px; margin-top:2px; }
+  .wc-half { flex:1; justify-content:center; padding:12px; text-transform:none; letter-spacing:0.01em; font-size:13.5px; }
   .wc-actions { margin-top:22px; display:flex; flex-direction:column; gap:11px; }
   .wc-primary { width:100%; justify-content:center; padding:14px 22px; }
   .wc-opt { width:100%; justify-content:center; padding:12px; text-transform:none; letter-spacing:0.01em; font-size:13.5px; gap:9px; }
@@ -603,7 +606,7 @@
     .load-bar span { animation:none !important; }
     .pat-mood polyline { stroke-dasharray:none !important; stroke-dashoffset:0 !important; }
     .pat-mood circle { opacity:1 !important; transform:none !important; }
-    .pane.show, .journal.show, .checkin.show, .welcome.show .wc-card, .modal-bg.show .modal { opacity:1 !important; transform:none !important; }
+    .pane.show, .journal.show, .checkin.show, .support.show, .welcome.show .wc-card, .modal-bg.show .modal { opacity:1 !important; transform:none !important; }
   }
 
   .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
@@ -628,7 +631,7 @@
   html[data-motion="reduce"] .pat-mood polyline { stroke-dasharray:none !important; stroke-dashoffset:0 !important; }
   html[data-motion="reduce"] .pat-mood circle { opacity:1 !important; transform:none !important; }
   html[data-motion="reduce"] .pane.show, html[data-motion="reduce"] .journal.show, html[data-motion="reduce"] .checkin.show,
-  html[data-motion="reduce"] .welcome.show .wc-card, html[data-motion="reduce"] .modal-bg.show .modal { opacity:1 !important; transform:none !important; }
+  html[data-motion="reduce"] .support.show, html[data-motion="reduce"] .welcome.show .wc-card, html[data-motion="reduce"] .modal-bg.show .modal { opacity:1 !important; transform:none !important; }
   /* text size: zoom scales the whole px-based UI uniformly (works where rem refactor wouldn't) */
   html[data-text="large"]   { zoom: 1.12; }
   html[data-text="largest"] { zoom: 1.25; }
@@ -751,6 +754,9 @@
      ============================================================ */
   .checkin { display:none; max-width:680px; margin:0 auto; padding:34px 0 90px; }
   .checkin.show { display:block; }
+  .support { display:none; max-width:680px; margin:0 auto; padding:34px 0 90px; }
+  .support.show { display:block; animation: viewIn .5s cubic-bezier(.2,.7,.2,1) both; }
+  .support .res-item:first-of-type { margin-top:8px; }
   .ci-card { border:1px solid var(--line-bright); border-radius:20px; padding:30px;
     background:linear-gradient(180deg, rgba(179,156,255,0.05), rgba(255,255,255,0.012)); }
   .ci-q { font-family:var(--serif); font-weight:300; font-size:22px; color:var(--ink); margin-bottom:18px; }
@@ -889,17 +895,20 @@
       <button class="refract-btn wc-primary" id="wcGuest">Begin — stays on this device</button>
       <div id="wcCloud" style="display:none;">
         <div class="wc-or">or, to keep your reflections across devices</div>
-        <button class="ghost-btn wc-opt" id="wcGoogle">
-          <svg viewBox="0 0 18 18" aria-hidden="true"><path fill="#EA4335" d="M9 7.5v3.2h4.5c-.2 1.1-1.4 3.3-4.5 3.3A5 5 0 1 1 9 4a4.5 4.5 0 0 1 3.2 1.2l2.2-2.1A8 8 0 1 0 9 17c4.6 0 7.6-3.2 7.6-7.7 0-.5 0-.9-.1-1.3H9z"/></svg>
-          Continue with Google
-        </button>
-        <button class="ghost-btn wc-opt" id="wcAnon">Continue anonymously — no email</button>
+        <input type="text" id="wcUser" maxlength="30" placeholder="Username" autocomplete="username" />
+        <input type="password" id="wcPass" maxlength="200" placeholder="Password (at least 8 characters)" autocomplete="current-password" />
+        <div class="wc-row">
+          <button class="refract-btn wc-half" id="wcLogin">Log in</button>
+          <button class="ghost-btn wc-half" id="wcSignup">Create account</button>
+        </div>
+        <div class="wc-or">or</div>
+        <button class="ghost-btn wc-opt" id="wcAnon">Continue anonymously — no account</button>
       </div>
-      <div id="wcNoCloud" class="wc-note">Accounts (Google or anonymous sync) switch on once the server is connected. For now, everything stays privately on this device.</div>
+      <div id="wcNoCloud" class="wc-note">Accounts (a username, or anonymous sync) switch on once the server is connected. For now, everything stays privately on this device.</div>
     </div>
 
     <div class="notice" id="wcErr" style="margin-top:14px;"></div>
-    <p class="wc-fine">Guest keeps everything in this browser only. Anonymous gives you a private account with no email attached. Nothing is ever sold or shared. <a id="wcPrivacy">How your data is handled →</a></p>
+    <p class="wc-fine">A username + password lets you log back in on any device. Guest stays in this browser only; anonymous is a private account with no details. Nothing is ever sold or shared. <a id="wcPrivacy">How your data is handled →</a></p>
   </div>
 </div>
 
@@ -921,6 +930,7 @@
       <button class="tab" role="tab" data-view="journal" aria-selected="false">Journal</button>
       <button class="tab" role="tab" data-view="encourage" aria-selected="false">Encouragement</button>
       <button class="tab" role="tab" data-view="wisdom" aria-selected="false">Wisdom</button>
+      <button class="tab" role="tab" data-view="support" aria-selected="false">Support</button>
     </nav>
     <div class="top-actions">
       <button class="ghost-btn" id="historyBtn">Reflections</button>
@@ -1155,9 +1165,9 @@
       </div>
       <div class="ci-fields">
         <label class="wc-name-label" for="ciWord">One word for it <span>(optional)</span></label>
-        <input type="text" id="ciWord" maxlength="40" placeholder="e.g. tender, hopeful, frayed, steady" />
+        <input type="text" id="ciWord" maxlength="40" placeholder="a word for today" />
         <label class="wc-name-label" for="ciGrateful" style="margin-top:16px;">One thing you're grateful for <span>(optional)</span></label>
-        <input type="text" id="ciGrateful" maxlength="120" placeholder="however small — a coffee, a text back, the quiet" />
+        <input type="text" id="ciGrateful" maxlength="120" placeholder="however small" />
       </div>
       <div class="pane-actions" style="justify-content:flex-start; margin-top:24px;">
         <button class="refract-btn" id="ciSave">Save today's check-in</button>
@@ -1202,6 +1212,65 @@
       <button class="ghost-btn" id="wisKeep">Keep ♥</button>
       <button class="ghost-btn" id="wisToTalk">Reflect on this →</button>
     </div>
+  </section>
+
+  <!-- ============ SUPPORT (extra help · hotlines) ============ -->
+  <section class="support" id="support">
+    <div class="eyebrow" style="text-align:center;">you don't have to face it alone</div>
+    <h2 class="jr-title" style="text-align:center;">Real help, <em>any time</em></h2>
+    <p class="jr-sub" style="text-align:center; max-width:520px; margin-left:auto; margin-right:auto;">Prism is a tool for thinking — it can't be a person, and some moments need a person. These lines are real, free, confidential, and there for you whenever you need them.</p>
+
+    <div class="res-item">
+      <span class="res-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 4h4l2 5-3 2a12 12 0 006 6l2-3 5 2v4a2 2 0 01-2 2C10 22 2 14 2 6a2 2 0 012-2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span>
+      <div>
+        <div class="res-t">988 Suicide &amp; Crisis Lifeline <span style="color:var(--ink-faint);font-weight:400">· US</span></div>
+        <div class="res-d">Call or text <b>988</b>, or chat at <a href="https://988lifeline.org" target="_blank" rel="noopener">988lifeline.org</a>. Free and confidential, 24/7 — English &amp; Spanish, interpreters in 240+ languages.</div>
+      </div>
+    </div>
+    <div class="res-item">
+      <span class="res-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H8l-4 3V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span>
+      <div>
+        <div class="res-t">Crisis Text Line <span style="color:var(--ink-faint);font-weight:400">· US</span></div>
+        <div class="res-d">Text <b>HOME</b> to <b>741741</b> to reach a trained crisis counselor. Free, 24/7.</div>
+      </div>
+    </div>
+    <div class="res-item">
+      <span class="res-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-4.5-9-9a5 5 0 019-3 5 5 0 019 3c-2 4.5-9 9-9 9z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span>
+      <div>
+        <div class="res-t">The Trevor Project <span style="color:var(--ink-faint);font-weight:400">· LGBTQ+ youth, US</span></div>
+        <div class="res-d">Call <b>1-866-488-7386</b>, text <b>START</b> to <b>678-678</b>, or chat at <a href="https://www.thetrevorproject.org/get-help/" target="_blank" rel="noopener">thetrevorproject.org</a>. Free, confidential, 24/7.</div>
+      </div>
+    </div>
+    <div class="res-item">
+      <span class="res-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span>
+      <div>
+        <div class="res-t">Veterans Crisis Line <span style="color:var(--ink-faint);font-weight:400">· US</span></div>
+        <div class="res-d">Dial <b>988</b> then press <b>1</b>, or text <b>838255</b>. For veterans, service members, and those who care about them.</div>
+      </div>
+    </div>
+    <div class="res-item">
+      <span class="res-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 4h4l2 5-3 2a12 12 0 006 6l2-3 5 2v4a2 2 0 01-2 2C10 22 2 14 2 6a2 2 0 012-2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span>
+      <div>
+        <div class="res-t">SAMHSA Helpline <span style="color:var(--ink-faint);font-weight:400">· US</span></div>
+        <div class="res-d">Call <b>1-800-662-4357</b> for free, confidential, 24/7 help with mental health or substance use — including referrals to local support.</div>
+      </div>
+    </div>
+    <div class="res-item">
+      <span class="res-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" stroke="currentColor" stroke-width="1.3"/></svg></span>
+      <div>
+        <div class="res-t">Outside the US — <a href="https://findahelpline.com" target="_blank" rel="noopener">findahelpline.com</a></div>
+        <div class="res-d">Free, confidential helplines in 130+ countries, in your language.</div>
+      </div>
+    </div>
+    <div class="res-item">
+      <span class="res-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3l9-16z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+      <div>
+        <div class="res-t">In immediate danger?</div>
+        <div class="res-d">If you or someone near you is in immediate danger, call your local emergency number (<b>911</b> in the US).</div>
+      </div>
+    </div>
+
+    <p class="fineprint" style="margin-top:18px; text-align:center;">Prism is a student project — it can't contact anyone for you, but the people on the other end of these lines are real, and they want to help.</p>
   </section>
 
   <footer>
@@ -2211,7 +2280,7 @@ function reset(){
 let activeView = "reflect";
 function showView(name){
   activeView = name;
-  ["journal","encourage","wisdom","checkin"].forEach(id => $(id).classList.remove("show"));
+  ["journal","encourage","wisdom","checkin","support"].forEach(id => $(id).classList.remove("show"));
   $("loader").classList.remove("show");
   document.querySelectorAll("#tabs .tab").forEach(t => t.setAttribute("aria-selected", t.dataset.view === name ? "true" : "false"));
   if (name === "reflect"){
@@ -2226,6 +2295,7 @@ function showView(name){
     else if (name === "checkin"){ $("checkin").classList.add("show"); checkinInit(); }
     else if (name === "encourage"){ $("encourage").classList.add("show"); encourageInit(); }
     else if (name === "wisdom"){ $("wisdom").classList.add("show"); wisdomInit(); }
+    else if (name === "support"){ $("support").classList.add("show"); }
   }
   window.scrollTo({top:0, behavior:"smooth"});
 }
@@ -2909,13 +2979,13 @@ function renderCheckins(){
 
 /* ============================================================
    IDENTITY & LOGIN
-   Guest = on-device only (always works). Anonymous / Google use
-   Supabase Auth, initialised from the public /api/config. Everything
-   degrades gracefully: if Supabase isn't configured, guest is offered.
+   Guest = on-device only (always works). Anonymous + username/password
+   accounts use Supabase Auth, initialised from the public /api/config.
+   Degrades gracefully: if Supabase isn't configured, guest is offered.
    ============================================================ */
 const IDENTITY_STORE = "prism_identity";
 let sb = null;          // Supabase client (only if configured)
-let identity = null;    // { mode:'guest'|'anon'|'google', name?, email? }
+let identity = null;    // { mode:'guest'|'anon'|'user', name?, email? }
 
 function loadIdentity(){ try { return JSON.parse(localStorage.getItem(IDENTITY_STORE) || "null"); } catch(_){ return null; } }
 function saveIdentity(obj){ try { localStorage.setItem(IDENTITY_STORE, JSON.stringify(obj)); } catch(_){} }
@@ -2937,13 +3007,14 @@ async function initSupabase(){
 }
 
 function identityFromUser(u){
-  const name = (u.user_metadata && (u.user_metadata.name || u.user_metadata.full_name)) || "";
-  return { mode: u.is_anonymous ? "anon" : "google", name, email: u.email || "" };
+  const meta = u.user_metadata || {};
+  const name = meta.username || meta.name || (u.email ? String(u.email).split("@")[0] : "");
+  return { mode: u.is_anonymous ? "anon" : "user", name, email: u.email || "" };
 }
 
 /* ============================================================
    CLOUD SYNC — what makes "Prism remembers you" true ACROSS devices.
-   Signed-in users (Google / anonymous) sync their private bundle
+   Signed-in users (username/password or anonymous) sync their private bundle
    directly via the Supabase client; Row-Level Security guarantees a
    user can only ever touch their own row. GUESTS never sync — their
    data stays strictly on-device. Every call is defensive and no-ops
@@ -3069,11 +3140,46 @@ $("wcGuest").addEventListener("click", () => {
   setIdentity({ mode:"guest", name:$("wcName").value.trim().slice(0,40), since:Date.now() });
   enterApp(null);
 });
-$("wcGoogle").addEventListener("click", async () => {
+/* Username + password accounts. Under the hood we use a synthetic email so it
+   plugs straight into Supabase Auth + the same Row-Level-Security cloud sync —
+   no real email is ever sent or required. Username uniqueness is enforced by
+   Supabase (the synthetic email is unique), so a taken name is rejected. */
+function usernameToEmail(u){
+  const clean = String(u||"").trim().toLowerCase().replace(/[^a-z0-9_.-]/g, "");
+  return clean ? clean + "@prism-reflect.app" : "";
+}
+function validCreds(u, p){
+  const clean = String(u||"").trim();
+  if (clean.replace(/[^a-z0-9_.-]/gi, "").length < 3){ showWcErr("Pick a username of at least 3 letters or numbers."); return null; }
+  if (String(p||"").length < 8){ showWcErr("Use a password of at least 8 characters."); return null; }
+  return { email: usernameToEmail(clean), username: clean.slice(0,30) };
+}
+$("wcSignup").addEventListener("click", async () => {
   if (!sb) return;
-  try { await sb.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: location.origin + location.pathname } }); }
-  catch(_){ showWcErr("Couldn't start Google sign-in. You can continue as a guest for now."); }
+  const c = validCreds($("wcUser").value, $("wcPass").value); if (!c) return;
+  const btn = $("wcSignup"); btn.disabled = true;
+  try {
+    const { data, error } = await sb.auth.signUp({ email:c.email, password:$("wcPass").value, options:{ data:{ username:c.username } } });
+    if (error){ showWcErr(/registered|already|exists/i.test(error.message) ? "That username's already taken — try another, or log in." : error.message); return; }
+    if (!data.session){ showWcErr("That username may be taken — try logging in, or pick another."); return; }
+    setIdentity({ mode:"user", name:c.username, since:Date.now() });
+    enterApp(null);
+  } catch(_){ showWcErr("Couldn't create the account just now. Try again, or continue as a guest."); }
+  finally { btn.disabled = false; }
 });
+$("wcLogin").addEventListener("click", async () => {
+  if (!sb) return;
+  const c = validCreds($("wcUser").value, $("wcPass").value); if (!c) return;
+  const btn = $("wcLogin"); btn.disabled = true;
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email:c.email, password:$("wcPass").value });
+    if (error || !data.session){ showWcErr("Wrong username or password — or no account yet. Try “Create account”."); return; }
+    setIdentity({ mode:"user", name:c.username, since:Date.now() });
+    enterApp(null);
+  } catch(_){ showWcErr("Couldn't log in just now. Try again, or continue as a guest."); }
+  finally { btn.disabled = false; }
+});
+$("wcPass").addEventListener("keydown", e => { if (e.key === "Enter") $("wcLogin").click(); });
 $("wcAnon").addEventListener("click", async () => {
   if (!sb) return;
   $("wcAnon").disabled = true;
@@ -3092,15 +3198,15 @@ function renderAccount(){
   const el = $("accountChip"); if (!el) return;
   if (!identity){ el.style.display="none"; return; }
   el.style.display = "";
-  el.textContent = identity.mode==="google" ? (identity.name || identity.email || "Account")
-                 : identity.mode==="anon"   ? (identity.name || "Anonymous")
+  el.textContent = identity.mode==="user" ? (identity.name || "Account")
+                 : identity.mode==="anon" ? (identity.name || "Anonymous")
                  : (identity.name || "Guest");
 }
 $("accountChip").addEventListener("click", () => {
   const sub = identity ? (
-    identity.mode==="google" ? `Signed in${identity.email?` as ${identity.email}`:""} with Google — your reflections sync privately to your account.`
-    : identity.mode==="anon" ? "You're using a private anonymous account — no email, and your reflections sync to it across this browser."
-    : "You're on this device only. Reflections stay in this browser; sign in anytime to keep them across devices."
+    identity.mode==="user" ? `Signed in as ${identity.name || "you"} — your reflections sync privately to your account, on any device you log in from.`
+    : identity.mode==="anon" ? "You're using a private anonymous account — no details, and your reflections sync to it on this browser."
+    : "You're on this device only. Reflections stay in this browser; create an account anytime to keep them across devices."
   ) : "";
   $("accountSub").textContent = sub;
   openModal("accountModal");

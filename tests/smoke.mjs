@@ -71,10 +71,14 @@ try {
     await page.goto(URL, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(300);
     check("welcome gate shows on first load", await page.locator("#welcome").evaluate((el) => el.classList.contains("show")));
-    check("guest + google + anon buttons present",
+    check("guest + username/password + anon present; Google removed",
       (await page.locator("#wcGuest").count()) === 1 &&
-      (await page.locator("#wcGoogle").count()) === 1 &&
-      (await page.locator("#wcAnon").count()) === 1);
+      (await page.locator("#wcUser").count()) === 1 &&
+      (await page.locator("#wcPass").count()) === 1 &&
+      (await page.locator("#wcLogin").count()) === 1 &&
+      (await page.locator("#wcSignup").count()) === 1 &&
+      (await page.locator("#wcAnon").count()) === 1 &&
+      (await page.locator("#wcGoogle").count()) === 0);
     await page.locator("#wcGuest").click();
     await page.waitForTimeout(300);
     check("guest entry dismisses the gate", await page.locator("#welcome").evaluate((el) => !el.classList.contains("show")));
@@ -144,11 +148,14 @@ try {
   /* ===== 4. Tabs + journal + check-in ===== */
   {
     const { ctx, page, errors } = await freshPage();
-    for (const v of ["checkin", "journal", "encourage", "wisdom", "reflect"]) {
+    for (const v of ["checkin", "journal", "encourage", "wisdom", "support", "reflect"]) {
       await page.locator(`#tabs .tab[data-view="${v}"]`).click();
       await page.waitForTimeout(120);
     }
-    check("all five tabs switch without error", errors.length === 0, errors.join("; "));
+    check("all tabs switch without error", errors.length === 0, errors.join("; "));
+    await page.locator('#tabs .tab[data-view="support"]').click();
+    await page.waitForTimeout(120);
+    check("Support tab shows crisis hotlines", (await page.locator("#support .res-item").count()) >= 5);
 
     // journal reflect (example mode)
     await page.locator(`#tabs .tab[data-view="journal"]`).click();
